@@ -28,18 +28,18 @@
 </head>
 <body class="text-slate-800 pb-12">
 
-    <!-- Top Header Banner -->
+    <!-- Header Banner -->
     <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white py-6 px-8 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <span class="bg-blue-500/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30">DEPARTMENT OF POSTS</span>
                 <h1 class="text-2xl md:text-3xl font-bold mt-1">Indore Region - Verticals Performance Dashboard</h1>
-                <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Real-time Live Sync with Google Sheets ('ind')</p>
+                <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Live Sync with Google Sheets ('ind')</p>
             </div>
             
             <div class="flex items-center gap-3">
                 <span id="syncBadge" class="text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold">
-                    🟢 Google Sheet Live Synced
+                    🟢 Live Synced
                 </span>
                 <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition flex items-center gap-1.5">
                     <span>📊</span> Export Excel
@@ -51,7 +51,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-6">
 
-        <!-- Primary Data Type Switcher Tabs (Revenue vs Count) -->
+        <!-- Data Type Switcher Tabs -->
         <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
             <button onclick="switchDataType('revenue')" id="tab-type-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
                 <span>💰</span> Revenue Data Sheet
@@ -61,10 +61,9 @@
             </button>
         </div>
 
-        <!-- Filter Controls Bar -->
+        <!-- Filter Controls -->
         <div class="bg-white rounded-xl p-5 border border-slate-200 card flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                <!-- 1. Vertical Select -->
                 <div class="flex items-center gap-2">
                     <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
                     <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
@@ -75,53 +74,47 @@
                     </select>
                 </div>
 
-                <!-- 2. Division Select -->
                 <div class="flex items-center gap-2">
                     <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division Filter:</label>
                     <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-800 text-white text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
                         <option value="ALL">🏢 All Divisions (Full Region)</option>
                         <option value="Indore City">🏙️ Indore City Division</option>
-                        <option value="Indore Mfl">🏞️ Indore Moffusil Division</option>
+                        <option value="Indore Moffusil">🏞️ Indore Moffusil Division</option>
                         <option value="Khandwa">📮 Khandwa Division</option>
                         <option value="Mandsaur">📦 Mandsaur Division</option>
                         <option value="Ratlam">🚆 Ratlam Division</option>
                         <option value="Sehore">🌾 Sehore Division</option>
                         <option value="Ujjain">🛕 Ujjain Division</option>
-                        <option value="RMS ID">🚚 RMS ID Division</option>
+                        <option value="ID DIVISION">🚚 ID DIVISION INDORE</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Instant Search Input -->
             <div class="w-full md:w-64">
                 <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Filter Table..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5 px-3 focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
         </div>
 
-        <!-- Top Metric Cards -->
+        <!-- Metric Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Card 1: Target Card -->
             <div class="card p-5 border-l-4 border-blue-600">
-                <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET 26-27)</div>
+                <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET)</div>
                 <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">0</div>
                 <div class="text-xs text-slate-500 mt-1">मासिक लक्ष्य: <span id="kpiMonthlyTarget" class="font-bold text-slate-700">0</span></div>
             </div>
 
-            <!-- Card 2: Total Achievement -->
             <div class="card p-5 border-l-4 border-emerald-500">
                 <div id="kpiAchLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
                 <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">0</div>
                 <div class="text-xs text-slate-500 mt-1">अनुपातिक लक्ष्य तक: <span id="kpiTillMonth" class="font-bold text-slate-700">0</span></div>
             </div>
 
-            <!-- Card 3: % Prop Achievement -->
             <div class="card p-5 border-l-4 border-amber-500">
-                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">% अनुपातिक लक्ष्य प्राप्ति</div>
+                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">% लक्ष्य प्राप्ति (% ACHIEVEMENT)</div>
                 <div id="kpiPropPct" class="text-2xl font-black text-amber-600 mt-2">0.0%</div>
                 <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-bold text-slate-700">0.0%</span></div>
             </div>
 
-            <!-- Card 4: Current Selection Status -->
             <div class="card p-5 border-l-4 border-purple-500">
                 <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">चयनित विवरण (SELECTED STATUS)</div>
                 <div id="kpiActiveDivText" class="text-lg font-extrabold text-purple-700 mt-2 truncate">All Divisions</div>
@@ -129,9 +122,8 @@
             </div>
         </div>
 
-        <!-- Dynamic Charts Grid -->
+        <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Chart 1: Monthly Trend Bar Chart -->
             <div class="card p-6 lg:col-span-2">
                 <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -144,7 +136,6 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Vertical Breakdown (Always shows 3 Verticals share) -->
             <div class="card p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -157,12 +148,12 @@
             </div>
         </div>
 
-        <!-- Detailed Data Table -->
+        <!-- Detailed Table -->
         <div class="card p-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
                     <h2 id="tableMainTitle" class="text-base font-bold text-slate-800">📋 विस्तृत तालिका विवरण (Detailed Performance Table)</h2>
-                    <p id="tableSubTitle" class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
+                    <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
                 </div>
                 <div id="recordBadge" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold">
                     0 Rows Loaded
@@ -185,8 +176,8 @@
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
 
-        let currentDataType = 'revenue'; // 'revenue' or 'count'
-        let currentVertical = 'ALL';     // 'ALL', 'PARCEL', 'MAIL', 'IRGB'
+        let currentDataType = 'revenue';
+        let currentVertical = 'ALL';
         let trendChart = null, secondChart = null;
 
         let revenueRecords = [];
@@ -194,7 +185,7 @@
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){{2}})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
+            return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
         function cleanNumber(val) {
@@ -206,50 +197,39 @@
 
         async function fetchAllLiveData() {
             try {
-                // Fetch Revenue CSV
                 const revRes = await fetch(REVENUE_CSV_URL + '&t=' + new Date().getTime());
                 const revText = await revRes.text();
-                revenueRecords = parseSheetData(parseCSV(revText), 'revenue');
+                revenueRecords = parseRevenueSheet(parseCSV(revText));
 
-                // Fetch Count CSV
                 const countRes = await fetch(COUNT_CSV_URL + '&t=' + new Date().getTime());
                 const countText = await countRes.text();
-                countRecords = parseSheetData(parseCSV(countText), 'count');
+                countRecords = parseCountSheet(parseCSV(countText));
 
                 updateDashboard();
             } catch (e) {
                 console.error("Fetch Error:", e);
-                updateDashboard();
             }
         }
 
-        function parseSheetData(rows, type) {
+        // Parsing Revenue Sheet
+        function parseRevenueSheet(rows) {
             let currentVert = "PARCEL";
             let records = [];
 
             rows.forEach((row) => {
                 let rowStr = row.join(" ").toUpperCase();
 
-                // Track Section Transition
-                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL") || rowStr.includes("MO ARTICLE") || rowStr.includes("MAIL OP")) {
-                    currentVert = "MAIL";
-                } else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB") || rowStr.includes("INTERNATIONAL")) {
-                    currentVert = "IRGB";
-                } else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE") || rowStr.includes("PARCEL COUNT") || rowStr.includes("PARCEL")) {
-                    currentVert = "PARCEL";
-                }
+                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST")) currentVert = "MAIL";
+                else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB")) currentVert = "IRGB";
+                else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE")) currentVert = "PARCEL";
 
-                // Skip header rows or total rows
-                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET") || !row[0] || row[0].trim() === "") {
-                    return;
-                }
+                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
 
                 let divName = row[0].trim();
                 if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
 
                 let isIRGB = (currentVert === "IRGB");
-                let isRevenue = (type === 'revenue');
-                let crDivisor = (isRevenue && isIRGB) ? 100 : 1; // Convert IRGB Lakhs to Crores in revenue mode
+                let crDivisor = isIRGB ? 100 : 1; // Convert IRGB Lakhs to Crores
 
                 let rawT = cleanNumber(row[1]);
                 let rawM = cleanNumber(row[2]);
@@ -259,10 +239,6 @@
                 let rawJn = cleanNumber(row[6]);
                 let rawJl = cleanNumber(row[7]);
                 let rawAch = cleanNumber(row[8]);
-
-                if (rawAch === 0 && (rawAp + rawMy + rawJn + rawJl) > 0) {
-                    rawAch = rawAp + rawMy + rawJn + rawJl;
-                }
 
                 records.push({
                     divName: divName,
@@ -292,6 +268,67 @@
             return records;
         }
 
+        // 🎯 EXACT FIX: Parsing Count Sheet Column Alignment based on your Google Sheet structure
+        function parseCountSheet(rows) {
+            let currentVert = "PARCEL";
+            let records = [];
+
+            rows.forEach((row) => {
+                let rowStr = row.join(" ").toUpperCase();
+
+                if (rowStr.includes("MO ARTICLE COUNT") || rowStr.includes("MAIL OPERATION")) currentVert = "MAIL";
+                else if (rowStr.includes("IRGB ARTICLE COUNT") || rowStr.includes("IRGB")) currentVert = "IRGB";
+                else if (rowStr.includes("PARCEL ARTICLE COUNT") || rowStr.includes("PARCEL")) currentVert = "PARCEL";
+
+                if (rowStr.includes("NAME OF DIVISON") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
+
+                let divName = row[0].trim();
+                if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
+
+                // Absolute Mapping matching your Sheet Image:
+                // Col 1: April-26 Count
+                // Col 2: May-26 Count
+                // Col 3: June-26 Count
+                // Col 4: July-26 Target
+                // Col 5: July-26 Article Count
+                // Col 6: Achievement %
+                let rawAp = cleanNumber(row[1]);
+                let rawMy = cleanNumber(row[2]);
+                let rawJn = cleanNumber(row[3]);
+                let rawJulyTarget = cleanNumber(row[4]);
+                let rawJulyCount = cleanNumber(row[5]);
+                let pctAch = row[6] || "0%";
+
+                let sumTillDate = rawAp + rawMy + rawJn + rawJulyCount;
+
+                records.push({
+                    divName: divName,
+                    vertical: currentVert,
+                    target: rawJulyTarget,
+                    monthly: rawJulyTarget,
+                    tillMonth: rawJulyTarget,
+                    apr: rawAp,
+                    may: rawMy,
+                    jun: rawJn,
+                    jul: rawJulyCount,
+                    totalAch: sumTillDate,
+                    rawTarget: rawJulyTarget,
+                    rawMonthly: rawJulyTarget,
+                    rawTillMonth: rawJulyTarget,
+                    rawApr: rawAp,
+                    rawMay: rawMy,
+                    rawJun: rawJn,
+                    rawJul: rawJulyCount,
+                    rawTotalAch: sumTillDate,
+                    propPct: pctAch,
+                    totalPct: pctAch,
+                    isIRGB: false
+                });
+            });
+
+            return records;
+        }
+
         function switchDataType(type) {
             currentDataType = type;
 
@@ -302,7 +339,7 @@
                 tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
                 tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
                 document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
-                document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET 26-27)";
+                document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
                 document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
             } else {
                 tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
@@ -321,48 +358,35 @@
 
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
 
-            // Filter Dataset
             let filtered = dataset.filter(r => {
                 let matchDiv = (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase());
                 let matchVert = (currentVertical === 'ALL') || (r.vertical === currentVertical);
                 return matchDiv && matchVert;
             });
 
-            let sumTarget = 0, sumMonthly = 0, sumTillMonth = 0, sumAch = 0;
+            let sumTarget = 0, sumAch = 0;
             let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
 
             filtered.forEach(r => {
-                if (showLakhsOnly) {
-                    sumTarget += r.rawTarget;
-                    sumMonthly += r.rawMonthly;
-                    sumTillMonth += r.rawTillMonth;
-                    sumAch += r.rawTotalAch;
+                if (currentDataType === 'count') {
+                    sumTarget += r.target;    // July Target
+                    sumAch += r.jul;          // July Actual Count
                 } else {
-                    if (currentDataType === 'count') {
-                        sumTarget += r.rawTillMonth || r.target; 
-                        sumAch += r.rawJul || r.jul;
-                    } else {
-                        sumTarget += r.target;
-                        sumMonthly += r.monthly;
-                        sumTillMonth += r.tillMonth;
-                        sumAch += r.totalAch;
-                    }
+                    sumTarget += showLakhsOnly ? r.rawTarget : r.target;
+                    sumAch += showLakhsOnly ? r.rawTotalAch : r.totalAch;
                 }
             });
 
-            let propPct = sumTillMonth > 0 ? ((sumAch / sumTillMonth) * 100).toFixed(1) + "%" : "0%";
-            let totalPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(1) + "%" : "0%";
+            let achPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(1) + "%" : "0%";
 
             let unitPrefix = (currentDataType === 'revenue') ? '₹' : '';
             let unitSuffix = (currentDataType === 'revenue') ? (showLakhsOnly ? ' Lakhs' : ' Cr') : ' Articles';
             let decimals = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
 
             document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toFixed(decimals)}${unitSuffix}`;
-            document.getElementById('kpiMonthlyTarget').innerText = `${unitPrefix}${sumMonthly.toFixed(decimals)}${unitSuffix}`;
             document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toFixed(decimals)}${unitSuffix}`;
-            document.getElementById('kpiTillMonth').innerText = `${unitPrefix}${sumTillMonth.toFixed(decimals)}${unitSuffix}`;
-            document.getElementById('kpiPropPct').innerText = propPct;
-            document.getElementById('kpiTotalPct').innerText = totalPct;
+            document.getElementById('kpiPropPct').innerText = achPct;
+            document.getElementById('kpiTotalPct').innerText = achPct;
 
             document.getElementById('kpiActiveDivText').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
             document.getElementById('kpiActiveVertText').innerText = currentVertical === 'ALL' ? "All Verticals Combined" : `${currentVertical} Vertical`;
@@ -372,84 +396,71 @@
         }
 
         function renderTable(filteredData, showLakhsOnly) {
-            let unitHeader = (currentDataType === 'revenue') ? (showLakhsOnly ? '(₹ Lakhs)' : '(₹ Cr)') : '(Count)';
+            let isCount = (currentDataType === 'count');
 
             let theadHtml = `
                 <tr class="bg-slate-900 text-white font-bold uppercase text-xs">
                     <th class="p-3.5 border-b">Division Name</th>
                     <th class="p-3.5 border-b">Vertical</th>
-                    <th class="p-3.5 border-b">Total Target ${unitHeader}</th>
-                    <th class="p-3.5 border-b">Monthly Target</th>
+                    <th class="p-3.5 border-b">${isCount ? 'July Target' : 'Total Target (Cr)'}</th>
                     <th class="p-3.5 border-b">April 26</th>
                     <th class="p-3.5 border-b">May 26</th>
                     <th class="p-3.5 border-b">June 26</th>
-                    <th class="p-3.5 border-b">July 26</th>
-                    <th class="p-3.5 border-b font-extrabold text-emerald-300">Total Achieved</th>
-                    <th class="p-3.5 border-b">% Prop. Target</th>
-                    <th class="p-3.5 border-b">% Total Target</th>
+                    <th class="p-3.5 border-b">July 26 Count</th>
+                    <th class="p-3.5 border-b font-extrabold text-emerald-300">${isCount ? 'Total Booking' : 'Total Achievement'}</th>
+                    <th class="p-3.5 border-b">% Achievement</th>
                 </tr>`;
             document.getElementById('tableHead').innerHTML = theadHtml;
 
             let tbodyHtml = '';
-            let sumT = 0, sumM = 0, sumAp = 0, sumMy = 0, sumJn = 0, sumJl = 0, sumAch = 0;
+            let sumT = 0, sumAp = 0, sumMy = 0, sumJn = 0, sumJl = 0, sumAch = 0;
 
             filteredData.forEach(r => {
                 let vertBadge = r.vertical === 'PARCEL' ? '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">📦 Parcel</span>' :
                                 (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
                                 '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
 
-                let isRev = (currentDataType === 'revenue');
-                let isIRGB = (r.vertical === 'IRGB');
-                let useLakhs = isRev && isIRGB && showLakhsOnly;
+                let t = showLakhsOnly ? r.rawTarget : r.target;
+                let ap = showLakhsOnly ? r.rawApr : r.apr;
+                let my = showLakhsOnly ? r.rawMay : r.may;
+                let jn = showLakhsOnly ? r.rawJun : r.jun;
+                let jl = showLakhsOnly ? r.rawJul : r.jul;
+                let ach = showLakhsOnly ? r.rawTotalAch : r.totalAch;
 
-                let t = useLakhs ? r.rawTarget : r.target;
-                let m = useLakhs ? r.rawMonthly : r.monthly;
-                let ap = useLakhs ? r.rawApr : r.apr;
-                let my = useLakhs ? r.rawMay : r.may;
-                let jn = useLakhs ? r.rawJun : r.jun;
-                let jl = useLakhs ? r.rawJul : r.jul;
-                let ach = useLakhs ? r.rawTotalAch : r.totalAch;
+                sumT += t; sumAp += ap; sumMy += my; sumJn += jn; sumJl += jl; sumAch += ach;
 
-                sumT += t; sumM += m; sumAp += ap; sumMy += my; sumJn += jn; sumJl += jl; sumAch += ach;
-
-                let dec = isRev ? (useLakhs ? 2 : 3) : 0;
-                let unitTag = (isRev && isIRGB && !useLakhs) ? ' <span class="text-[10px] text-purple-600 font-normal">(Cr)</span>' : '';
+                let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
 
                 tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
-                    <td class="p-3">${vertBadge}${unitTag}</td>
+                    <td class="p-3">${vertBadge}</td>
                     <td class="p-3">${t.toFixed(dec)}</td>
-                    <td class="p-3">${m.toFixed(dec)}</td>
                     <td class="p-3">${ap.toFixed(dec)}</td>
                     <td class="p-3">${my.toFixed(dec)}</td>
                     <td class="p-3">${jn.toFixed(dec)}</td>
-                    <td class="p-3">${jl.toFixed(dec)}</td>
+                    <td class="p-3 font-bold text-blue-700">${jl.toFixed(dec)}</td>
                     <td class="p-3 font-extrabold text-emerald-700">${ach.toFixed(dec)}</td>
                     <td class="p-3 font-semibold text-amber-700">${r.propPct}</td>
-                    <td class="p-3 font-semibold text-slate-600">${r.totalPct}</td>
                 </tr>`;
             });
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
 
-            // 🌟 FIXED TOTAL ROW: Now correctly sums all columns and prevents 0
-            let dec = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
-            let totPropPct = (sumM > 0) ? ((sumAch / sumM) * 100).toFixed(1) + "%" : "0%";
-            let totTotalPct = (sumT > 0) ? ((sumAch / sumT) * 100).toFixed(1) + "%" : "0%";
+            // 🎯 FIXED TOTAL ROW (Dynamic calculation without 0)
+            let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
+            let totalAchPct = sumT > 0 ? ((sumJl / sumT) * 100).toFixed(1) + "%" : "0%";
 
             let tfootHtml = `
                 <tr class="bg-slate-900 text-white font-extrabold text-xs">
                     <td class="p-3.5 uppercase tracking-wider text-amber-300">TOTAL (SUMMARY)</td>
                     <td class="p-3.5">ALL FILTERED</td>
                     <td class="p-3.5">${sumT.toFixed(dec)}</td>
-                    <td class="p-3.5">${sumM.toFixed(dec)}</td>
                     <td class="p-3.5">${sumAp.toFixed(dec)}</td>
                     <td class="p-3.5">${sumMy.toFixed(dec)}</td>
                     <td class="p-3.5">${sumJn.toFixed(dec)}</td>
-                    <td class="p-3.5">${sumJl.toFixed(dec)}</td>
+                    <td class="p-3.5 text-blue-300 font-bold">${sumJl.toFixed(dec)}</td>
                     <td class="p-3.5 text-emerald-300 font-black">${sumAch.toFixed(dec)}</td>
-                    <td class="p-3.5 text-amber-300">${totPropPct}</td>
-                    <td class="p-3.5 text-blue-300">${totTotalPct}</td>
+                    <td class="p-3.5 text-amber-300">${totalAchPct}</td>
                 </tr>`;
             document.getElementById('tableFoot').innerHTML = tfootHtml;
 
@@ -460,7 +471,7 @@
             const ctx1 = document.getElementById('monthlyTrendChart').getContext('2d');
             if (trendChart) trendChart.destroy();
 
-            let months = ['April 26', 'May 26', 'June 26', 'July 26 (till date)'];
+            let months = ['April 26', 'May 26', 'June 26', 'July 26'];
 
             if (selectedDiv !== 'ALL') {
                 document.getElementById('chart1Title').innerText = `${selectedDiv} - Monthly Comparison (April - July)`;
@@ -487,12 +498,7 @@
                 trendChart = new Chart(ctx1, {
                     type: 'bar',
                     data: { labels: months, datasets: datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'top' } },
-                        scales: { y: { beginAtZero: true } }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
 
             } else {
@@ -515,12 +521,7 @@
                             { label: 'July 26', data: juls, backgroundColor: '#8b5cf6' }
                         ]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { position: 'top' } },
-                        scales: { y: { beginAtZero: true } }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
             }
 
@@ -529,12 +530,12 @@
 
             let divDataset = fullDataset.filter(r => (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase()));
 
-            let parcelTotal = divDataset.filter(x => x.vertical === 'PARCEL').reduce((a, b) => a + b.totalAch, 0);
-            let mailTotal   = divDataset.filter(x => x.vertical === 'MAIL').reduce((a, b) => a + b.totalAch, 0);
-            let irgbTotal   = divDataset.filter(x => x.vertical === 'IRGB').reduce((a, b) => a + b.totalAch, 0);
+            let parcelTotal = divDataset.filter(x => x.vertical === 'PARCEL').reduce((a, b) => a + b.jul, 0);
+            let mailTotal   = divDataset.filter(x => x.vertical === 'MAIL').reduce((a, b) => a + b.jul, 0);
+            let irgbTotal   = divDataset.filter(x => x.vertical === 'IRGB').reduce((a, b) => a + b.jul, 0);
 
             document.getElementById('chart2Title').innerText = (selectedDiv === 'ALL') ? 
-                "3 Verticals Share (Full Region)" : 
+                "3 Verticals Share (July Booking)" : 
                 `${selectedDiv} - 3 Verticals Share`;
 
             secondChart = new Chart(ctx2, {
@@ -546,11 +547,7 @@
                         backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
@@ -567,8 +564,8 @@
             const wb = XLSX.utils.book_new();
             const table = document.getElementById('dataTable');
             const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, "Vertical_Report");
-            XLSX.writeFile(wb, `Indore_Region_${currentDataType.toUpperCase()}_Report.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "Report");
+            XLSX.writeFile(wb, `Indore_Region_Report.xlsx`);
         }
 
         window.onload = fetchAllLiveData;
