@@ -194,7 +194,7 @@
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
+            return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){{2}})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
         function cleanNumber(val) {
@@ -209,12 +209,12 @@
                 // Fetch Revenue CSV
                 const revRes = await fetch(REVENUE_CSV_URL + '&t=' + new Date().getTime());
                 const revText = await revRes.text();
-                revenueRecords = parseStructuredSheet(parseCSV(revText), 'revenue');
+                revenueRecords = parseSheetData(parseCSV(revText), 'revenue');
 
                 // Fetch Count CSV
                 const countRes = await fetch(COUNT_CSV_URL + '&t=' + new Date().getTime());
                 const countText = await countRes.text();
-                countRecords = parseStructuredSheet(parseCSV(countText), 'count');
+                countRecords = parseSheetData(parseCSV(countText), 'count');
 
                 updateDashboard();
             } catch (e) {
@@ -223,14 +223,14 @@
             }
         }
 
-        function parseStructuredSheet(rows, type) {
+        function parseSheetData(rows, type) {
             let currentVert = "PARCEL";
             let records = [];
 
             rows.forEach((row) => {
                 let rowStr = row.join(" ").toUpperCase();
 
-                // Section Transition Tracker
+                // Track Section Transition
                 if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL") || rowStr.includes("MO ARTICLE") || rowStr.includes("MAIL OP")) {
                     currentVert = "MAIL";
                 } else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB") || rowStr.includes("INTERNATIONAL")) {
@@ -239,8 +239,8 @@
                     currentVert = "PARCEL";
                 }
 
-                // Skip header rows or total rows during parsing
-                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET 2026-27") || !row[0] || row[0].trim() === "") {
+                // Skip header rows or total rows
+                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET") || !row[0] || row[0].trim() === "") {
                     return;
                 }
 
@@ -251,7 +251,6 @@
                 let isRevenue = (type === 'revenue');
                 let crDivisor = (isRevenue && isIRGB) ? 100 : 1; // Convert IRGB Lakhs to Crores in revenue mode
 
-                // Robust column mapping for June & July in both Revenue and Count sheets
                 let rawT = cleanNumber(row[1]);
                 let rawM = cleanNumber(row[2]);
                 let rawTM = cleanNumber(row[3]);
@@ -261,7 +260,6 @@
                 let rawJl = cleanNumber(row[7]);
                 let rawAch = cleanNumber(row[8]);
 
-                // Auto fallback for total achievement if column 8 is missing/0
                 if (rawAch === 0 && (rawAp + rawMy + rawJn + rawJl) > 0) {
                     rawAch = rawAp + rawMy + rawJn + rawJl;
                 }
@@ -330,7 +328,6 @@
                 return matchDiv && matchVert;
             });
 
-            // Calculate KPIs
             let sumTarget = 0, sumMonthly = 0, sumTillMonth = 0, sumAch = 0;
             let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
 
@@ -370,10 +367,7 @@
             document.getElementById('kpiActiveDivText').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
             document.getElementById('kpiActiveVertText').innerText = currentVertical === 'ALL' ? "All Verticals Combined" : `${currentVertical} Vertical`;
 
-            // Render Table & Total Row
             renderTable(filtered, showLakhsOnly);
-
-            // Render Charts
             renderCharts(dataset, filtered, selectedDiv, showLakhsOnly);
         }
 
@@ -416,7 +410,6 @@
                 let jl = useLakhs ? r.rawJul : r.jul;
                 let ach = useLakhs ? r.rawTotalAch : r.totalAch;
 
-                // Accumulate totals for bottom TOTAL row
                 sumT += t; sumM += m; sumAp += ap; sumMy += my; sumJn += jn; sumJl += jl; sumAch += ach;
 
                 let dec = isRev ? (useLakhs ? 2 : 3) : 0;
@@ -439,7 +432,7 @@
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
 
-            // Dynamic TOTAL Row Calculation at Table Bottom (No 0s!)
+            // 🌟 FIXED TOTAL ROW: Now correctly sums all columns and prevents 0
             let dec = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
             let totPropPct = (sumM > 0) ? ((sumAch / sumM) * 100).toFixed(1) + "%" : "0%";
             let totTotalPct = (sumT > 0) ? ((sumAch / sumT) * 100).toFixed(1) + "%" : "0%";
