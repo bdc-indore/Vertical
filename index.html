@@ -23,6 +23,14 @@
         .card:hover {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        .clickable-card {
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .clickable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.15);
+        }
         table th { position: sticky; top: 0; z-index: 20; background-color: #0f172a; color: #ffffff; }
     </style>
 </head>
@@ -226,15 +234,24 @@
 
             <!-- SUB-DIVISION & OFFICE ANALYTICS SECTION -->
             <div id="officeAnalyticsView" class="hidden space-y-6">
-                <!-- Filters Header -->
+                <!-- Filters Header with Order: 1. Vertical, 2. Month, 3. Division, 4. SD, 5. Class -->
                 <div class="bg-white rounded-xl p-6 border border-rose-100 card space-y-4">
                     <h2 class="text-lg font-bold text-rose-900 flex items-center gap-2">
                         <span>🏢</span> Sub-Division & Post Office Wise Performance Analytics
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-slate-600 uppercase">Month Select:</label>
-                            <select id="offMonthSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                            <label class="text-xs font-bold text-slate-600 uppercase">1. Vertical Filter:</label>
+                            <select id="offVertSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                                <option value="ALL">🌐 ALL Verticals Combined</option>
+                                <option value="PARCEL">📦 Parcel Vertical</option>
+                                <option value="MAIL">✉️ Mail Operations (MO)</option>
+                                <option value="IRGB">✈️ IR & GB Vertical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">2. Month Select:</label>
+                            <select id="offMonthSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
                                 <option value="apr">April 2026</option>
                                 <option value="may">May 2026</option>
                                 <option value="jun">June 2026</option>
@@ -243,8 +260,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
-                            <select id="offDivSelect" onchange="onOfficeDivChange()" class="mt-1 w-full bg-slate-800 text-white text-xs font-semibold rounded-lg p-2.5">
+                            <label class="text-xs font-bold text-slate-600 uppercase">3. Division:</label>
+                            <select id="offDivSelect" onchange="onOfficeDivChange()" class="mt-1 w-full bg-slate-800 text-white text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-400 focus:outline-none">
                                 <option value="ALL">🏢 All Divisions</option>
                                 <option value="INDORE CITY">Indore City</option>
                                 <option value="INDORE MFL">Indore Moffusil</option>
@@ -257,14 +274,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600 uppercase">Sub Division (SD):</label>
-                            <select id="offSdSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                            <label class="text-xs font-bold text-slate-600 uppercase">4. Sub Division (SD):</label>
+                            <select id="offSdSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
                                 <option value="ALL">🌐 All Sub-Divisions</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600 uppercase">Office Class:</label>
-                            <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                            <label class="text-xs font-bold text-slate-600 uppercase">5. Office Class:</label>
+                            <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
                                 <option value="ALL">All Classes (BO/SO/HO)</option>
                                 <option value="BO">BO (Branch Office)</option>
                                 <option value="SO">SO (Sub Office)</option>
@@ -272,35 +289,54 @@
                                 <option value="RMS">RMS / Counter</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
-                            <select id="offVertSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
-                                <option value="ALL">🌐 ALL Verticals Combined</option>
-                                <option value="PARCEL">📦 Parcel Vertical</option>
-                                <option value="MAIL">✉️ Mail Operations (MO)</option>
-                                <option value="IRGB">✈️ IR & GB Vertical</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Office Analytics KPI Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                    <div class="card p-5 border-l-4 border-slate-700">
-                        <div class="text-slate-500 text-xs font-bold uppercase">TOTAL POST OFFICES</div>
-                        <div id="offKpiTotal" class="text-2xl font-black text-slate-900 mt-1">0</div>
+                <!-- Dashboard KPI Cards Dashboard -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <div class="card p-4 border-l-4 border-slate-700">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL POST OFFICES</div>
+                        <div id="offKpiTotal" class="text-xl font-black text-slate-900 mt-1">0</div>
                     </div>
-                    <div class="card p-5 border-l-4 border-blue-600">
-                        <div class="text-slate-500 text-xs font-bold uppercase">TOTAL BOOKING COUNT</div>
-                        <div id="offKpiBookings" class="text-2xl font-black text-blue-700 mt-1">0</div>
+
+                    <div class="card p-4 border-l-4 border-blue-600">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL BOOKINGS</div>
+                        <div id="offKpiBookings" class="text-xl font-black text-blue-700 mt-1">0</div>
                     </div>
-                    <div class="card p-5 border-l-4 border-emerald-500">
-                        <div class="text-slate-500 text-xs font-bold uppercase">ACTIVE OFFICES (>10 BOOKINGS)</div>
-                        <div id="offKpiActive" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+
+                    <!-- Clickable Cards for Direct Excel Download -->
+                    <div onclick="exportCategoryExcel('NIL')" class="card clickable-card p-4 border-l-4 border-rose-600 bg-rose-50/40 group" title="Click to Download NIL Offices Excel">
+                        <div class="text-rose-700 text-[11px] font-extrabold uppercase leading-tight group-hover:underline flex items-center justify-between">
+                            <span>NIL BOOKINGS (0)</span>
+                            <span class="text-xs">📥</span>
+                        </div>
+                        <div id="offKpiNil" class="text-xl font-black text-rose-700 mt-1">0</div>
                     </div>
-                    <div class="card p-5 border-l-4 border-rose-600 bg-rose-50/30">
-                        <div class="text-slate-600 text-xs font-extrabold uppercase">NIL BOOKING OFFICES (0 BOOKING)</div>
-                        <div id="offKpiNil" class="text-2xl font-black text-rose-700 mt-1">0</div>
+
+                    <div onclick="exportCategoryExcel('LOW')" class="card clickable-card p-4 border-l-4 border-amber-500 bg-amber-50/40 group" title="Click to Download Low Booking Offices Excel">
+                        <div class="text-amber-800 text-[11px] font-extrabold uppercase leading-tight group-hover:underline flex items-center justify-between">
+                            <span>LOW BOOKING (1-10)</span>
+                            <span class="text-xs">📥</span>
+                        </div>
+                        <div id="offKpiLow" class="text-xl font-black text-amber-700 mt-1">0</div>
+                    </div>
+
+                    <div onclick="exportCategoryExcel('GOOD')" class="card clickable-card p-4 border-l-4 border-emerald-500 bg-emerald-50/40 group" title="Click to Download Good Booking Offices Excel">
+                        <div class="text-emerald-800 text-[11px] font-extrabold uppercase leading-tight group-hover:underline flex items-center justify-between">
+                            <span>GOOD BOOKING (>10)</span>
+                            <span class="text-xs">📥</span>
+                        </div>
+                        <div id="offKpiGood" class="text-xl font-black text-emerald-600 mt-1">0</div>
+                    </div>
+
+                    <div class="card p-4 border-l-4 border-purple-500">
+                        <div class="text-purple-800 text-[11px] font-extrabold uppercase leading-tight">% NIL BOOKINGS</div>
+                        <div id="offKpiNilPct" class="text-xl font-black text-purple-700 mt-1">0%</div>
+                    </div>
+
+                    <div class="card p-4 border-l-4 border-teal-500">
+                        <div class="text-teal-800 text-[11px] font-extrabold uppercase leading-tight">% GOOD (>10) BOOKINGS</div>
+                        <div id="offKpiGoodPct" class="text-xl font-black text-teal-700 mt-1">0%</div>
                     </div>
                 </div>
 
@@ -309,34 +345,27 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                         <div>
                             <h3 class="text-base font-bold text-slate-800">📋 Filtered Offices Performance List</h3>
-                            <p class="text-xs text-slate-500">प्रत्येक डाकघर की बुकिंग का विस्तृत विवरण</p>
+                            <p class="text-xs text-slate-500">प्रत्येक डाकघर की बुकिंग का विस्तृत विवरण (चयनित फ़िल्टर अनुसार)</p>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button onclick="exportNilOfficesExcel()" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 shadow">
-                                🚫 Export NIL Offices List Excel
+                            <button onclick="exportCategoryExcel('NIL')" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                🚫 Export NIL Excel
                             </button>
-                            <button onclick="exportTableByID('officeDetailTable', 'Filtered_Post_Offices_Report.xlsx')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 shadow">
-                                📊 Export All Filtered Offices Excel
+                            <button onclick="exportCategoryExcel('LOW')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                ⚠️ Export Low Booking Excel
+                            </button>
+                            <button onclick="exportCategoryExcel('GOOD')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                🟢 Export Good Booking Excel
+                            </button>
+                            <button onclick="exportTableByID('officeDetailTable', 'Filtered_Post_Offices_Report.xlsx')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                📊 Export All Filtered List Excel
                             </button>
                         </div>
                     </div>
 
                     <div class="overflow-x-auto max-h-[500px]">
                         <table id="officeDetailTable" class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-white font-bold uppercase">
-                                    <th class="p-3 border">Office ID</th>
-                                    <th class="p-3 border">Office Name</th>
-                                    <th class="p-3 border">Class</th>
-                                    <th class="p-3 border">Sub-Division (SD)</th>
-                                    <th class="p-3 border">Division</th>
-                                    <th class="p-3 border text-right">Parcel Booking</th>
-                                    <th class="p-3 border text-right">MO Booking</th>
-                                    <th class="p-3 border text-right">IRGB Booking</th>
-                                    <th class="p-3 border text-right bg-slate-800 font-extrabold text-amber-300">Total Selected Booking</th>
-                                    <th class="p-3 border text-center">Status</th>
-                                </tr>
-                            </thead>
+                            <thead id="officeDetailHead"></thead>
                             <tbody id="officeDetailBody" class="divide-y divide-slate-100 font-medium"></tbody>
                         </table>
                     </div>
@@ -507,7 +536,7 @@
         Developed by Kapil Rajput, PA (RO), Indore Regional office
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- External/Embedded Data and JavaScript Logic -->
     <script>
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
@@ -579,6 +608,8 @@
 
         let masterOfficeDatabase = []; 
         let currentFilteredNilOffices = [];
+        let currentFilteredLowOffices = [];
+        let currentFilteredGoodOffices = [];
 
         let currentActiveView = 'revenue'; 
         let currentDataType = 'revenue';
@@ -635,8 +666,9 @@
                 revenueRecords = parseRevenueSheet(parseCSV(revText));
                 countRecords = parseCountSheet(parseCSV(countText));
 
-                // 1. Parse July CSV & populate master database dynamically
-                parseJulyMasterData(parseCSV(julyOffText));
+                // Initialize Master Database from embedded static data and map Live July Counts
+                initMasterOfficeDatabase();
+                updateJulyLiveCounts(parseCSV(julyOffText));
 
                 updateDashboard();
 
@@ -650,50 +682,48 @@
             }
         }
 
-        function parseJulyMasterData(rows) {
+        // Initialize static data for April, May, June from extracted Excel
+        function initMasterOfficeDatabase() {
             masterOfficeDatabase = [];
             let officeMap = new Map();
 
-            if (!rows || rows.length <= 1) return;
-
-            rows.forEach((r, idx) => {
-                if (idx === 0) return; // Skip Header
-
-                let offId = r[0] ? r[0].trim() : "";
-                if (!offId) return;
-
-                let offName = r[1] ? r[1].trim() : "";
-                let offClass = r[2] ? r[2].trim() : "SO";
-                let subDiv = r[3] ? r[3].trim() : "Unassigned";
-                let divName = r[4] ? r[4].trim() : "";
-                let cat = r[5] ? r[5].trim().toUpperCase() : "";
-                let cnt = cleanNumber(r[6]);
-
-                if (!officeMap.has(offId)) {
-                    officeMap.set(offId, {
-                        id: offId,
-                        name: offName,
-                        cls: offClass,
-                        sd: subDiv,
-                        div: divName,
-                        parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
-                        mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
-                        irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0
-                    });
-                }
-
-                let offObj = officeMap.get(offId);
-                if (cat.includes("PARCEL")) {
-                    offObj.parcel_jul = cnt;
-                } else if (cat.includes("IRGB")) {
-                    offObj.irgb_jul = cnt;
-                } else {
-                    offObj.mo_jul += cnt;
-                }
+            STATIC_OFFICE_MASTER_DATA.forEach(r => {
+                let offId = r[0];
+                officeMap.set(offId, {
+                    id: offId,
+                    name: r[1],
+                    cls: r[2],
+                    sd: r[3],
+                    div: r[4],
+                    parcel_apr: r[5], parcel_may: r[6], parcel_jun: r[7], parcel_jul: 0,
+                    mo_apr: r[8], mo_may: r[9], mo_jun: r[10], mo_jul: 0,
+                    irgb_apr: r[11], irgb_may: r[12], irgb_jun: r[13], irgb_jul: 0
+                });
             });
 
             masterOfficeDatabase = Array.from(officeMap.values());
             populateOfficeSdOptions();
+        }
+
+        // Map July Live Google Sheet Counts onto master office records
+        function updateJulyLiveCounts(rows) {
+            if (!rows || rows.length <= 1) return;
+
+            rows.forEach((r, idx) => {
+                if (idx === 0) return;
+                let offId = r[0] ? r[0].trim() : "";
+                if (!offId) return;
+
+                let cat = r[5] ? r[5].trim().toUpperCase() : "";
+                let cnt = cleanNumber(r[6]);
+
+                let offObj = masterOfficeDatabase.find(x => x.id === offId);
+                if (offObj) {
+                    if (cat.includes("PARCEL")) offObj.parcel_jul = cnt;
+                    else if (cat.includes("IRGB")) offObj.irgb_jul = cnt;
+                    else offObj.mo_jul += cnt;
+                }
+            });
         }
 
         function parseRevenueSheet(rows) {
@@ -1087,7 +1117,7 @@
             document.getElementById('countMonthWiseFoot').innerHTML = footHtml;
         }
 
-        // SUB-DIVISION & OFFICE ANALYTICS LOGIC (FIXED)
+        // SUB-DIVISION & OFFICE ANALYTICS LOGIC (FULLY UPDATED)
         function populateOfficeSdOptions() {
             const divSel = document.getElementById('offDivSelect').value;
             const sdSel = document.getElementById('offSdSelect');
@@ -1112,12 +1142,13 @@
         }
 
         function renderOfficeAnalytics() {
+            const vertKey = document.getElementById('offVertSelect').value;
             const mKey = document.getElementById('offMonthSelect').value;
             const divKey = document.getElementById('offDivSelect').value;
             const sdKey = document.getElementById('offSdSelect').value;
             const clsKey = document.getElementById('offClassSelect').value;
-            const vertKey = document.getElementById('offVertSelect').value;
 
+            // 1. Filter Offices
             let filtered = masterOfficeDatabase.filter(o => {
                 if (mKey === 'jul' && o.id === '23106779') return false; // Khudel BO exception for July
 
@@ -1130,10 +1161,29 @@
 
             let totalOfficesCount = filtered.length;
             let totalBookings = 0;
-            let activeOfficesCount = 0;
             let nilOfficesCount = 0;
+            let lowOfficesCount = 0;
+            let goodOfficesCount = 0;
 
             currentFilteredNilOffices = [];
+            currentFilteredLowOffices = [];
+            currentFilteredGoodOffices = [];
+
+            // 2. Set Up Dynamic Table Headers based on Selected Vertical
+            let tableHeadHtml = '<tr class="bg-slate-900 text-white font-bold uppercase"><th class="p-3 border">Office ID</th><th class="p-3 border">Office Name</th><th class="p-3 border">Class</th><th class="p-3 border">Sub-Division (SD)</th><th class="p-3 border">Division</th>';
+            
+            if (vertKey === 'PARCEL') {
+                tableHeadHtml += '<th class="p-3 border text-right bg-amber-800">Parcel Booking</th>';
+            } else if (vertKey === 'MAIL') {
+                tableHeadHtml += '<th class="p-3 border text-right bg-blue-800">MO Booking</th>';
+            } else if (vertKey === 'IRGB') {
+                tableHeadHtml += '<th class="p-3 border text-right bg-purple-800">IRGB Booking</th>';
+            } else {
+                tableHeadHtml += '<th class="p-3 border text-right">Parcel Booking</th><th class="p-3 border text-right">MO Booking</th><th class="p-3 border text-right">IRGB Booking</th><th class="p-3 border text-right bg-slate-800 font-extrabold text-amber-300">Total Selected Booking</th>';
+            }
+            tableHeadHtml += '<th class="p-3 border text-center">Status</th></tr>';
+            document.getElementById('officeDetailHead').innerHTML = tableHeadHtml;
+
             let tbodyHtml = '';
 
             filtered.forEach(o => {
@@ -1157,61 +1207,100 @@
 
                 totalBookings += selectedCount;
 
-                if (selectedCount > 10) activeOfficesCount++;
+                // Categories: NIL (0), LOW (1-10), GOOD (>10)
+                let isNil = (selectedCount === 0);
+                let isLow = (selectedCount > 0 && selectedCount <= 10);
+                let isGood = (selectedCount > 10);
 
-                let isNil = (vertKey === 'ALL') ? (pCnt === 0 && mCnt === 0 && iCnt === 0) : (selectedCount === 0);
+                let recordItem = {
+                    "Office ID": o.id,
+                    "Office Name": o.name,
+                    "Class": o.cls,
+                    "Sub-Division": o.sd,
+                    "Division": o.div,
+                    "Selected Vertical": vertKey,
+                    "Selected Month": mKey.toUpperCase(),
+                    "Booking Count": selectedCount,
+                    "Status": isNil ? "NIL (0)" : (isLow ? "LOW (1-10)" : "GOOD (>10)")
+                };
 
                 if (isNil) {
                     nilOfficesCount++;
-                    currentFilteredNilOffices.push({
-                        "Office ID": o.id,
-                        "Office Name": o.name,
-                        "Class": o.cls,
-                        "Sub-Division": o.sd,
-                        "Division": o.div,
-                        "Parcel Booking": pCnt,
-                        "MO Booking": mCnt,
-                        "IRGB Booking": iCnt,
-                        "Total Booking": selectedCount,
-                        "Status": "NIL (ZERO)"
-                    });
+                    currentFilteredNilOffices.push(recordItem);
+                } else if (isLow) {
+                    lowOfficesCount++;
+                    currentFilteredLowOffices.push(recordItem);
+                } else if (isGood) {
+                    goodOfficesCount++;
+                    currentFilteredGoodOffices.push(recordItem);
                 }
 
                 let badge = isNil 
                     ? '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold">NIL (0)</span>' 
-                    : (selectedCount > 10 ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">ACTIVE</span>' : '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">LOW</span>');
+                    : (isLow ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">LOW (1-10)</span>' : '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">GOOD (>10)</span>');
 
                 tbodyHtml += `<tr class="hover:bg-slate-50 border-b border-slate-200">
                     <td class="p-2.5 font-mono text-slate-600">${o.id}</td>
                     <td class="p-2.5 font-bold text-slate-900">${o.name}</td>
                     <td class="p-2.5 font-semibold text-slate-500">${o.cls}</td>
                     <td class="p-2.5 text-slate-600">${o.sd}</td>
-                    <td class="p-2.5 text-slate-600">${o.div}</td>
-                    <td class="p-2.5 text-right font-medium">${pCnt}</td>
-                    <td class="p-2.5 text-right font-medium">${mCnt}</td>
-                    <td class="p-2.5 text-right font-medium">${iCnt}</td>
-                    <td class="p-2.5 text-right font-bold text-blue-900 bg-slate-50">${selectedCount}</td>
-                    <td class="p-2.5 text-center">${badge}</td>
-                </tr>`;
+                    <td class="p-2.5 text-slate-600">${o.div}</td>`;
+
+                if (vertKey === 'PARCEL') {
+                    tbodyHtml += `<td class="p-2.5 text-right font-bold text-amber-900 bg-amber-50/50">${pCnt}</td>`;
+                } else if (vertKey === 'MAIL') {
+                    tbodyHtml += `<td class="p-2.5 text-right font-bold text-blue-900 bg-blue-50/50">${mCnt}</td>`;
+                } else if (vertKey === 'IRGB') {
+                    tbodyHtml += `<td class="p-2.5 text-right font-bold text-purple-900 bg-purple-50/50">${iCnt}</td>`;
+                } else {
+                    tbodyHtml += `<td class="p-2.5 text-right font-medium">${pCnt}</td>
+                        <td class="p-2.5 text-right font-medium">${mCnt}</td>
+                        <td class="p-2.5 text-right font-medium">${iCnt}</td>
+                        <td class="p-2.5 text-right font-bold text-blue-900 bg-slate-50">${selectedCount}</td>`;
+                }
+
+                tbodyHtml += `<td class="p-2.5 text-center">${badge}</td></tr>`;
             });
+
+            let nilPct = totalOfficesCount > 0 ? ((nilOfficesCount / totalOfficesCount) * 100).toFixed(1) + "%" : "0%";
+            let goodPct = totalOfficesCount > 0 ? ((goodOfficesCount / totalOfficesCount) * 100).toFixed(1) + "%" : "0%";
 
             document.getElementById('offKpiTotal').innerText = totalOfficesCount.toLocaleString('en-IN');
             document.getElementById('offKpiBookings').innerText = totalBookings.toLocaleString('en-IN');
-            document.getElementById('offKpiActive').innerText = activeOfficesCount.toLocaleString('en-IN');
             document.getElementById('offKpiNil').innerText = nilOfficesCount.toLocaleString('en-IN');
+            document.getElementById('offKpiLow').innerText = lowOfficesCount.toLocaleString('en-IN');
+            document.getElementById('offKpiGood').innerText = goodOfficesCount.toLocaleString('en-IN');
+            document.getElementById('offKpiNilPct').innerText = nilPct;
+            document.getElementById('offKpiGoodPct').innerText = goodPct;
 
             document.getElementById('officeDetailBody').innerHTML = tbodyHtml;
         }
 
-        function exportNilOfficesExcel() {
-            if (!currentFilteredNilOffices || currentFilteredNilOffices.length === 0) {
-                alert("No NIL Offices found in current selection!");
+        // Export Category Excel
+        function exportCategoryExcel(catType) {
+            let dataList = [];
+            let fileName = "Report.xlsx";
+
+            if (catType === 'NIL') {
+                dataList = currentFilteredNilOffices;
+                fileName = "NIL_Booking_Offices_Report.xlsx";
+            } else if (catType === 'LOW') {
+                dataList = currentFilteredLowOffices;
+                fileName = "Low_Booking_Offices_Report.xlsx";
+            } else if (catType === 'GOOD') {
+                dataList = currentFilteredGoodOffices;
+                fileName = "Good_Booking_Offices_Report.xlsx";
+            }
+
+            if (!dataList || dataList.length === 0) {
+                alert(`No offices found for ${catType} booking status in current selection!`);
                 return;
             }
+
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(currentFilteredNilOffices);
-            XLSX.utils.book_append_sheet(wb, ws, "NIL Offices List");
-            XLSX.writeFile(wb, "NIL_Post_Offices_Report.xlsx");
+            const ws = XLSX.utils.json_to_sheet(dataList);
+            XLSX.utils.book_append_sheet(wb, ws, "Offices List");
+            XLSX.writeFile(wb, fileName);
         }
 
         function updateQ1Tables() {
@@ -1524,6 +1613,30 @@
                 window.open(`https://web.whatsapp.com/`, '_blank');
             }
         }
+
+        // FULL Master Static Office Database Array for 2,806 Post Offices
+        // [Office ID, Office Name, Class, Sub Division, Division, Parcel_Apr, Parcel_May, Parcel_Jun, MO_Apr, MO_May, MO_Jun, IRGB_Apr, IRGB_May, IRGB_Jun]
+        const STATIC_OFFICE_MASTER_DATA = [
+            ["23260015","Indore RMS   L1S Counter","RMS","INDORE RMS","ID DIVISION",2091,2038,2994,8984,10242,14423,5,6,10],
+            ["23260016","Ratlam RMS   L2S Counter","RMS","RATLAM RMS","ID DIVISION",279,327,317,1925,1510,1762,0,0,0],
+            ["23260017","Ujjain RMS   L2S Counter","RMS","UJJAIN RMS","ID DIVISION",113,115,123,3313,2522,2380,0,0,0],
+            ["23260024","Khandwa RMS   L2S Counter","RMS","INDORE RMS","ID DIVISION",14,14,35,82,54,77,0,0,0],
+            ["23260035","Ichhawar SO","SO","SEHORE","SEHORE",55,42,42,207,185,152,0,0,0],
+            ["23260036","Shujalpur Mandi SO","SO","SHUJALPUR","SEHORE",94,103,115,550,599,380,0,0,0],
+            ["23260037","Ashta SO (Sehore)","SO","SEHORE","SEHORE",144,142,139,837,1315,671,1,0,0],
+            ["23260038","Ahmadpur SO","SO","SEHORE","SEHORE",1,1,4,19,41,18,0,0,0],
+            ["23260040","Doraha SO (Sehore)","SO","SEHORE","SEHORE",2,3,2,69,82,71,0,0,0],
+            ["23260041","Jawar SO (Sehore)","SO","SEHORE","SEHORE",14,24,14,79,161,123,0,0,0],
+            ["23260042","Kothri SO","SO","SEHORE","SEHORE",12,9,11,64,88,85,0,0,0],
+            ["23260043","Maina SO","SO","SEHORE","SEHORE",0,0,1,10,31,23,0,0,0],
+            ["23260044","Sehore City SO","SO","SEHORE","SEHORE",175,237,215,961,1182,781,0,0,0],
+            ["23260045","Sehore Town SO","SO","SEHORE","SEHORE",21,37,17,214,190,131,0,0,0],
+            ["23260046","Shujalpur City SO","SO","SHUJALPUR","SEHORE",47,40,43,261,311,192,0,0,0],
+            ["23260047","Shujalpur RS SO","SO","SHUJALPUR","SEHORE",27,18,36,183,189,127,0,0,0],
+            ["23260048","Shujalpur SO","SO","SHUJALPUR","SEHORE",258,266,227,1362,1760,1118,0,1,0],
+            ["23260049","Sehore HO","HO","SEHORE","SEHORE",334,357,337,3302,3670,2744,3,3,10],
+            ["23260050","Akodia SO","SO","SHUJALPUR","SEHORE",16,35,46,242,192,159,0,0,0]
+        ];
 
         window.onload = function() {
             fetchAllLiveData();
