@@ -42,11 +42,8 @@
                     <span id="syncBadge" class="text-xs bg-amber-500/30 text-amber-200 px-3 py-1.5 rounded-full border border-amber-400/30 font-semibold animate-pulse">
                         ⏳ Loading Data...
                     </span>
-                    <button onclick="exportActiveReportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                        <span>📊</span> Download Report Excel
-                    </button>
                     <button onclick="shareActiveReportViaWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                        <span>💬</span> Send Report on WhatsApp
+                        <span>💬</span> Send Active View on WhatsApp
                     </button>
                 </div>
             </div>
@@ -159,7 +156,7 @@
                     </div>
                 </div>
 
-                <!-- Detailed Table -->
+                <!-- Main Detailed Table -->
                 <div class="card p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                         <div>
@@ -167,6 +164,9 @@
                             <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
                         </div>
                         <div class="flex items-center gap-2">
+                            <button onclick="exportTableByID('dataTable', 'Main_Performance_Table.xlsx')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                📊 Export Main Table Excel
+                            </button>
                             <div id="recordBadge" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold">
                                 0 Rows Loaded
                             </div>
@@ -182,20 +182,40 @@
                     </div>
                 </div>
 
-                <!-- Month-Wise Target vs Achievement Summary Table (Only visible in Count Sheet Tab) -->
+                <!-- Month-Wise Division Detail Table (Count Tab Only) -->
                 <div id="countMonthWiseContainer" class="card p-6 hidden">
-                    <h3 class="text-base font-bold text-slate-800 mb-3">📅 Month-Wise Target vs Achievement Summary (April - July)</h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span>📅</span> Detailed Month-Wise Division Target & Achievement (Till Date)
+                        </h3>
+                        <button onclick="exportTableByID('countMonthWiseTable', 'MonthWise_Division_Count_Report.xlsx')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                            📊 Export Month-Wise Detail Excel
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table id="countMonthWiseTable" class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-800 text-white font-bold text-xs uppercase">
-                                    <th class="p-3">Month</th>
-                                    <th class="p-3">Target Articles</th>
-                                    <th class="p-3">Achieved Articles</th>
-                                    <th class="p-3 text-center">% Achievement</th>
+                                <tr class="bg-slate-900 text-white font-bold uppercase">
+                                    <th class="p-2.5 border">Division Name</th>
+                                    <th class="p-2.5 border bg-slate-800">Apr Tgt</th>
+                                    <th class="p-2.5 border bg-slate-800">Apr Ach</th>
+                                    <th class="p-2.5 border bg-slate-800 text-amber-300">Apr %</th>
+                                    <th class="p-2.5 border bg-slate-800">May Tgt</th>
+                                    <th class="p-2.5 border bg-slate-800">May Ach</th>
+                                    <th class="p-2.5 border bg-slate-800 text-amber-300">May %</th>
+                                    <th class="p-2.5 border bg-slate-800">Jun Tgt</th>
+                                    <th class="p-2.5 border bg-slate-800">Jun Ach</th>
+                                    <th class="p-2.5 border bg-slate-800 text-amber-300">Jun %</th>
+                                    <th class="p-2.5 border bg-slate-800">Jul Tgt</th>
+                                    <th class="p-2.5 border bg-slate-800">Jul Ach</th>
+                                    <th class="p-2.5 border bg-slate-800 text-amber-300">Jul %</th>
+                                    <th class="p-2.5 border bg-indigo-900 font-extrabold text-indigo-100">Total Tgt (Till Date)</th>
+                                    <th class="p-2.5 border bg-indigo-900 font-extrabold text-emerald-200">Total Ach (Till Date)</th>
+                                    <th class="p-2.5 border bg-amber-600 font-black text-white text-center">Overall % Ach</th>
                                 </tr>
                             </thead>
-                            <tbody id="countMonthWiseBody" class="divide-y divide-slate-100 font-semibold"></tbody>
+                            <tbody id="countMonthWiseBody" class="divide-y divide-slate-200 font-medium"></tbody>
+                            <tfoot id="countMonthWiseFoot" class="bg-slate-900 text-white font-bold uppercase"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -215,18 +235,23 @@
                             </select>
                         </div>
                         <div class="text-xs text-slate-500 font-semibold">
-                            Quarter 1: April 2026 - June 2026 Performance
+                            Quarter 1: April 2026 - June 2026 Performance Breakdown
                         </div>
                     </div>
                 </div>
 
                 <!-- Q1 Revenue Table -->
                 <div class="card p-6">
-                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span>💰</span> Q-1 Revenue Performance Table (April - June 2026)
-                    </h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span>💰</span> Q-1 Revenue Performance Table (April - June 2026)
+                        </h3>
+                        <button onclick="exportTableByID('q1RevTable', 'Q1_Revenue_Report.xlsx')" class="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                            📊 Export Q1 Revenue Excel
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table id="q1RevTable" class="w-full text-left text-sm border-collapse">
                             <thead>
                                 <tr class="bg-teal-950 text-white font-bold text-xs uppercase">
                                     <th class="p-3.5">Division Name</th>
@@ -248,11 +273,16 @@
 
                 <!-- Q1 Count Table -->
                 <div class="card p-6">
-                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span>📦</span> Q-1 Article Count Performance Table (April - June 2026)
-                    </h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span>📦</span> Q-1 Article Count Performance Table (April - June 2026)
+                        </h3>
+                        <button onclick="exportTableByID('q1CountTable', 'Q1_Article_Count_Report.xlsx')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                            📊 Export Q1 Count Excel
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table id="q1CountTable" class="w-full text-left text-sm border-collapse">
                             <thead>
                                 <tr class="bg-slate-900 text-white font-bold text-xs uppercase">
                                     <th class="p-3.5">Division Name</th>
@@ -322,6 +352,9 @@
                 <div class="card p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                         <h3 class="text-base font-bold text-slate-800">📊 Comparative Summary Table (Last Year vs Current Year)</h3>
+                        <button onclick="exportTableByID('yoyDataTable', 'YoY_Comparison_Report.xlsx')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                            📊 Export YoY Excel
+                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table id="yoyDataTable" class="w-full text-left text-sm border-collapse">
@@ -430,9 +463,6 @@
 
         let revenueRecords = [];
         let countRecords = [];
-
-        let lastFilteredStandardData = [];
-        let lastFilteredYoYData = [];
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -693,8 +723,6 @@
                 return matchDiv && matchVert;
             });
 
-            lastFilteredStandardData = filtered; 
-
             let sumTarget = 0, sumAch = 0, sumJul = 0;
             let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
 
@@ -726,7 +754,7 @@
             renderCharts(dataset, filtered, selectedDiv, showLakhsOnly);
 
             if (currentDataType === 'count') {
-                renderCountMonthWiseTable(filtered);
+                renderCountMonthWiseDivisionTable(filtered);
             }
         }
 
@@ -806,42 +834,93 @@
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
         }
 
-        // --- MONTH-WISE TARGET VS ACHIEVEMENT SUMMARY TABLE (FOR COUNT SHEET TAB) ---
-        function renderCountMonthWiseTable(filteredCountData) {
-            let months = [
-                { id: 'apr', name: 'April 2026' },
-                { id: 'may', name: 'May 2026' },
-                { id: 'jun', name: 'June 2026' },
-                { id: 'jul', name: 'July 2026' }
-            ];
+        // --- NEW DETAILED DIVISION MONTH-WISE TARGET & ACH TABLE (ARTICLE COUNT BOTTOM) ---
+        function renderCountMonthWiseDivisionTable(filteredCountData) {
+            let bodyHtml = '';
 
-            let html = '';
-            months.forEach(m => {
-                let monthAchSum = filteredCountData.reduce((acc, row) => acc + (row[m.id] || 0), 0);
-                
-                // Calculate Target Sum
-                let monthTargetSum = 0;
-                filteredCountData.forEach(row => {
-                    let stdKey = getStandardDivKey(row.divName);
-                    let vKey = row.vertical;
-                    if (m.id === 'jul') {
-                        monthTargetSum += row.target;
-                    } else if (Q1_COUNT_TARGETS[vKey] && Q1_COUNT_TARGETS[vKey][stdKey]) {
-                        monthTargetSum += Q1_COUNT_TARGETS[vKey][stdKey][m.id] || 0;
-                    }
-                });
+            let sumApT = 0, sumApA = 0;
+            let sumMyT = 0, sumMyA = 0;
+            let sumJnT = 0, sumJnA = 0;
+            let sumJlT = 0, sumJlA = 0;
+            let sumTotalTgt = 0, sumTotalAch = 0;
 
-                let pct = monthTargetSum > 0 ? ((monthAchSum / monthTargetSum) * 100).toFixed(1) + "%" : "0%";
+            filteredCountData.forEach(row => {
+                let stdKey = getStandardDivKey(row.divName);
+                let vKey = row.vertical;
 
-                html += `<tr class="border-b border-slate-200 hover:bg-slate-50">
-                    <td class="p-3 font-bold text-slate-800">${m.name}</td>
-                    <td class="p-3 text-slate-600">${monthTargetSum.toLocaleString('en-IN')}</td>
-                    <td class="p-3 font-bold text-indigo-700">${monthAchSum.toLocaleString('en-IN')}</td>
-                    <td class="p-3 text-center font-extrabold text-emerald-600">${pct}</td>
+                let q1Tgts = (Q1_COUNT_TARGETS[vKey] && Q1_COUNT_TARGETS[vKey][stdKey]) 
+                    ? Q1_COUNT_TARGETS[vKey][stdKey] 
+                    : { apr: 0, may: 0, jun: 0 };
+
+                let apT = q1Tgts.apr, apA = row.apr;
+                let myT = q1Tgts.may, myA = row.may;
+                let jnT = q1Tgts.jun, jnA = row.jun;
+                let jlT = row.target, jlA = row.jul;
+
+                let apPct = apT > 0 ? ((apA / apT) * 100).toFixed(1) + "%" : "0%";
+                let myPct = myT > 0 ? ((myA / myT) * 100).toFixed(1) + "%" : "0%";
+                let jnPct = jnT > 0 ? ((jnA / jnT) * 100).toFixed(1) + "%" : "0%";
+                let jlPct = jlT > 0 ? ((jlA / jlT) * 100).toFixed(1) + "%" : "0%";
+
+                let totTgtTillDate = apT + myT + jnT + jlT;
+                let totAchTillDate = apA + myA + jnA + jlA;
+                let overallPct = totTgtTillDate > 0 ? ((totAchTillDate / totTgtTillDate) * 100).toFixed(1) + "%" : "0%";
+
+                sumApT += apT; sumApA += apA;
+                sumMyT += myT; sumMyA += myA;
+                sumJnT += jnT; sumJnA += jnA;
+                sumJlT += jlT; sumJlA += jlA;
+                sumTotalTgt += totTgtTillDate;
+                sumTotalAch += totAchTillDate;
+
+                bodyHtml += `<tr class="hover:bg-slate-50 border-b border-slate-200">
+                    <td class="p-2.5 font-bold text-slate-900 border-r">${row.divName} <span class="text-[10px] text-slate-400">(${row.vertical})</span></td>
+                    <td class="p-2.5 text-slate-600">${apT.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${apA.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-bold text-amber-600 border-r">${apPct}</td>
+                    <td class="p-2.5 text-slate-600">${myT.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${myA.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-bold text-amber-600 border-r">${myPct}</td>
+                    <td class="p-2.5 text-slate-600">${jnT.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${jnA.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-bold text-amber-600 border-r">${jnPct}</td>
+                    <td class="p-2.5 text-slate-600">${jlT.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${jlA.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-bold text-amber-600 border-r">${jlPct}</td>
+                    <td class="p-2.5 font-bold bg-indigo-50 text-indigo-900">${totTgtTillDate.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 font-extrabold bg-emerald-50 text-emerald-800">${totAchTillDate.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center font-black bg-amber-100 text-amber-900">${overallPct}</td>
                 </tr>`;
             });
 
-            document.getElementById('countMonthWiseBody').innerHTML = html;
+            document.getElementById('countMonthWiseBody').innerHTML = bodyHtml;
+
+            let totApPct = sumApT > 0 ? ((sumApA / sumApT) * 100).toFixed(1) + "%" : "0%";
+            let totMyPct = sumMyT > 0 ? ((sumMyA / sumMyT) * 100).toFixed(1) + "%" : "0%";
+            let totJnPct = sumJnT > 0 ? ((sumJnA / sumJnT) * 100).toFixed(1) + "%" : "0%";
+            let totJlPct = sumJlT > 0 ? ((sumJlA / sumJlT) * 100).toFixed(1) + "%" : "0%";
+            let totOverallPct = sumTotalTgt > 0 ? ((sumTotalAch / sumTotalTgt) * 100).toFixed(1) + "%" : "0%";
+
+            let footHtml = `<tr class="bg-slate-900 text-white font-black text-xs">
+                <td class="p-2.5 text-amber-300 uppercase border-r">TOTAL (TILL DATE)</td>
+                <td class="p-2.5">${sumApT.toLocaleString('en-IN')}</td>
+                <td class="p-2.5">${sumApA.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-amber-300 border-r">${totApPct}</td>
+                <td class="p-2.5">${sumMyT.toLocaleString('en-IN')}</td>
+                <td class="p-2.5">${sumMyA.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-amber-300 border-r">${totMyPct}</td>
+                <td class="p-2.5">${sumJnT.toLocaleString('en-IN')}</td>
+                <td class="p-2.5">${sumJnA.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-amber-300 border-r">${totJnPct}</td>
+                <td class="p-2.5">${sumJlT.toLocaleString('en-IN')}</td>
+                <td class="p-2.5">${sumJlA.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-amber-300 border-r">${totJlPct}</td>
+                <td class="p-2.5 text-indigo-200">${sumTotalTgt.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-emerald-300">${sumTotalAch.toLocaleString('en-IN')}</td>
+                <td class="p-2.5 text-center text-amber-300 font-black">${totOverallPct}</td>
+            </tr>`;
+
+            document.getElementById('countMonthWiseFoot').innerHTML = footHtml;
         }
 
         // --- NEW Q-1 TABLES LOGIC ---
@@ -854,8 +933,8 @@
             let sumAnnT = 0, sumQ1T = 0, sumApr = 0, sumMay = 0, sumJun = 0, sumQ1Ach = 0;
 
             filteredRev.forEach(r => {
-                let annT = r.target; // Annual Target in Cr
-                let q1T = annT / 4;   // Q1 Target = Annual Target / 4
+                let annT = r.target; 
+                let q1T = annT / 4;   
                 let ap = r.apr, my = r.may, jn = r.jun;
                 let q1Ach = ap + my + jn;
                 let q1Pct = q1T > 0 ? ((q1Ach / q1T) * 100).toFixed(1) + "%" : "0%";
@@ -959,8 +1038,6 @@
 
             let tbodyHtml = '';
             let totalLYCount = 0, totalTYCount = 0, totalLYRev = 0, totalTYRev = 0;
-            
-            lastFilteredYoYData = []; 
 
             filteredRev.forEach((rItem) => {
                 let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical);
@@ -990,20 +1067,6 @@
 
                 let countGrowthVal = lyCountVal > 0 ? (((tyCountVal - lyCountVal) / lyCountVal) * 100) : 0;
                 let revGrowthVal = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100) : 0;
-
-                let countGrowthStr = countGrowthVal.toFixed(1) + "%";
-                let revGrowthStr = revGrowthVal.toFixed(1) + "%";
-
-                lastFilteredYoYData.push({
-                    "Division Name": rItem.divName,
-                    "Vertical": rItem.vertical,
-                    "LY Count (2025)": lyCountVal,
-                    "TY Count (2026)": tyCountVal,
-                    "Count Growth %": countGrowthStr,
-                    "LY Revenue (2025)": `₹${lyRevVal} Cr`,
-                    "TY Revenue (2026)": `₹${tyRevVal} Cr`,
-                    "Rev Growth %": revGrowthStr
-                });
 
                 let countGrowthBadge = countGrowthVal >= 0 
                     ? `<span class="text-emerald-600 font-bold">▲ +${countGrowthVal.toFixed(1)}%</span>` 
@@ -1138,79 +1201,30 @@
             });
         }
 
-        function generateCleanExcelWorkbook() {
+        // --- UNIVERSAL TABLE EXPORT FUNCTION (EXPORTS ANY SPECIFIC HTML TABLE TO CLEAN EXCEL) ---
+        function exportTableByID(tableId, defaultFileName) {
+            const tableElement = document.getElementById(tableId);
+            if (!tableElement) return;
+
             const wb = XLSX.utils.book_new();
-            let exportData = [];
-
-            if (currentActiveView === 'yoy') {
-                exportData = lastFilteredYoYData;
-            } else if (currentActiveView === 'q1') {
-                const vKey = document.getElementById('q1VerticalSelect').value;
-                exportData = revenueRecords.filter(r => r.vertical === vKey).map(r => {
-                    let annT = r.target;
-                    let q1T = annT / 4;
-                    let q1Ach = r.apr + r.may + r.jun;
-                    let q1Pct = q1T > 0 ? ((q1Ach / q1T) * 100).toFixed(1) + "%" : "0%";
-                    return {
-                        "Division Name": r.divName,
-                        "Vertical": r.vertical,
-                        "Annual Target (Cr)": annT.toFixed(3),
-                        "Q-1 Target (Cr)": q1T.toFixed(3),
-                        "April 26": r.apr.toFixed(3),
-                        "May 26": r.may.toFixed(3),
-                        "June 26": r.jun.toFixed(3),
-                        "Q-1 Total Achievement": q1Ach.toFixed(3),
-                        "Q-1 % Achievement": q1Pct
-                    };
-                });
-            } else {
-                let isCount = (currentDataType === 'count');
-                let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
-
-                exportData = lastFilteredStandardData.map(r => {
-                    let t = showLakhsOnly ? r.rawTarget : r.target;
-                    let ap = showLakhsOnly ? r.rawApr : r.apr;
-                    let my = showLakhsOnly ? r.rawMay : r.may;
-                    let jn = showLakhsOnly ? r.rawJun : r.jun;
-                    let jl = showLakhsOnly ? r.rawJul : r.jul;
-                    let ach = showLakhsOnly ? r.rawTotalAch : r.totalAch;
-                    let pct = isCount ? (t > 0 ? (jl / t) * 100 : 0) : (t > 0 ? (ach / t) * 100 : 0);
-
-                    return {
-                        "Division Name": r.divName,
-                        "Vertical": r.vertical,
-                        [isCount ? 'July Target' : 'Total Target']: t,
-                        "April 26": ap,
-                        "May 26": my,
-                        "June 26": jn,
-                        "July 26": jl,
-                        [isCount ? 'Total Booking' : 'Total Achievement']: ach,
-                        "% Achievement": pct.toFixed(2) + "%"
-                    };
-                });
-            }
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            XLSX.utils.book_append_sheet(wb, ws, "Performance Report");
-            return wb;
-        }
-
-        function exportActiveReportToExcel() {
-            const wb = generateCleanExcelWorkbook();
-            let fileName = (currentActiveView === 'yoy') 
-                ? 'Indore_Region_YoY_Report.xlsx' 
-                : (currentActiveView === 'q1' ? 'Indore_Region_Q1_Report.xlsx' : `Indore_Region_${currentDataType.toUpperCase()}_Report.xlsx`);
-                
-            XLSX.writeFile(wb, fileName);
+            const ws = XLSX.utils.table_to_sheet(tableElement);
+            XLSX.utils.book_append_sheet(wb, ws, "Report");
+            XLSX.writeFile(wb, defaultFileName);
         }
 
         async function shareActiveReportViaWhatsApp() {
-            const wb = generateCleanExcelWorkbook();
-            let fileName = (currentActiveView === 'yoy') 
-                ? 'Indore_Region_YoY_Report.xlsx' 
-                : (currentActiveView === 'q1' ? 'Indore_Region_Q1_Report.xlsx' : `Indore_Region_${currentDataType.toUpperCase()}_Report.xlsx`);
+            let activeTableId = 'dataTable';
+            let fileName = 'Indore_Region_Performance_Report.xlsx';
 
-            XLSX.writeFile(wb, fileName);
+            if (currentActiveView === 'yoy') {
+                activeTableId = 'yoyDataTable';
+                fileName = 'Indore_Region_YoY_Report.xlsx';
+            } else if (currentActiveView === 'q1') {
+                activeTableId = 'q1RevTable';
+                fileName = 'Indore_Region_Q1_Report.xlsx';
+            }
+
+            exportTableByID(activeTableId, fileName);
 
             let msgText = encodeURIComponent(`Hello! I have downloaded the Indore Region Performance Excel Report (${fileName}). Attaching it here.`);
             let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
