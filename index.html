@@ -38,8 +38,8 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <span id="syncBadge" class="text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold">
-                    🟢 Live Synced
+                <span id="syncBadge" class="text-xs bg-amber-500/30 text-amber-200 px-3 py-1.5 rounded-full border border-amber-400/30 font-semibold animate-pulse">
+                    ⏳ Loading Data...
                 </span>
                 <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition flex items-center gap-1.5">
                     <span>📊</span> Export Excel
@@ -99,20 +99,20 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <div class="card p-5 border-l-4 border-blue-600">
                 <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET)</div>
-                <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">0</div>
-                <div class="text-xs text-slate-500 mt-1">मासिक लक्ष्य: <span id="kpiMonthlyTarget" class="font-bold text-slate-700">0</span></div>
+                <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">Loading...</div>
+                <div class="text-xs text-slate-500 mt-1">मासिक लक्ष्य: <span id="kpiMonthlyTarget" class="font-bold text-slate-700">-</span></div>
             </div>
 
             <div class="card p-5 border-l-4 border-emerald-500">
                 <div id="kpiAchLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
-                <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">0</div>
-                <div class="text-xs text-slate-500 mt-1">अनुपातिक लक्ष्य तक: <span id="kpiTillMonth" class="font-bold text-slate-700">0</span></div>
+                <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">Loading...</div>
+                <div class="text-xs text-slate-500 mt-1">अनुपातिक लक्ष्य तक: <span id="kpiTillMonth" class="font-bold text-slate-700">-</span></div>
             </div>
 
             <div class="card p-5 border-l-4 border-amber-500">
                 <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">% लक्ष्य प्राप्ति (% ACHIEVEMENT)</div>
-                <div id="kpiPropPct" class="text-2xl font-black text-amber-600 mt-2">0.0%</div>
-                <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-bold text-slate-700">0.0%</span></div>
+                <div id="kpiPropPct" class="text-2xl font-black text-amber-600 mt-2">...</div>
+                <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-bold text-slate-700">-</span></div>
             </div>
 
             <div class="card p-5 border-l-4 border-purple-500">
@@ -195,19 +195,54 @@
             return isNaN(num) ? 0 : num;
         }
 
+        // 🚀 OPTIMIZED FAST LIVE FETCH WITH PARALLEL PROMISES & LOCALSTORAGE CACHE
         async function fetchAllLiveData() {
-            try {
-                const revRes = await fetch(REVENUE_CSV_URL + '&t=' + new Date().getTime());
-                const revText = await revRes.text();
-                revenueRecords = parseRevenueSheet(parseCSV(revText));
+            // Step 1: Pehle LocalStorage Cache se instant load karein agar exist karta ho (0 sec delay)
+            const cachedRev = localStorage.getItem('cache_revenue_data');
+            const cachedCount = localStorage.getItem('cache_count_data');
 
-                const countRes = await fetch(COUNT_CSV_URL + '&t=' + new Date().getTime());
+            if (cachedRev && cachedCount) {
+                try {
+                    revenueRecords = JSON.parse(cachedRev);
+                    countRecords = JSON.parse(cachedCount);
+                    updateDashboard(); // Screen par bina rukaawat data dikhayen
+                    
+                    document.getElementById('syncBadge').innerHTML = "🟢 Cached (Syncing Live...)";
+                    document.getElementById('syncBadge').className = "text-xs bg-blue-500/30 text-blue-200 px-3 py-1.5 rounded-full border border-blue-400/30 font-semibold";
+                } catch(e) {
+                    console.log("Cache parsing error", e);
+                }
+            }
+
+            // Step 2: Parallel Fetching (Dono Sheets Google se ek saath fetch hongi)
+            try {
+                const timestamp = new Date().getTime();
+                
+                const [revRes, countRes] = await Promise.all([
+                    fetch(REVENUE_CSV_URL + '&t=' + timestamp),
+                    fetch(COUNT_CSV_URL + '&t=' + timestamp)
+                ]);
+
+                const revText = await revRes.text();
                 const countText = await countRes.text();
+
+                revenueRecords = parseRevenueSheet(parseCSV(revText));
                 countRecords = parseCountSheet(parseCSV(countText));
 
+                // Step 3: Cache ko update karein aane wale sessions ke liye
+                localStorage.setItem('cache_revenue_data', JSON.stringify(revenueRecords));
+                localStorage.setItem('cache_count_data', JSON.stringify(countRecords));
+
+                // Step 4: UI ko Fresh Live Data se update karein
                 updateDashboard();
+
+                document.getElementById('syncBadge').innerHTML = "🟢 Live Synced";
+                document.getElementById('syncBadge').className = "text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold";
+
             } catch (e) {
                 console.error("Fetch Error:", e);
+                document.getElementById('syncBadge').innerHTML = "🔴 Sync Error";
+                document.getElementById('syncBadge').className = "text-xs bg-red-500/30 text-red-200 px-3 py-1.5 rounded-full border border-red-400/30 font-semibold";
             }
         }
 
@@ -268,7 +303,7 @@
             return records;
         }
 
-        // 🎯 FIX: Robust Article Count Sheet Parser
+        // Parsing Count Sheet
         function parseCountSheet(rows) {
             let currentVert = "PARCEL";
             let records = [];
@@ -277,7 +312,6 @@
                 let firstCol = row[0] ? row[0].trim().toUpperCase() : "";
                 let rowStr = row.join(" ").toUpperCase();
 
-                // Section Headers detection
                 if (rowStr.includes("MO ARTICLE COUNT") || rowStr.includes("MAIL OPERATION")) {
                     currentVert = "MAIL";
                     return;
@@ -289,15 +323,12 @@
                     return;
                 }
 
-                // Table Header / Total / Empty row skips
                 if (!row[0] || firstCol === "" || firstCol.includes("NAME OF DIV") || firstCol === 'TOTAL' || firstCol.includes('GRAND TOTAL') || firstCol.includes('SL NO')) {
                     return;
                 }
 
                 let divName = row[0].trim();
 
-                // Standard Count Sheet Mapping
-                // Col 1 = Apr Count, Col 2 = May Count, Col 3 = Jun Count, Col 4 = Jul Target, Col 5 = Jul Count, Col 6 = Ach %
                 let rawAp = cleanNumber(row[1]);
                 let rawMy = cleanNumber(row[2]);
                 let rawJn = cleanNumber(row[3]);
@@ -364,6 +395,8 @@
 
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
 
+            if (!dataset || dataset.length === 0) return;
+
             let filtered = dataset.filter(r => {
                 let matchDiv = (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase());
                 let matchVert = (currentVertical === 'ALL') || (r.vertical === currentVertical);
@@ -375,8 +408,8 @@
 
             filtered.forEach(r => {
                 if (currentDataType === 'count') {
-                    sumTarget += r.target;    // July Target
-                    sumAch += r.jul;          // July Actual Count
+                    sumTarget += r.target;    
+                    sumAch += r.jul;          
                 } else {
                     sumTarget += showLakhsOnly ? r.rawTarget : r.target;
                     sumAch += showLakhsOnly ? r.rawTotalAch : r.totalAch;
