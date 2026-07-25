@@ -66,7 +66,7 @@
             <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
                 <!-- 1. Vertical Select -->
                 <div class="flex items-center gap-2">
-                    <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical:</label>
+                    <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
                     <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
                         <option value="ALL">🌐 All Verticals Combined</option>
                         <option value="PARCEL">📦 Parcel Vertical</option>
@@ -77,7 +77,7 @@
 
                 <!-- 2. Division Select -->
                 <div class="flex items-center gap-2">
-                    <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division:</label>
+                    <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division Filter:</label>
                     <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-800 text-white text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
                         <option value="ALL">🏢 All Divisions (Full Region)</option>
                         <option value="Indore City">🏙️ Indore City Division</option>
@@ -144,7 +144,7 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Vertical Share / Breakdown Chart -->
+            <!-- Chart 2: Always Breakdown 3 Verticals -->
             <div class="card p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -245,20 +245,25 @@
                 let divName = row[0].trim();
                 if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
 
+                // Normalize IRGB Revenue unit from Lakhs to Crores!
+                let isIRGB = (currentVert === "IRGB");
+                let divisor = (type === 'revenue' && isIRGB) ? 100 : 1; // Lakhs to Crores conversion
+
                 records.push({
                     divName: divName,
                     vertical: currentVert,
-                    target: cleanNumber(row[1]),
-                    monthly: cleanNumber(row[2]),
-                    tillMonth: cleanNumber(row[3]),
-                    apr: cleanNumber(row[4]),
-                    may: cleanNumber(row[5]),
-                    jun: cleanNumber(row[6]),
-                    jul: cleanNumber(row[7]),
-                    totalAch: cleanNumber(row[8]),
+                    target: cleanNumber(row[1]) / divisor,
+                    monthly: cleanNumber(row[2]) / divisor,
+                    tillMonth: cleanNumber(row[3]) / divisor,
+                    apr: cleanNumber(row[4]) / divisor,
+                    may: cleanNumber(row[5]) / divisor,
+                    jun: cleanNumber(row[6]) / divisor,
+                    jul: cleanNumber(row[7]) / divisor,
+                    totalAch: cleanNumber(row[8]) / divisor,
                     propPct: row[9] || "0%",
                     totalPct: row[10] || "0%",
-                    rawRow: row
+                    rawRow: row,
+                    isConvertedLakhs: (type === 'revenue' && isIRGB)
                 });
             });
 
@@ -290,7 +295,7 @@
 
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
 
-            // Filter Dataset
+            // Filter Dataset for KPIs and Table
             let filtered = dataset.filter(r => {
                 let matchDiv = (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase());
                 let matchVert = (currentVertical === 'ALL') || (r.vertical === currentVertical);
@@ -311,11 +316,12 @@
 
             let unitPrefix = (currentDataType === 'revenue') ? '₹' : '';
             let unitSuffix = (currentDataType === 'revenue') ? ' Cr' : '';
+            let decimals = (currentDataType === 'revenue') ? 3 : 0;
 
-            document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toLocaleString('en-IN')}${unitSuffix}`;
-            document.getElementById('kpiMonthlyTarget').innerText = `${unitPrefix}${sumMonthly.toLocaleString('en-IN')}${unitSuffix}`;
-            document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toLocaleString('en-IN')}${unitSuffix}`;
-            document.getElementById('kpiTillMonth').innerText = `${unitPrefix}${sumTillMonth.toLocaleString('en-IN')}${unitSuffix}`;
+            document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toFixed(decimals)}${unitSuffix}`;
+            document.getElementById('kpiMonthlyTarget').innerText = `${unitPrefix}${sumMonthly.toFixed(decimals)}${unitSuffix}`;
+            document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toFixed(decimals)}${unitSuffix}`;
+            document.getElementById('kpiTillMonth').innerText = `${unitPrefix}${sumTillMonth.toFixed(decimals)}${unitSuffix}`;
             document.getElementById('kpiPropPct').innerText = propPct;
             document.getElementById('kpiTotalPct').innerText = totalPct;
 
@@ -325,13 +331,11 @@
             // Render Table
             renderTable(filtered);
 
-            // Render Charts (Passing Selected Division)
-            renderCharts(filtered, selectedDiv);
+            // Render Charts (Pass full dataset so Doughnut always breaks down 3 verticals!)
+            renderCharts(dataset, filtered, selectedDiv);
         }
 
         function renderTable(filteredData) {
-            let unitText = (currentDataType === 'revenue') ? 'Cr.' : 'Count';
-
             let theadHtml = `
                 <tr class="bg-slate-900 text-white font-bold uppercase text-xs">
                     <th class="p-3.5 border-b">Division Name</th>
@@ -354,16 +358,19 @@
                                 (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
                                 '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
 
+                let decimals = (currentDataType === 'revenue') ? 3 : 0;
+                let irgbNote = r.isConvertedLakhs ? ' <span class="text-[10px] text-purple-600 font-normal">(Cr)</span>' : '';
+
                 tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
-                    <td class="p-3">${vertBadge}</td>
-                    <td class="p-3">${r.target}</td>
-                    <td class="p-3">${r.monthly}</td>
-                    <td class="p-3">${r.apr}</td>
-                    <td class="p-3">${r.may}</td>
-                    <td class="p-3">${r.jun}</td>
-                    <td class="p-3">${r.jul}</td>
-                    <td class="p-3 font-extrabold text-emerald-700">${r.totalAch}</td>
+                    <td class="p-3">${vertBadge}${irgbNote}</td>
+                    <td class="p-3">${r.target.toFixed(decimals)}</td>
+                    <td class="p-3">${r.monthly.toFixed(decimals)}</td>
+                    <td class="p-3">${r.apr.toFixed(decimals)}</td>
+                    <td class="p-3">${r.may.toFixed(decimals)}</td>
+                    <td class="p-3">${r.jun.toFixed(decimals)}</td>
+                    <td class="p-3">${r.jul.toFixed(decimals)}</td>
+                    <td class="p-3 font-extrabold text-emerald-700">${r.totalAch.toFixed(decimals)}</td>
                     <td class="p-3 font-semibold text-amber-700">${r.propPct}</td>
                     <td class="p-3 font-semibold text-slate-600">${r.totalPct}</td>
                 </tr>`;
@@ -373,14 +380,14 @@
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
         }
 
-        function renderCharts(filteredData, selectedDiv) {
+        function renderCharts(fullDataset, filteredData, selectedDiv) {
             const ctx1 = document.getElementById('monthlyTrendChart').getContext('2d');
             if (trendChart) trendChart.destroy();
 
             let months = ['April 26', 'May 26', 'June 26', 'July 26 (till date)'];
 
             if (selectedDiv !== 'ALL') {
-                // Single Division selected: Chart compares April, May, June, July across verticals!
+                // Single Division selected: Compare months across verticals
                 document.getElementById('chart1Title').innerText = `${selectedDiv} - Monthly Comparison (April - July)`;
 
                 let parcelRec = filteredData.find(x => x.vertical === 'PARCEL');
@@ -452,23 +459,27 @@
                 });
             }
 
-            // Chart 2: Vertical Share Doughnut
+            // Chart 2 ALWAYS shows ALL THREE Verticals Breakdown for the selected Division
             const ctx2 = document.getElementById('secondaryChart').getContext('2d');
             if (secondChart) secondChart.destroy();
 
-            let vertLabels = ['Parcel', 'Mail Operations', 'IRGB'];
-            let vertTotals = [
-                filteredData.filter(x => x.vertical === 'PARCEL').reduce((a, b) => a + b.totalAch, 0),
-                filteredData.filter(x => x.vertical === 'MAIL').reduce((a, b) => a + b.totalAch, 0),
-                filteredData.filter(x => x.vertical === 'IRGB').reduce((a, b) => a + b.totalAch, 0)
-            ];
+            // Filter full dataset ONLY by division (ignore currentVertical filter here)
+            let divDataset = fullDataset.filter(r => (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase()));
+
+            let parcelTotal = divDataset.filter(x => x.vertical === 'PARCEL').reduce((a, b) => a + b.totalAch, 0);
+            let mailTotal   = divDataset.filter(x => x.vertical === 'MAIL').reduce((a, b) => a + b.totalAch, 0);
+            let irgbTotal   = divDataset.filter(x => x.vertical === 'IRGB').reduce((a, b) => a + b.totalAch, 0);
+
+            document.getElementById('chart2Title').innerText = (selectedDiv === 'ALL') ? 
+                "3 Verticals Share (Full Region)" : 
+                `${selectedDiv} - 3 Verticals Share`;
 
             secondChart = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: vertLabels,
+                    labels: ['Parcel', 'Mail Operations', 'IRGB'],
                     datasets: [{
-                        data: vertTotals,
+                        data: [parcelTotal, mailTotal, irgbTotal],
                         backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6']
                     }]
                 },
