@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indore Region Verticals - Dynamic Live Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        table th { position: sticky; top: 0; z-index: 10; background-color: #1e293b; color: white; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <div>
+        <!-- Top Header Banner -->
+        <header class="bg-gradient-to-r from-red-900 via-indigo-900 to-slate-900 text-white shadow-xl border-b border-red-900/50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-center sm:text-left">
+                    <span class="bg-red-500/30 text-red-200 text-xs font-semibold px-3 py-1 rounded-full border border-red-400/30 tracking-wide uppercase">DEPARTMENT OF POSTS</span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">Indore Region - Live Operational Dashboard</h1>
+                    <p class="text-red-200 text-sm font-medium mt-0.5">Real-time Live Sync with Google Spreadsheet</p>
+                </div>
+                <div class="text-xs bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20 text-red-100 font-semibold text-center">
+                    🟢 Google Sheet Live Synced
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Container -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Rows Loaded</div>
+                        <div id="kpiTotalRows" class="text-2xl font-black text-slate-900 mt-1">0</div>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg text-xl">📊</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filtered Records</div>
+                        <div id="kpiFilteredRows" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg text-xl">🏢</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Division</div>
+                        <div id="kpiActiveDiv" class="text-sm font-black text-indigo-600 mt-1 truncate max-w-[130px]">All Divisions</div>
+                    </div>
+                    <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg text-xl">📍</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</div>
+                        <div id="kpiStatus" class="text-xs font-black text-amber-600 mt-1">Syncing...</div>
+                    </div>
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg text-xl">⚡</div>
+                </div>
+            </div>
+
+            <!-- Controls / Filters & Download Section -->
+            <div class="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col md:flex-row justify-between items-center gap-4">
+                
+                <!-- Filter Dropdowns -->
+                <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                    <div class="flex items-center gap-2">
+                        <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division:</label>
+                        <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                            <option value="ALL">🏢 All Divisions (Full Region)</option>
+                            <option value="INDORE CITY">INDORE CITY</option>
+                            <option value="INDORE MFL">INDORE MFL</option>
+                            <option value="KHANDWA">KHANDWA</option>
+                            <option value="MANDSAUR">MANDSAUR</option>
+                            <option value="RATLAM">RATLAM</option>
+                            <option value="SEHORE">SEHORE</option>
+                            <option value="UJJAIN">UJJAIN</option>
+                            <option value="RMS ID">RMS ID</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Instant Search & Export -->
+                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Search Office / SO / BO..." class="w-full md:w-64 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    
+                    <button onclick="exportToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition flex items-center gap-1.5 whitespace-nowrap">
+                        <span>📊</span> Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="statusMsg" class="bg-white rounded-xl p-8 border border-slate-200 text-center font-semibold text-slate-600 card-shadow">
+                Google Sheet से लाइव डाटा फेच हो रहा है, कृपया प्रतीक्षा करें...
+            </div>
+
+            <!-- Main Data Table Container -->
+            <div id="tableCard" class="bg-white rounded-xl border border-slate-200 card-shadow overflow-hidden hidden">
+                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h2 id="tableTitle" class="text-base font-bold text-slate-800">📋 Live Google Spreadsheet Data</h2>
+                    <span id="rowCountBadge" class="text-xs font-semibold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">0 Records Found</span>
+                </div>
+
+                <div class="overflow-x-auto max-h-[550px] custom-scrollbar">
+                    <table id="dataTable" class="w-full text-left text-sm border-collapse">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-200 font-medium text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 text-center text-xs sm:text-sm text-slate-500">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
+            Developed & Maintained by: <strong class="text-slate-800">Kapil Rajput, PA(RO), Indore Regional Office</strong>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Target Google Sheet Direct Export Link
+        const SPREADSHEET_ID = "1ZWqCZifDA1acmTNGpWBfE9_GX-DqM_OyGjOkSFoixps";
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
+
+        let globalHeaders = [];
+        let globalRows = [];
+
+        function parseCSV(text) {
+            let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+            return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
+        }
+
+        async function fetchSheetData() {
+            const statusMsg = document.getElementById('statusMsg');
+            try {
+                const res = await fetch(CSV_URL + '&t=' + new Date().getTime());
+                if (!res.ok) throw new Error("Fetch failed");
+                
+                const text = await res.text();
+                const parsed = parseCSV(text);
+                
+                globalHeaders = parsed[0] || [];
+                globalRows = parsed.slice(1) || [];
+
+                statusMsg.classList.add('hidden');
+                document.getElementById('tableCard').classList.remove('hidden');
+                document.getElementById('kpiStatus').innerText = "Live";
+
+                updateDashboard();
+            } catch (err) {
+                console.error("Data fetch error:", err);
+                statusMsg.innerText = "गूगल शीट से डाटा कनेक्ट करने में समस्या आई। कृपया पब्लिश लिंक की जांच करें।";
+                document.getElementById('kpiStatus').innerText = "Error";
+            }
+        }
+
+        function updateDashboard() {
+            const selectedDiv = document.getElementById('divisionSelect').value.toUpperCase();
+
+            // Render Table Header
+            let theadHtml = '<tr>';
+            globalHeaders.forEach(h => {
+                theadHtml += `<th class="p-3.5 border-b border-slate-700 font-bold uppercase text-xs tracking-wider">${h || ''}</th>`;
+            });
+            theadHtml += '</tr>';
+            document.getElementById('tableHead').innerHTML = theadHtml;
+
+            // Render Filtered Rows
+            let tbodyHtml = '';
+            let filteredCount = 0;
+
+            globalRows.forEach(row => {
+                let rowStr = row.join(" ").toUpperCase();
+                if (selectedDiv !== 'ALL' && !rowStr.includes(selectedDiv)) return;
+
+                tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-slate-200">';
+                row.forEach(cell => {
+                    tbodyHtml += `<td class="p-3 border-r border-slate-100">${cell !== undefined ? cell : ''}</td>`;
+                });
+                tbodyHtml += '</tr>';
+                filteredCount++;
+            });
+
+            document.getElementById('tableBody').innerHTML = tbodyHtml;
+            document.getElementById('rowCountBadge').innerText = `${filteredCount} Records Found`;
+
+            // Update KPI Cards
+            document.getElementById('kpiTotalRows').innerText = globalRows.length;
+            document.getElementById('kpiFilteredRows').innerText = filteredCount;
+            document.getElementById('kpiActiveDiv').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
+        }
+
+        function filterBySearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(tr => {
+                const text = tr.innerText.toLowerCase();
+                tr.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            const table = document.getElementById('dataTable');
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet_Report");
+            XLSX.writeFile(wb, `Indore_Region_Verticals_Report.xlsx`);
+        }
+
+        window.onload = fetchSheetData;
+    </script>
+</body>
+</html>
