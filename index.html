@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indore Region - Live Performance Dashboard</title>
+    <title>Indore Region - Verticals Performance Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -34,7 +34,7 @@
             <div>
                 <span class="bg-blue-500/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30">DEPARTMENT OF POSTS</span>
                 <h1 class="text-2xl md:text-3xl font-bold mt-1">Indore Region - Verticals Performance Dashboard</h1>
-                <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Real-time Division & Vertical Performance Tracker</p>
+                <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Real-time Live Sync with Google Sheets ('ind')</p>
             </div>
             
             <div class="flex items-center gap-3">
@@ -51,7 +51,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-6">
 
-        <!-- Data Type Switcher Tabs (Revenue vs Count) -->
+        <!-- Primary Data Type Switcher Tabs (Revenue vs Count) -->
         <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
             <button onclick="switchDataType('revenue')" id="tab-type-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
                 <span>💰</span> Revenue Data Sheet
@@ -100,7 +100,7 @@
 
         <!-- Top Metric Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Card 1: Total Target -->
+            <!-- Card 1: Target Card -->
             <div class="card p-5 border-l-4 border-blue-600">
                 <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET 26-27)</div>
                 <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">0</div>
@@ -109,7 +109,7 @@
 
             <!-- Card 2: Total Achievement -->
             <div class="card p-5 border-l-4 border-emerald-500">
-                <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
+                <div id="kpiAchLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
                 <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">0</div>
                 <div class="text-xs text-slate-500 mt-1">अनुपातिक लक्ष्य तक: <span id="kpiTillMonth" class="font-bold text-slate-700">0</span></div>
             </div>
@@ -121,7 +121,7 @@
                 <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-bold text-slate-700">0.0%</span></div>
             </div>
 
-            <!-- Card 4: Current Selection Info -->
+            <!-- Card 4: Current Selection Status -->
             <div class="card p-5 border-l-4 border-purple-500">
                 <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">चयनित विवरण (SELECTED STATUS)</div>
                 <div id="kpiActiveDivText" class="text-lg font-extrabold text-purple-700 mt-2 truncate">All Divisions</div>
@@ -131,7 +131,7 @@
 
         <!-- Dynamic Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Chart 1: Monthly Comparison Chart (April, May, June, July) -->
+            <!-- Chart 1: Monthly Trend Bar Chart -->
             <div class="card p-6 lg:col-span-2">
                 <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -144,11 +144,11 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Always Breakdown 3 Verticals -->
+            <!-- Chart 2: Vertical Breakdown (Always shows 3 Verticals share) -->
             <div class="card p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (Vertical Breakdown)</span>
+                        <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (3 Verticals Share)</span>
                     </h2>
                 </div>
                 <div class="h-72">
@@ -162,7 +162,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
                     <h2 id="tableMainTitle" class="text-base font-bold text-slate-800">📋 विस्तृत तालिका विवरण (Detailed Performance Table)</h2>
-                    <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
+                    <p id="tableSubTitle" class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
                 </div>
                 <div id="recordBadge" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold">
                     0 Rows Loaded
@@ -197,8 +197,9 @@
         }
 
         function cleanNumber(val) {
-            if (!val) return 0;
-            let num = parseFloat(val.toString().replace(/,/g, ''));
+            if (val === undefined || val === null) return 0;
+            let str = val.toString().replace(/,/g, '').replace(/%/g, '').trim();
+            let num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
 
@@ -228,8 +229,8 @@
             rows.forEach((row) => {
                 let rowStr = row.join(" ").toUpperCase();
 
-                // Track Section Transition
-                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL") || rowStr.includes("MO ARTICLE")) {
+                // Section Transition Tracker
+                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL") || rowStr.includes("MO ARTICLE") || rowStr.includes("MAIL OP")) {
                     currentVert = "MAIL";
                 } else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB") || rowStr.includes("INTERNATIONAL")) {
                     currentVert = "IRGB";
@@ -237,33 +238,40 @@
                     currentVert = "PARCEL";
                 }
 
-                // Ignore header rows
-                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET") || !row[0] || row[0].trim() === "") {
+                // Skip main sheet title / empty header rows
+                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET 2026-27") || !row[0] || row[0].trim() === "") {
                     return;
                 }
 
                 let divName = row[0].trim();
                 if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
 
-                // Normalize IRGB Revenue unit from Lakhs to Crores!
                 let isIRGB = (currentVert === "IRGB");
-                let divisor = (type === 'revenue' && isIRGB) ? 100 : 1; // Lakhs to Crores conversion
+                let isRevenue = (type === 'revenue');
+                let crDivisor = (isRevenue && isIRGB) ? 100 : 1;
 
                 records.push({
                     divName: divName,
                     vertical: currentVert,
-                    target: cleanNumber(row[1]) / divisor,
-                    monthly: cleanNumber(row[2]) / divisor,
-                    tillMonth: cleanNumber(row[3]) / divisor,
-                    apr: cleanNumber(row[4]) / divisor,
-                    may: cleanNumber(row[5]) / divisor,
-                    jun: cleanNumber(row[6]) / divisor,
-                    jul: cleanNumber(row[7]) / divisor,
-                    totalAch: cleanNumber(row[8]) / divisor,
+                    target: cleanNumber(row[1]) / crDivisor,
+                    monthly: cleanNumber(row[2]) / crDivisor,
+                    tillMonth: cleanNumber(row[3]) / crDivisor,
+                    apr: cleanNumber(row[4]) / crDivisor,
+                    may: cleanNumber(row[5]) / crDivisor,
+                    jun: cleanNumber(row[6]) / crDivisor,
+                    jul: cleanNumber(row[7]) / crDivisor,
+                    totalAch: cleanNumber(row[8]) / crDivisor,
+                    rawTarget: cleanNumber(row[1]),
+                    rawMonthly: cleanNumber(row[2]),
+                    rawTillMonth: cleanNumber(row[3]),
+                    rawApr: cleanNumber(row[4]),
+                    rawMay: cleanNumber(row[5]),
+                    rawJun: cleanNumber(row[6]),
+                    rawJul: cleanNumber(row[7]),
+                    rawTotalAch: cleanNumber(row[8]),
                     propPct: row[9] || "0%",
                     totalPct: row[10] || "0%",
-                    rawRow: row,
-                    isConvertedLakhs: (type === 'revenue' && isIRGB)
+                    isIRGB: isIRGB
                 });
             });
 
@@ -280,10 +288,14 @@
                 tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
                 tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
                 document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
+                document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET 26-27)";
+                document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
             } else {
                 tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
                 tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
                 document.getElementById('chart1UnitBadge').innerText = "Article Count";
+                document.getElementById('kpiTargetLabel').innerText = "जुलाई लक्ष्य (JULY TARGET ARTICLES)";
+                document.getElementById('kpiAchLabel').innerText = "जुलाई बुकिंग (JULY ARTICLE COUNT)";
             }
 
             updateDashboard();
@@ -295,28 +307,41 @@
 
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
 
-            // Filter Dataset for KPIs and Table
+            // Filter Dataset
             let filtered = dataset.filter(r => {
                 let matchDiv = (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase());
                 let matchVert = (currentVertical === 'ALL') || (r.vertical === currentVertical);
                 return matchDiv && matchVert;
             });
 
-            // Calculate KPIs
             let sumTarget = 0, sumMonthly = 0, sumTillMonth = 0, sumAch = 0;
+            let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
+
             filtered.forEach(r => {
-                sumTarget += r.target;
-                sumMonthly += r.monthly;
-                sumTillMonth += r.tillMonth;
-                sumAch += r.totalAch;
+                if (showLakhsOnly) {
+                    sumTarget += r.rawTarget;
+                    sumMonthly += r.rawMonthly;
+                    sumTillMonth += r.rawTillMonth;
+                    sumAch += r.rawTotalAch;
+                } else {
+                    if (currentDataType === 'count') {
+                        sumTarget += r.rawTillMonth || r.target; 
+                        sumAch += r.rawJul || r.jul;
+                    } else {
+                        sumTarget += r.target;
+                        sumMonthly += r.monthly;
+                        sumTillMonth += r.tillMonth;
+                        sumAch += r.totalAch;
+                    }
+                }
             });
 
             let propPct = sumTillMonth > 0 ? ((sumAch / sumTillMonth) * 100).toFixed(1) + "%" : "0%";
             let totalPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(1) + "%" : "0%";
 
             let unitPrefix = (currentDataType === 'revenue') ? '₹' : '';
-            let unitSuffix = (currentDataType === 'revenue') ? ' Cr' : '';
-            let decimals = (currentDataType === 'revenue') ? 3 : 0;
+            let unitSuffix = (currentDataType === 'revenue') ? (showLakhsOnly ? ' Lakhs' : ' Cr') : ' Articles';
+            let decimals = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
 
             document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toFixed(decimals)}${unitSuffix}`;
             document.getElementById('kpiMonthlyTarget').innerText = `${unitPrefix}${sumMonthly.toFixed(decimals)}${unitSuffix}`;
@@ -329,18 +354,20 @@
             document.getElementById('kpiActiveVertText').innerText = currentVertical === 'ALL' ? "All Verticals Combined" : `${currentVertical} Vertical`;
 
             // Render Table
-            renderTable(filtered);
+            renderTable(filtered, showLakhsOnly);
 
-            // Render Charts (Pass full dataset so Doughnut always breaks down 3 verticals!)
-            renderCharts(dataset, filtered, selectedDiv);
+            // Render Charts
+            renderCharts(dataset, filtered, selectedDiv, showLakhsOnly);
         }
 
-        function renderTable(filteredData) {
+        function renderTable(filteredData, showLakhsOnly) {
+            let unitHeader = (currentDataType === 'revenue') ? (showLakhsOnly ? '(₹ Lakhs)' : '(₹ Cr)') : '(Count)';
+
             let theadHtml = `
                 <tr class="bg-slate-900 text-white font-bold uppercase text-xs">
                     <th class="p-3.5 border-b">Division Name</th>
                     <th class="p-3.5 border-b">Vertical</th>
-                    <th class="p-3.5 border-b">Total Target</th>
+                    <th class="p-3.5 border-b">Total Target ${unitHeader}</th>
                     <th class="p-3.5 border-b">Monthly Target</th>
                     <th class="p-3.5 border-b">April 26</th>
                     <th class="p-3.5 border-b">May 26</th>
@@ -358,19 +385,31 @@
                                 (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
                                 '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
 
-                let decimals = (currentDataType === 'revenue') ? 3 : 0;
-                let irgbNote = r.isConvertedLakhs ? ' <span class="text-[10px] text-purple-600 font-normal">(Cr)</span>' : '';
+                let isRev = (currentDataType === 'revenue');
+                let isIRGB = (r.vertical === 'IRGB');
+                let useLakhs = isRev && isIRGB && showLakhsOnly;
+
+                let t = useLakhs ? r.rawTarget : r.target;
+                let m = useLakhs ? r.rawMonthly : r.monthly;
+                let ap = useLakhs ? r.rawApr : r.apr;
+                let my = useLakhs ? r.rawMay : r.may;
+                let jn = useLakhs ? r.rawJun : r.jun;
+                let jl = useLakhs ? r.rawJul : r.jul;
+                let ach = useLakhs ? r.rawTotalAch : r.totalAch;
+
+                let dec = isRev ? (useLakhs ? 2 : 3) : 0;
+                let unitTag = (isRev && isIRGB && !useLakhs) ? ' <span class="text-[10px] text-purple-600 font-normal">(Cr)</span>' : '';
 
                 tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
-                    <td class="p-3">${vertBadge}${irgbNote}</td>
-                    <td class="p-3">${r.target.toFixed(decimals)}</td>
-                    <td class="p-3">${r.monthly.toFixed(decimals)}</td>
-                    <td class="p-3">${r.apr.toFixed(decimals)}</td>
-                    <td class="p-3">${r.may.toFixed(decimals)}</td>
-                    <td class="p-3">${r.jun.toFixed(decimals)}</td>
-                    <td class="p-3">${r.jul.toFixed(decimals)}</td>
-                    <td class="p-3 font-extrabold text-emerald-700">${r.totalAch.toFixed(decimals)}</td>
+                    <td class="p-3">${vertBadge}${unitTag}</td>
+                    <td class="p-3">${t.toFixed(dec)}</td>
+                    <td class="p-3">${m.toFixed(dec)}</td>
+                    <td class="p-3">${ap.toFixed(dec)}</td>
+                    <td class="p-3">${my.toFixed(dec)}</td>
+                    <td class="p-3">${jn.toFixed(dec)}</td>
+                    <td class="p-3">${jl.toFixed(dec)}</td>
+                    <td class="p-3 font-extrabold text-emerald-700">${ach.toFixed(dec)}</td>
                     <td class="p-3 font-semibold text-amber-700">${r.propPct}</td>
                     <td class="p-3 font-semibold text-slate-600">${r.totalPct}</td>
                 </tr>`;
@@ -380,14 +419,13 @@
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
         }
 
-        function renderCharts(fullDataset, filteredData, selectedDiv) {
+        function renderCharts(fullDataset, filteredData, selectedDiv, showLakhsOnly) {
             const ctx1 = document.getElementById('monthlyTrendChart').getContext('2d');
             if (trendChart) trendChart.destroy();
 
             let months = ['April 26', 'May 26', 'June 26', 'July 26 (till date)'];
 
             if (selectedDiv !== 'ALL') {
-                // Single Division selected: Compare months across verticals
                 document.getElementById('chart1Title').innerText = `${selectedDiv} - Monthly Comparison (April - July)`;
 
                 let parcelRec = filteredData.find(x => x.vertical === 'PARCEL');
@@ -397,25 +435,16 @@
                 let datasets = [];
 
                 if (parcelRec || currentVertical === 'PARCEL' || currentVertical === 'ALL') {
-                    datasets.push({
-                        label: 'Parcel Vertical',
-                        data: parcelRec ? [parcelRec.apr, parcelRec.may, parcelRec.jun, parcelRec.jul] : [0,0,0,0],
-                        backgroundColor: '#f59e0b'
-                    });
+                    let d = parcelRec ? [parcelRec.apr, parcelRec.may, parcelRec.jun, parcelRec.jul] : [0,0,0,0];
+                    datasets.push({ label: 'Parcel Vertical', data: d, backgroundColor: '#f59e0b' });
                 }
                 if (mailRec || currentVertical === 'MAIL' || currentVertical === 'ALL') {
-                    datasets.push({
-                        label: 'Mail Operations (MO)',
-                        data: mailRec ? [mailRec.apr, mailRec.may, mailRec.jun, mailRec.jul] : [0,0,0,0],
-                        backgroundColor: '#3b82f6'
-                    });
+                    let d = mailRec ? [mailRec.apr, mailRec.may, mailRec.jun, mailRec.jul] : [0,0,0,0];
+                    datasets.push({ label: 'Mail Operations (MO)', data: d, backgroundColor: '#3b82f6' });
                 }
                 if (irgbRec || currentVertical === 'IRGB' || currentVertical === 'ALL') {
-                    datasets.push({
-                        label: 'IR & GB Vertical',
-                        data: irgbRec ? [irgbRec.apr, irgbRec.may, irgbRec.jun, irgbRec.jul] : [0,0,0,0],
-                        backgroundColor: '#8b5cf6'
-                    });
+                    let d = irgbRec ? (showLakhsOnly ? [irgbRec.rawApr, irgbRec.rawMay, irgbRec.rawJun, irgbRec.rawJul] : [irgbRec.apr, irgbRec.may, irgbRec.jun, irgbRec.jul]) : [0,0,0,0];
+                    datasets.push({ label: 'IR & GB Vertical', data: d, backgroundColor: '#8b5cf6' });
                 }
 
                 trendChart = new Chart(ctx1, {
@@ -430,14 +459,13 @@
                 });
 
             } else {
-                // All Divisions: Compare Divisions across months
                 document.getElementById('chart1Title').innerText = "Divisions Comparison - Monthly Trend";
 
                 let divs = [...new Set(filteredData.map(d => d.divName))];
-                let aprs = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + b.apr, 0));
-                let mays = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + b.may, 0));
-                let juns = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + b.jun, 0));
-                let juls = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + b.jul, 0));
+                let aprs = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + (showLakhsOnly ? b.rawApr : b.apr), 0));
+                let mays = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + (showLakhsOnly ? b.rawMay : b.may), 0));
+                let juns = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + (showLakhsOnly ? b.rawJun : b.jun), 0));
+                let juls = divs.map(d => filteredData.filter(x => x.divName === d).reduce((a, b) => a + (showLakhsOnly ? b.rawJul : b.jul), 0));
 
                 trendChart = new Chart(ctx1, {
                     type: 'bar',
@@ -459,11 +487,9 @@
                 });
             }
 
-            // Chart 2 ALWAYS shows ALL THREE Verticals Breakdown for the selected Division
             const ctx2 = document.getElementById('secondaryChart').getContext('2d');
             if (secondChart) secondChart.destroy();
 
-            // Filter full dataset ONLY by division (ignore currentVertical filter here)
             let divDataset = fullDataset.filter(r => (selectedDiv === 'ALL') || r.divName.toUpperCase().includes(selectedDiv.toUpperCase()));
 
             let parcelTotal = divDataset.filter(x => x.vertical === 'PARCEL').reduce((a, b) => a + b.totalAch, 0);
