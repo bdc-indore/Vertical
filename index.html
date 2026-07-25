@@ -34,7 +34,7 @@
             <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <span class="bg-blue-500/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30">DEPARTMENT OF POSTS</span>
-                    <h1 class="text-2xl md:text-3xl font-bold mt-1">Indore Region - Verticals Performance Dashboard</h1>
+                    <h1 class="text-2xl md:text-3xl font-bold mt-1">Indore Region - Performance Dashboard</h1>
                     <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Live Sync with Google Sheets ('ind')</p>
                 </div>
                 
@@ -54,16 +54,19 @@
 
             <!-- View Switcher Tabs -->
             <div class="flex flex-wrap border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
-                <button onclick="switchView('revenue')" id="tab-type-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
+                <button onclick="switchView('revenue')" id="tab-type-revenue" class="px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
                     <span>💰</span> Revenue Data Sheet
                 </button>
-                <button onclick="switchView('count')" id="tab-type-count" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
+                <button onclick="switchView('count')" id="tab-type-count" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
                     <span>📦</span> Article Count Data Sheet
                 </button>
-                <button onclick="switchView('q1')" id="tab-type-q1" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-2">
+                <button onclick="switchView('office')" id="tab-type-office" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-rose-600 transition flex items-center gap-2">
+                    <span>🏢</span> Sub-Division & Office Analytics
+                </button>
+                <button onclick="switchView('q1')" id="tab-type-q1" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-2">
                     <span>📊</span> Q-1 Data (Q1 Report)
                 </button>
-                <button onclick="switchView('yoy')" id="tab-type-yoy" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                <button onclick="switchView('yoy')" id="tab-type-yoy" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
                     <span>🔄</span> YoY Comparison Report
                 </button>
             </div>
@@ -216,6 +219,125 @@
                             </thead>
                             <tbody id="countMonthWiseBody" class="divide-y divide-slate-200 font-medium"></tbody>
                             <tfoot id="countMonthWiseFoot" class="bg-slate-900 text-white font-bold uppercase"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW SUB-DIVISION & OFFICE ANALYTICS SECTION -->
+            <div id="officeAnalyticsView" class="hidden space-y-6">
+                <!-- Filters Header -->
+                <div class="bg-white rounded-xl p-6 border border-rose-100 card space-y-4">
+                    <h2 class="text-lg font-bold text-rose-900 flex items-center gap-2">
+                        <span>🏢</span> Sub-Division & Post Office Wise Performance Analytics
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Month Select:</label>
+                            <select id="offMonthSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                                <option value="apr">April 2026</option>
+                                <option value="may">May 2026</option>
+                                <option value="jun">June 2026</option>
+                                <option value="jul">July 2026 (Live)</option>
+                                <option value="q1" selected>Q-1 Total (Apr-Jun)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
+                            <select id="offDivSelect" onchange="onOfficeDivChange()" class="mt-1 w-full bg-slate-800 text-white text-xs font-semibold rounded-lg p-2.5">
+                                <option value="ALL">🏢 All Divisions</option>
+                                <option value="INDORE CITY">Indore City</option>
+                                <option value="INDORE MFL">Indore Moffusil</option>
+                                <option value="KHANDWA">Khandwa</option>
+                                <option value="MANDSAUR">Mandsaur</option>
+                                <option value="RATLAM">Ratlam</option>
+                                <option value="SEHORE">Sehore</option>
+                                <option value="UJJAIN">Ujjain</option>
+                                <option value="ID DIVISION">ID DIVISION</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Sub Division (SD):</label>
+                            <select id="offSdSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                                <option value="ALL">🌐 All Sub-Divisions</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Office Class:</label>
+                            <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                                <option value="ALL">All Classes (BO/SO/HO)</option>
+                                <option value="BO">BO (Branch Office - 2,492)</option>
+                                <option value="SO">SO (Sub Office - 292)</option>
+                                <option value="HO">HO (Head Office)</option>
+                                <option value="RMS">RMS / Counter</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
+                            <select id="offVertSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
+                                <option value="ALL">🌐 ALL Verticals Combined</option>
+                                <option value="PARCEL">📦 Parcel Vertical</option>
+                                <option value="MAIL">✉️ Mail Operations (MO)</option>
+                                <option value="IRGB">✈️ IR & GB Vertical</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Office Analytics KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="card p-5 border-l-4 border-slate-700">
+                        <div class="text-slate-500 text-xs font-bold uppercase">TOTAL POST OFFICES</div>
+                        <div id="offKpiTotal" class="text-2xl font-black text-slate-900 mt-1">0</div>
+                    </div>
+                    <div class="card p-5 border-l-4 border-blue-600">
+                        <div class="text-slate-500 text-xs font-bold uppercase">TOTAL BOOKING COUNT</div>
+                        <div id="offKpiBookings" class="text-2xl font-black text-blue-700 mt-1">0</div>
+                    </div>
+                    <div class="card p-5 border-l-4 border-emerald-500">
+                        <div class="text-slate-500 text-xs font-bold uppercase">ACTIVE OFFICES (>10 BOOKINGS)</div>
+                        <div id="offKpiActive" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+                    </div>
+                    <div class="card p-5 border-l-4 border-rose-600 bg-rose-50/30">
+                        <div class="text-slate-600 text-xs font-extrabold uppercase">NIL BOOKING OFFICES (0 BOOKING)</div>
+                        <div id="offKpiNil" class="text-2xl font-black text-rose-700 mt-1">0</div>
+                    </div>
+                </div>
+
+                <!-- Post Offices Detailed Table -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">📋 Filtered Offices Performance List</h3>
+                            <p class="text-xs text-slate-500">प्रत्येक डाकघर की बुकिंग का विस्तृत विवरण</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="exportNilOfficesExcel()" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 shadow">
+                                🚫 Export NIL Offices List Excel
+                            </button>
+                            <button onclick="exportTableByID('officeDetailTable', 'Filtered_Post_Offices_Report.xlsx')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1 shadow">
+                                📊 Export All Filtered Offices Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px]">
+                        <table id="officeDetailTable" class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-white font-bold uppercase">
+                                    <th class="p-3 border">Office ID</th>
+                                    <th class="p-3 border">Office Name</th>
+                                    <th class="p-3 border">Class</th>
+                                    <th class="p-3 border">Sub-Division (SD)</th>
+                                    <th class="p-3 border">Division</th>
+                                    <th class="p-3 border text-right">Parcel Booking</th>
+                                    <th class="p-3 border text-right">MO Booking</th>
+                                    <th class="p-3 border text-right">IRGB Booking</th>
+                                    <th class="p-3 border text-right bg-slate-800 font-extrabold text-amber-300">Total Selected Booking</th>
+                                    <th class="p-3 border text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="officeDetailBody" class="divide-y divide-slate-100 font-medium"></tbody>
                         </table>
                     </div>
                 </div>
@@ -389,6 +511,9 @@
     <script>
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
+        
+        // --- NEW LIVE JULY OFFICE WISE GS CSV LINK ---
+        const JULY_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
 
         // --- VERIFIED HISTORICAL LAST YEAR (FY 2025-26) LOOKUP TABLE ---
         const HISTORICAL_LY_DATA = {
@@ -422,7 +547,7 @@
             }
         };
 
-        // --- HARDCODED Q-1 COUNT TARGETS FROM USER IMAGE ---
+        // --- HARDCODED Q-1 COUNT TARGETS ---
         const Q1_COUNT_TARGETS = {
             "PARCEL": {
                 "Indore City": { apr: 49060, may: 48941, jun: 53019 },
@@ -455,6 +580,10 @@
                 "ID DIVISION": { apr: 5, may: 7, jun: 7 }
             }
         };
+
+        // Static Master Database for 2,806 Post Offices (April, May, June counts from uploaded Excel)
+        let masterOfficeDatabase = []; 
+        let currentFilteredNilOffices = []; // For NIL offices export
 
         let currentActiveView = 'revenue'; 
         let currentDataType = 'revenue';
@@ -495,22 +624,6 @@
         }
 
         async function fetchAllLiveData() {
-            const cachedRev = localStorage.getItem('cache_revenue_data');
-            const cachedCount = localStorage.getItem('cache_count_data');
-
-            if (cachedRev && cachedCount) {
-                try {
-                    revenueRecords = JSON.parse(cachedRev);
-                    countRecords = JSON.parse(cachedCount);
-                    updateDashboard();
-                    
-                    document.getElementById('syncBadge').innerHTML = "🟢 Cached (Syncing Live...)";
-                    document.getElementById('syncBadge').className = "text-xs bg-blue-500/30 text-blue-200 px-3 py-1.5 rounded-full border border-blue-400/30 font-semibold";
-                } catch(e) {
-                    console.log("Cache parsing error", e);
-                }
-            }
-
             try {
                 const timestamp = new Date().getTime();
                 
@@ -525,18 +638,46 @@
                 revenueRecords = parseRevenueSheet(parseCSV(revText));
                 countRecords = parseCountSheet(parseCSV(countText));
 
-                localStorage.setItem('cache_revenue_data', JSON.stringify(revenueRecords));
-                localStorage.setItem('cache_count_data', JSON.stringify(countRecords));
-
                 updateDashboard();
 
                 document.getElementById('syncBadge').innerHTML = "🟢 Live Synced";
                 document.getElementById('syncBadge').className = "text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold";
 
+                // Fetch July Office Wise Data
+                fetchJulyOfficeData();
+
             } catch (e) {
                 console.error("Fetch Error:", e);
                 document.getElementById('syncBadge').innerHTML = "🔴 Sync Error";
                 document.getElementById('syncBadge').className = "text-xs bg-red-500/30 text-red-200 px-3 py-1.5 rounded-full border border-red-400/30 font-semibold";
+            }
+        }
+
+        async function fetchJulyOfficeData() {
+            try {
+                const timestamp = new Date().getTime();
+                const res = await fetch(JULY_OFFICE_CSV_URL + '&t=' + timestamp);
+                const text = await res.text();
+                const rows = parseCSV(text);
+                
+                // Parse July GS sheet and map counts to offices in masterOfficeDatabase
+                if (rows && rows.length > 1) {
+                    rows.forEach((r, idx) => {
+                        if (idx === 0) return; // Header
+                        let offId = r[0] ? r[0].trim() : "";
+                        let cat = r[5] ? r[5].trim().toUpperCase() : "";
+                        let cnt = cleanNumber(r[6]);
+
+                        let offObj = masterOfficeDatabase.find(x => x.id === offId);
+                        if (offObj) {
+                            if (cat.includes("PARCEL")) offObj.parcel_jul = cnt;
+                            else if (cat.includes("IRGB")) offObj.irgb_jul = cnt;
+                            else offObj.mo_jul += cnt; // Speed Post + Other
+                        }
+                    });
+                }
+            } catch(e) {
+                console.log("July Office data fetch error or pending", e);
             }
         }
 
@@ -661,45 +802,54 @@
         function switchView(viewType) {
             currentActiveView = viewType;
             const stdView = document.getElementById('standardDashboardView');
+            const offView = document.getElementById('officeAnalyticsView');
             const q1View = document.getElementById('q1DataView');
             const yoyView = document.getElementById('yoyComparisonView');
 
             const tabRev = document.getElementById('tab-type-revenue');
             const tabCount = document.getElementById('tab-type-count');
+            const tabOffice = document.getElementById('tab-type-office');
             const tabQ1 = document.getElementById('tab-type-q1');
             const tabYoY = document.getElementById('tab-type-yoy');
 
-            tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-            tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-            tabQ1.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-2";
-            tabYoY.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2";
+            tabRev.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            tabCount.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            tabOffice.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-rose-600 transition flex items-center gap-2";
+            tabQ1.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-2";
+            tabYoY.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2";
 
             stdView.classList.add('hidden');
+            offView.classList.add('hidden');
             q1View.classList.add('hidden');
             yoyView.classList.add('hidden');
 
             document.getElementById('countMonthWiseContainer').classList.add('hidden');
 
-            if (viewType === 'q1') {
+            if (viewType === 'office') {
+                offView.classList.remove('hidden');
+                tabOffice.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-rose-600 text-rose-600 transition flex items-center gap-2";
+                populateOfficeSdOptions();
+                renderOfficeAnalytics();
+            } else if (viewType === 'q1') {
                 q1View.classList.remove('hidden');
-                tabQ1.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-2";
+                tabQ1.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-2";
                 updateQ1Tables();
             } else if (viewType === 'yoy') {
                 yoyView.classList.remove('hidden');
-                tabYoY.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+                tabYoY.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
                 updateYoYTable();
             } else {
                 stdView.classList.remove('hidden');
 
                 if (viewType === 'revenue') {
                     currentDataType = 'revenue';
-                    tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    tabRev.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
                     document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
                     document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
                     document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
                 } else {
                     currentDataType = 'count';
-                    tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    tabCount.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
                     document.getElementById('chart1UnitBadge').innerText = "Article Count";
                     document.getElementById('kpiTargetLabel').innerText = "जुलाई लक्ष्य (JULY TARGET ARTICLES)";
                     document.getElementById('kpiAchLabel').innerText = "जुलाई बुकिंग (JULY ARTICLE COUNT)";
@@ -834,7 +984,6 @@
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
         }
 
-        // --- NEW DETAILED DIVISION MONTH-WISE TARGET & ACH TABLE (ARTICLE COUNT BOTTOM) ---
         function renderCountMonthWiseDivisionTable(filteredCountData) {
             let bodyHtml = '';
 
@@ -923,7 +1072,136 @@
             document.getElementById('countMonthWiseFoot').innerHTML = footHtml;
         }
 
-        // --- NEW Q-1 TABLES LOGIC ---
+        // --- SUB-DIVISION & OFFICE ANALYTICS LOGIC ---
+        function populateOfficeSdOptions() {
+            const divSel = document.getElementById('offDivSelect').value;
+            const sdSel = document.getElementById('offSdSelect');
+
+            let sds = [...new Set(masterOfficeDatabase.filter(o => divSel === 'ALL' || isMatchingDivision(o.div, divSel)).map(o => o.sd))].sort();
+
+            let html = '<option value="ALL">🌐 All Sub-Divisions</option>';
+            sds.forEach(sd => {
+                if(sd && sd.trim() !== "") html += `<option value="${sd}">${sd}</option>`;
+            });
+            sdSel.innerHTML = html;
+        }
+
+        function onOfficeDivChange() {
+            populateOfficeSdOptions();
+            renderOfficeAnalytics();
+        }
+
+        function renderOfficeAnalytics() {
+            const mKey = document.getElementById('offMonthSelect').value;
+            const divKey = document.getElementById('offDivSelect').value;
+            const sdKey = document.getElementById('offSdSelect').value;
+            const clsKey = document.getElementById('offClassSelect').value;
+            const vertKey = document.getElementById('offVertSelect').value;
+
+            // Filter Offices based on selections (Excluding Khudel BO if month is July)
+            let filtered = masterOfficeDatabase.filter(o => {
+                if (mKey === 'jul' && o.id === '23106779') return false; // Khudel BO exception for July
+
+                let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
+                let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
+                let matchCls = (clsKey === 'ALL') || (o.cls.toUpperCase() === clsKey.toUpperCase());
+
+                return matchDiv && matchSd && matchCls;
+            });
+
+            let totalOfficesCount = filtered.length;
+            let totalBookings = 0;
+            let activeOfficesCount = 0;
+            let nilOfficesCount = 0;
+
+            currentFilteredNilOffices = [];
+            let tbodyHtml = '';
+
+            filtered.forEach(o => {
+                let pCnt = 0, mCnt = 0, iCnt = 0;
+
+                if (mKey === 'q1') {
+                    pCnt = o.parcel_apr + o.parcel_may + o.parcel_jun;
+                    mCnt = o.mo_apr + o.mo_may + o.mo_jun;
+                    iCnt = o.irgb_apr + o.irgb_may + o.irgb_jun;
+                } else {
+                    pCnt = o[`parcel_${mKey}`] || 0;
+                    mCnt = o[`mo_${mKey}`] || 0;
+                    iCnt = o[`irgb_${mKey}`] || 0;
+                }
+
+                let selectedCount = 0;
+                if (vertKey === 'PARCEL') selectedCount = pCnt;
+                else if (vertKey === 'MAIL') selectedCount = mCnt;
+                else if (vertKey === 'IRGB') selectedCount = iCnt;
+                else selectedCount = pCnt + mCnt + iCnt; // ALL Verticals Sum
+
+                totalBookings += selectedCount;
+
+                if (selectedCount > 10) activeOfficesCount++;
+
+                // NIL Logic: If Vertical ALL, all 3 verticals must be 0
+                let isNil = false;
+                if (vertKey === 'ALL') {
+                    isNil = (pCnt === 0 && mCnt === 0 && iCnt === 0);
+                } else {
+                    isNil = (selectedCount === 0);
+                }
+
+                if (isNil) {
+                    nilOfficesCount++;
+                    currentFilteredNilOffices.push({
+                        "Office ID": o.id,
+                        "Office Name": o.name,
+                        "Class": o.cls,
+                        "Sub-Division": o.sd,
+                        "Division": o.div,
+                        "Parcel Booking": pCnt,
+                        "MO Booking": mCnt,
+                        "IRGB Booking": iCnt,
+                        "Total Booking": selectedCount,
+                        "Status": "NIL (ZERO)"
+                    });
+                }
+
+                let badge = isNil 
+                    ? '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold">NIL (0)</span>' 
+                    : (selectedCount > 10 ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">ACTIVE</span>' : '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">LOW</span>');
+
+                tbodyHtml += `<tr class="hover:bg-slate-50 border-b border-slate-200">
+                    <td class="p-2.5 font-mono text-slate-600">${o.id}</td>
+                    <td class="p-2.5 font-bold text-slate-900">${o.name}</td>
+                    <td class="p-2.5 font-semibold text-slate-500">${o.cls}</td>
+                    <td class="p-2.5 text-slate-600">${o.sd}</td>
+                    <td class="p-2.5 text-slate-600">${o.div}</td>
+                    <td class="p-2.5 text-right font-medium">${pCnt}</td>
+                    <td class="p-2.5 text-right font-medium">${mCnt}</td>
+                    <td class="p-2.5 text-right font-medium">${iCnt}</td>
+                    <td class="p-2.5 text-right font-bold text-blue-900 bg-slate-50">${selectedCount}</td>
+                    <td class="p-2.5 text-center">${badge}</td>
+                </tr>`;
+            });
+
+            document.getElementById('offKpiTotal').innerText = totalOfficesCount.toLocaleString('en-IN');
+            document.getElementById('offKpiBookings').innerText = totalBookings.toLocaleString('en-IN');
+            document.getElementById('offKpiActive').innerText = activeOfficesCount.toLocaleString('en-IN');
+            document.getElementById('offKpiNil').innerText = nilOfficesCount.toLocaleString('en-IN');
+
+            document.getElementById('officeDetailBody').innerHTML = tbodyHtml;
+        }
+
+        function exportNilOfficesExcel() {
+            if (!currentFilteredNilOffices || currentFilteredNilOffices.length === 0) {
+                alert("No NIL Offices found in current selection!");
+                return;
+            }
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(currentFilteredNilOffices);
+            XLSX.utils.book_append_sheet(wb, ws, "NIL Offices List");
+            XLSX.writeFile(wb, "NIL_Post_Offices_Report.xlsx");
+        }
+
+        // --- Q-1 TABLES LOGIC ---
         function updateQ1Tables() {
             const vKey = document.getElementById('q1VerticalSelect').value;
 
@@ -1025,7 +1303,7 @@
                 </tr>`;
         }
 
-        // --- ACCURATE YOY TABLE WITH REAL HISTORICAL DATA MATCHING ---
+        // --- ACCURATE YOY TABLE ---
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
@@ -1201,7 +1479,6 @@
             });
         }
 
-        // --- UNIVERSAL TABLE EXPORT FUNCTION (EXPORTS ANY SPECIFIC HTML TABLE TO CLEAN EXCEL) ---
         function exportTableByID(tableId, defaultFileName) {
             const tableElement = document.getElementById(tableId);
             if (!tableElement) return;
@@ -1216,7 +1493,10 @@
             let activeTableId = 'dataTable';
             let fileName = 'Indore_Region_Performance_Report.xlsx';
 
-            if (currentActiveView === 'yoy') {
+            if (currentActiveView === 'office') {
+                activeTableId = 'officeDetailTable';
+                fileName = 'Post_Offices_Performance_Report.xlsx';
+            } else if (currentActiveView === 'yoy') {
                 activeTableId = 'yoyDataTable';
                 fileName = 'Indore_Region_YoY_Report.xlsx';
             } else if (currentActiveView === 'q1') {
@@ -1236,7 +1516,9 @@
             }
         }
 
-        window.onload = fetchAllLiveData;
+        window.onload = function() {
+            fetchAllLiveData();
+        };
     </script>
 </body>
 </html>
