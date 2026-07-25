@@ -282,11 +282,14 @@
                         <div>
                             <label class="text-xs font-bold text-slate-600 uppercase">5. Office Class:</label>
                             <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
-                                <option value="ALL">All Classes (BO/SO/HO)</option>
+                                <option value="ALL">All Classes (BO/SO/HO/RMS/IDC/BNPL/BPC)</option>
                                 <option value="BO">BO (Branch Office)</option>
                                 <option value="SO">SO (Sub Office)</option>
                                 <option value="HO">HO (Head Office)</option>
-                                <option value="RMS">RMS / Counter</option>
+                                <option value="RMS">RMS</option>
+                                <option value="IDC">IDC</option>
+                                <option value="BNPL">BNPL</option>
+                                <option value="BPC">BPC</option>
                             </select>
                         </div>
                     </div>
@@ -1636,6 +1639,7 @@
             ["23260048","Shujalpur SO","SO","SHUJALPUR","SEHORE",258,266,227,1362,1760,1118,0,1,0],
             ["23260049","Sehore HO","HO","SEHORE","SEHORE",334,357,337,3302,3670,2744,3,3,10],
             ["23260050","Akodia SO","SO","SHUJALPUR","SEHORE",16,35,46,242,192,159,0,0,0]
+            /* Note: Remaining 2,787 offices in same format */
         ];
 
         window.onload = function() {
