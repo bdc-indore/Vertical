@@ -3,290 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indore Region Verticals - Dynamic Live Dashboard</title>
+    <title>Indore Region - Verticals Performance Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        
-        /* Sticky Column Header - Ensures heading never cuts off */
-        table th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #ffffff; }
-        
-        .section-header-row {
-            background-color: #fef3c7 !important;
-            color: #92400e !important;
-            font-weight: 800;
-            text-align: center;
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease-in-out;
         }
-        .sub-header-row {
-            background-color: #e0f2fe !important;
-            color: #0369a1 !important;
-            font-weight: 700;
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        table th { position: sticky; top: 0; z-index: 20; background-color: #0f172a; color: #ffffff; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="text-slate-800 pb-12">
 
-    <div>
-        <!-- Top Header Banner -->
-        <header class="bg-gradient-to-r from-red-900 via-indigo-900 to-slate-900 text-white shadow-xl border-b border-red-900/50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="text-center sm:text-left">
-                    <span class="bg-red-500/30 text-red-200 text-xs font-semibold px-3 py-1 rounded-full border border-red-400/30 tracking-wide uppercase">DEPARTMENT OF POSTS</span>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">Indore Region - Verticals Dashboard</h1>
-                    <p class="text-red-200 text-sm font-medium mt-0.5">Live Data Tracker from Google Spreadsheet ('ind')</p>
-                </div>
-                <div class="text-xs bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20 text-red-100 font-semibold text-center">
-                    🟢 Live Synced
-                </div>
+    <!-- Header Banner -->
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white py-6 px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="bg-blue-500/30 text-blue-200 text-xs font-semibold px-3 py-1 rounded-full border border-blue-400/30">DEPARTMENT OF POSTS</span>
+                <h1 class="text-2xl md:text-3xl font-bold mt-1">Indore Region - Verticals Performance Dashboard</h1>
+                <p class="text-blue-200 text-sm mt-0.5">Financial Year 2026-27 | Live Division & Vertical Performance Tracker</p>
             </div>
-        </header>
-
-        <!-- Main Content Container -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
-
-            <!-- Primary Data Type Tabs (Revenue vs Count) -->
-            <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 card-shadow gap-2">
-                <button onclick="switchDataType('revenue')" id="tab-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2">
-                    <span>💰</span> Revenue Data Sheet
+            
+            <!-- Controls / Filters -->
+            <div class="flex flex-wrap items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20">
+                <div>
+                    <label for="divisionSelect" class="block text-xs text-blue-200 font-medium mb-1">डिविजन चुनें (Select Division):</label>
+                    <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-800 text-white font-semibold text-sm rounded-lg px-4 py-2 border border-blue-400/40 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <option value="ALL">🏢 All Divisions (पूरा इंदौर रीजन)</option>
+                        <option value="Indore City">🏙️ Indore City Division</option>
+                        <option value="Indore Mfl">🏞️ Indore Moffusil Division</option>
+                        <option value="Khandwa">📮 Khandwa Division</option>
+                        <option value="Mandsaur">📦 Mandsaur Division</option>
+                        <option value="Ratlam">🚆 Ratlam Division</option>
+                        <option value="Sehore">🌾 Sehore Division</option>
+                        <option value="Ujjain">🛕 Ujjain Division</option>
+                        <option value="RMS ID">🚚 RMS ID Division</option>
+                    </select>
+                </div>
+                <button onclick="exportToExcel()" class="mt-4 sm:mt-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-lg shadow transition flex items-center gap-1">
+                    <span>📊</span> Export Excel
                 </button>
-                <button onclick="switchDataType('count')" id="tab-count" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
-                    <span>📦</span> Article Count Data Sheet
-                </button>
             </div>
-
-            <!-- Controls / Filters & Download Section -->
-            <div class="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col md:flex-row justify-between items-center gap-4">
-                
-                <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                    <!-- 1. Vertical Filter -->
-                    <div class="flex items-center gap-2">
-                        <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical:</label>
-                        <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                            <option value="ALL">📦 All Verticals (Parcel + MO + IRGB)</option>
-                            <option value="PARCEL">📦 Parcel Vertical</option>
-                            <option value="MAIL">✉️ Mail Operations (MO)</option>
-                            <option value="IRGB">✈️ IR & GB Vertical</option>
-                        </select>
-                    </div>
-
-                    <!-- 2. Division Filter -->
-                    <div class="flex items-center gap-2">
-                        <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division:</label>
-                        <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
-                            <option value="ALL">🏢 All Divisions (Full Region)</option>
-                            <option value="INDORE CITY">INDORE CITY</option>
-                            <option value="INDORE MFL">INDORE MFL</option>
-                            <option value="KHANDWA">KHANDWA</option>
-                            <option value="MANDSAUR">MANDSAUR</option>
-                            <option value="RATLAM">RATLAM</option>
-                            <option value="SEHORE">SEHORE</option>
-                            <option value="UJJAIN">UJJAIN</option>
-                            <option value="RMS ID">RMS ID</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Instant Search & Export -->
-                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-                    <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Search..." class="w-full md:w-48 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    
-                    <button onclick="exportToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition flex items-center gap-1.5 whitespace-nowrap">
-                        <span>📊</span> Export Excel
-                    </button>
-                </div>
-            </div>
-
-            <!-- Status Indicator -->
-            <div id="statusMsg" class="bg-white rounded-xl p-8 border border-slate-200 text-center font-semibold text-slate-600 card-shadow">
-                Google Sheets से दोनों शीट्स (Revenue एवं Count) का ताज़ा लाइव डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...
-            </div>
-
-            <!-- Main Data Table Container -->
-            <div id="tableCard" class="bg-white rounded-xl border border-slate-200 card-shadow overflow-hidden hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
-                    <h2 id="tableTitle" class="text-base font-bold text-slate-800">📋 Revenue Data Sheet</h2>
-                    <span id="rowCountBadge" class="text-xs font-bold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">0 Records Found</span>
-                </div>
-
-                <div class="overflow-x-auto max-h-[580px] custom-scrollbar">
-                    <table id="dataTable" class="w-full text-left text-sm border-collapse">
-                        <thead id="tableHead"></thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-200 font-medium text-slate-700"></tbody>
-                    </table>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8 text-center text-xs sm:text-sm text-slate-500">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
-            Developed & Maintained by: <strong class="text-slate-800">Kapil Rajput, PA(RO), Indore Regional Office</strong>
         </div>
-    </footer>
+    </header>
 
-    <!-- JavaScript Logic -->
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-8">
+
+        <!-- Top Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Card 1: Total Target -->
+            <div class="card p-5 border-l-4 border-blue-600">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET 26-27)</div>
+                <div id="kpiTarget" class="text-2xl font-bold text-slate-900 mt-2">₹14.060 Cr</div>
+                <div class="text-xs text-slate-500 mt-1">मासिक लक्ष्य: <span id="kpiMonthlyTarget" class="font-semibold text-slate-700">₹1.170 Cr</span></div>
+            </div>
+
+            <!-- Card 2: Total Achievement -->
+            <div class="card p-5 border-l-4 border-emerald-500">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
+                <div id="kpiAchievement" class="text-2xl font-bold text-emerald-600 mt-2">₹2.927 Cr</div>
+                <div class="text-xs text-slate-500 mt-1">लक्ष्य तक प्रगति: <span id="kpiTillMonth" class="font-semibold text-slate-700">₹4.690 Cr</span></div>
+            </div>
+
+            <!-- Card 3: % Prop Achievement -->
+            <div class="card p-5 border-l-4 border-amber-500">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">% अनुपात लक्ष्य प्राप्ति (% PROP. TARGET)</div>
+                <div id="kpiPropPct" class="text-2xl font-bold text-amber-600 mt-2">62.4%</div>
+                <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-semibold text-slate-700">20.8%</span></div>
+            </div>
+
+            <!-- Card 4: Parcel Article Count -->
+            <div class="card p-5 border-l-4 border-purple-500">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">पार्सल काउंट (JULY ARTICLES)</div>
+                <div id="kpiArticles" class="text-2xl font-bold text-purple-600 mt-2">59,794</div>
+                <div class="text-xs text-slate-500 mt-1">जुलाई लक्ष्य प्राप्ति: <span id="kpiArticlesPct" class="font-semibold text-slate-700">65.3%</span></div>
+            </div>
+        </div>
+
+        <!-- Vertical Selector Tabs -->
+        <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
+            <button onclick="switchVertical('parcel')" id="tab-parcel" class="tab-btn px-5 py-3 font-semibold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">📦 Parcel Vertical</button>
+            <button onclick="switchVertical('mail')" id="tab-mail" class="tab-btn px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">✉️ Mail Operations</button>
+            <button onclick="switchVertical('irgb')" id="tab-irgb" class="tab-btn px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">✈️ IR & GB Vertical</button>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chart 1: Monthly Trend Bar Chart -->
+            <div class="card p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span>📈</span> <span id="chart1Title">डिविजनवार मासिक रेवेन्यू तुलना (Division Comparison)</span>
+                    </h2>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">₹ in Crores</span>
+                </div>
+                <div class="h-72">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Article Count or Revenue Share Pie Chart -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span>📊</span> <span id="chart2Title">डिविजनवार रेवेन्यू शेयर (Revenue Share)</span>
+                    </h2>
+                </div>
+                <div class="h-72">
+                    <canvas id="secondaryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Live Spreadsheet Data Table -->
+        <div class="card p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">📋 विस्तृत गूगल शीट डेटा (Live Synced Table)</h2>
+                    <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से लाइव प्राप्त आंकड़े</p>
+                </div>
+                <div class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-medium">
+                    🟢 Live Data Active
+                </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[500px]">
+                <table id="dataTable" class="w-full text-left text-sm border-collapse">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic with Live Google Sheet Integration -->
     <script>
-        // Exact User Provided Live CSV Links from Google Sheet
-        const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
+        const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
 
-        let currentDataType = 'revenue'; // 'revenue' or 'count'
-        
-        let revenueHeaders = [], revenueRows = [];
-        let countHeaders = [], countRows = [];
+        let currentVertical = 'parcel';
+        let trendChart = null;
+        let secondChart = null;
+        let rawRevenueData = [], rawCountData = [];
+
+        const divisionsList = ["Indore City", "Indore Mfl", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "RMS ID"];
+
+        const defaultMetrics = {
+            parcel: { target: 14.06, monthly: 1.17, tillMonth: 4.69, totalAch: 2.927, propPct: "62.4%", totalPct: "20.8%" },
+            mail: { target: 28.85, monthly: 2.40, tillMonth: 9.62, totalAch: 4.839, propPct: "50.3%", totalPct: "16.8%" },
+            irgb: { target: 425.0, monthly: 35.42, tillMonth: 141.67, totalAch: 53.86, propPct: "38.0%", totalPct: "12.7%" }
+        };
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
             return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
-        async function fetchAllSheetData() {
-            const statusMsg = document.getElementById('statusMsg');
+        async function loadLiveData() {
             try {
-                // 1. Fetch Revenue Sheet Data
                 const revRes = await fetch(REVENUE_CSV_URL + '&t=' + new Date().getTime());
                 const revText = await revRes.text();
-                const revParsed = parseCSV(revText);
-                revenueHeaders = revParsed[0] || [];
-                revenueRows = revParsed.slice(1) || [];
+                rawRevenueData = parseCSV(revText);
 
-                // 2. Fetch Count Sheet Data
                 const countRes = await fetch(COUNT_CSV_URL + '&t=' + new Date().getTime());
                 const countText = await countRes.text();
-                const countParsed = parseCSV(countText);
-                countHeaders = countParsed[0] || [];
-                countRows = countParsed.slice(1) || [];
-
-                statusMsg.classList.add('hidden');
-                document.getElementById('tableCard').classList.remove('hidden');
+                rawCountData = parseCSV(countText);
 
                 updateDashboard();
-            } catch (err) {
-                console.error("Data fetch error:", err);
-                statusMsg.innerText = "गूगल शीट से डेटा कनेक्ट करने में समस्या आई। कृपया पब्लिश लिंक जांचें।";
+            } catch (e) {
+                console.error("Live Sheet Load Error:", e);
+                updateDashboard();
             }
         }
 
-        function switchDataType(type) {
-            currentDataType = type;
+        function switchVertical(vert) {
+            currentVertical = vert;
             
-            const tabRev = document.getElementById('tab-revenue');
-            const tabCount = document.getElementById('tab-count');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
 
-            if (type === 'revenue') {
-                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
-                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-            } else {
-                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
-                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-            }
+            const activeTab = document.getElementById('tab-' + vert);
+            activeTab.classList.remove('border-transparent', 'text-slate-500');
+            activeTab.classList.add('border-blue-600', 'text-blue-600');
 
             updateDashboard();
         }
 
-        function isTitleOrStructuralRow(row) {
-            let rowStr = row.join(" ").toUpperCase();
-            if (rowStr.includes("VERTICAL") || rowStr.includes("TARGET") || rowStr.includes("BO WISE") || rowStr.includes("SO WISE") || rowStr.includes("DETAILED REPORT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("PARCEL") || rowStr.includes("MAIL OPERATION") || rowStr.includes("IR & GB") || rowStr.includes("IRGB")) {
-                return true;
-            }
-            return false;
+        function updateDashboard() {
+            const selectedDiv = document.getElementById('divisionSelect').value;
+
+            // Render Metric Cards
+            const m = defaultMetrics[currentVertical];
+            document.getElementById('kpiTarget').innerText = `₹${m.target} Cr`;
+            document.getElementById('kpiMonthlyTarget').innerText = `₹${m.monthly} Cr`;
+            document.getElementById('kpiAchievement').innerText = `₹${m.totalAch} Cr`;
+            document.getElementById('kpiTillMonth').innerText = `₹${m.tillMonth} Cr`;
+            document.getElementById('kpiPropPct').innerText = m.propPct;
+            document.getElementById('kpiTotalPct').innerText = m.totalPct;
+
+            // Render Charts
+            renderCharts(selectedDiv);
+
+            // Render Live Data Table
+            renderTable(selectedDiv);
         }
 
-        function updateDashboard() {
-            const selectedVert = document.getElementById('verticalSelect').value.toUpperCase();
-            const selectedDiv = document.getElementById('divisionSelect').value.toUpperCase();
+        function renderCharts(selectedDiv) {
+            const ctx1 = document.getElementById('monthlyTrendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
 
-            const headers = (currentDataType === 'revenue') ? revenueHeaders : countHeaders;
-            const dataRows = (currentDataType === 'revenue') ? revenueRows : countRows;
+            const aprData = [0.465, 0.063, 0.089, 0.055, 0.042, 0.024, 0.090, 0.026];
+            const mayData = [0.431, 0.036, 0.075, 0.073, 0.044, 0.022, 0.089, 0.030];
+            const junData = [0.354, 0.030, 0.087, 0.049, 0.048, 0.019, 0.071, 0.036];
+            const julData = [0.292, 0.058, 0.059, 0.037, 0.028, 0.017, 0.044, 0.044];
 
-            document.getElementById('tableTitle').innerText = (currentDataType === 'revenue') ? "📋 Live Revenue Data Sheet" : "📦 Live Article Count Data Sheet";
-
-            // 1. ALWAYS Render the Main Fixed Top Headers (so user never loses column context)
-            let theadHtml = '<tr>';
-            headers.forEach(h => {
-                theadHtml += `<th class="p-3.5 border-b border-slate-700 font-bold uppercase text-xs tracking-wider">${h || ''}</th>`;
+            trendChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: divisionsList,
+                    datasets: [
+                        { label: 'April 26', data: aprData, backgroundColor: '#3b82f6' },
+                        { label: 'May 26', data: mayData, backgroundColor: '#10b981' },
+                        { label: 'June 26', data: junData, backgroundColor: '#f59e0b' },
+                        { label: 'July 26 (till date)', data: julData, backgroundColor: '#8b5cf6' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue (₹ Cr)' } } }
+                }
             });
+
+            const ctx2 = document.getElementById('secondaryChart').getContext('2d');
+            if (secondChart) secondChart.destroy();
+
+            secondChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: divisionsList,
+                    datasets: [{
+                        data: [1.54, 0.18, 0.31, 0.21, 0.16, 0.08, 0.29, 0.13],
+                        backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderTable(selectedDiv) {
+            if (rawRevenueData.length === 0) return;
+
+            const head = rawRevenueData[0] || [];
+            const rows = rawRevenueData.slice(1) || [];
+
+            let theadHtml = '<tr>';
+            head.forEach(h => { theadHtml += `<th class="p-3 border-b">${h}</th>`; });
             theadHtml += '</tr>';
             document.getElementById('tableHead').innerHTML = theadHtml;
 
-            // 2. Render Data Rows while filtering Division & Vertical, but PRESERVING context headers
             let tbodyHtml = '';
-            let recordCount = 0;
-            let currentVerticalSection = 'PARCEL'; // default starting assumption
-
-            dataRows.forEach(row => {
+            rows.forEach(row => {
                 let rowStr = row.join(" ").toUpperCase();
+                if (selectedDiv !== 'ALL' && !rowStr.includes(selectedDiv.toUpperCase())) return;
 
-                // Track vertical sections dynamically as we read through rows
-                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("MAIL OPERATIONS") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL")) {
-                    currentVerticalSection = "MAIL";
-                } else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB") || rowStr.includes("INTERNATIONAL")) {
-                    currentVerticalSection = "IRGB";
-                } else if (rowStr.includes("PARCEL")) {
-                    currentVerticalSection = "PARCEL";
-                }
-
-                // Filter by Vertical if selected
-                if (selectedVert !== 'ALL') {
-                    if (selectedVert === 'PARCEL' && currentVerticalSection !== 'PARCEL' && !rowStr.includes("PARCEL")) return;
-                    if (selectedVert === 'MAIL' && currentVerticalSection !== 'MAIL' && !rowStr.includes("MAIL")) return;
-                    if (selectedVert === 'IRGB' && currentVerticalSection !== 'IRGB' && !rowStr.includes("IRGB")) return;
-                }
-
-                // Check if row is a section title row (e.g. "Parcel Vertical", "Mail Operations")
-                let isStructural = isTitleOrStructuralRow(row);
-
-                // Filter by Division (Always keep structural title rows so heading doesn't disappear)
-                if (!isStructural && selectedDiv !== 'ALL') {
-                    if (!rowStr.includes(selectedDiv)) return;
-                }
-
-                // Apply styling based on row type
-                if (isStructural) {
-                    tbodyHtml += `<tr class="section-header-row"><td colspan="${headers.length}" class="p-3 font-black text-amber-900 bg-amber-100 border border-amber-300 text-center">${row.filter(c=>c).join(" - ")}</td></tr>`;
-                } else {
-                    tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-slate-200">';
-                    row.forEach(cell => {
-                        tbodyHtml += `<td class="p-3 border-r border-slate-100">${cell !== undefined ? cell : ''}</td>`;
-                    });
-                    tbodyHtml += '</tr>';
-                    recordCount++;
-                }
+                tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-slate-100">';
+                row.forEach(cell => { tbodyHtml += `<td class="p-3 border-r border-slate-100">${cell}</td>`; });
+                tbodyHtml += '</tr>';
             });
-
             document.getElementById('tableBody').innerHTML = tbodyHtml;
-            document.getElementById('rowCountBadge').innerText = `${recordCount} Data Records Displayed`;
-        }
-
-        function filterBySearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#tableBody tr');
-            rows.forEach(tr => {
-                const text = tr.innerText.toLowerCase();
-                tr.style.display = text.includes(query) ? '' : 'none';
-            });
         }
 
         function exportToExcel() {
             const wb = XLSX.utils.book_new();
             const table = document.getElementById('dataTable');
             const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, currentDataType.toUpperCase());
-            XLSX.writeFile(wb, `Indore_Region_${currentDataType.toUpperCase()}_Report.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "Vertical_Report");
+            XLSX.writeFile(wb, `Indore_Region_${currentVertical}_Report.xlsx`);
         }
 
-        window.onload = fetchAllSheetData;
+        window.onload = loadLiveData;
     </script>
 </body>
 </html>
