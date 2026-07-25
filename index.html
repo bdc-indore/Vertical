@@ -6,8 +6,6 @@
     <title>Indore Region Verticals - Dynamic Live Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Google Fonts -->
@@ -18,7 +16,21 @@
         .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        table th { position: sticky; top: 0; z-index: 10; background-color: #1e293b; color: white; }
+        
+        /* Sticky Column Header - Ensures heading never cuts off */
+        table th { position: sticky; top: 0; z-index: 20; background-color: #1e293b; color: #ffffff; }
+        
+        .section-header-row {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            font-weight: 800;
+            text-align: center;
+        }
+        .sub-header-row {
+            background-color: #e0f2fe !important;
+            color: #0369a1 !important;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
@@ -29,11 +41,11 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="text-center sm:text-left">
                     <span class="bg-red-500/30 text-red-200 text-xs font-semibold px-3 py-1 rounded-full border border-red-400/30 tracking-wide uppercase">DEPARTMENT OF POSTS</span>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">Indore Region - Live Operational Dashboard</h1>
-                    <p class="text-red-200 text-sm font-medium mt-0.5">Real-time Live Sync with Google Spreadsheet</p>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">Indore Region - Verticals Dashboard</h1>
+                    <p class="text-red-200 text-sm font-medium mt-0.5">Live Data Tracker from Google Spreadsheet ('ind')</p>
                 </div>
                 <div class="text-xs bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/20 text-red-100 font-semibold text-center">
-                    🟢 Google Sheet Live Synced
+                    🟢 Live Synced
                 </div>
             </div>
         </header>
@@ -41,46 +53,32 @@
         <!-- Main Content Container -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
 
-            <!-- KPI Metric Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Rows Loaded</div>
-                        <div id="kpiTotalRows" class="text-2xl font-black text-slate-900 mt-1">0</div>
-                    </div>
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg text-xl">📊</div>
-                </div>
-
-                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Filtered Records</div>
-                        <div id="kpiFilteredRows" class="text-2xl font-black text-emerald-600 mt-1">0</div>
-                    </div>
-                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg text-xl">🏢</div>
-                </div>
-
-                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Division</div>
-                        <div id="kpiActiveDiv" class="text-sm font-black text-indigo-600 mt-1 truncate max-w-[130px]">All Divisions</div>
-                    </div>
-                    <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg text-xl">📍</div>
-                </div>
-
-                <div class="bg-white rounded-xl p-4 border border-slate-200 card-shadow flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</div>
-                        <div id="kpiStatus" class="text-xs font-black text-amber-600 mt-1">Syncing...</div>
-                    </div>
-                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg text-xl">⚡</div>
-                </div>
+            <!-- Primary Data Type Tabs (Revenue vs Count) -->
+            <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 card-shadow gap-2">
+                <button onclick="switchDataType('revenue')" id="tab-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2">
+                    <span>💰</span> Revenue Data Sheet
+                </button>
+                <button onclick="switchDataType('count')" id="tab-count" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
+                    <span>📦</span> Article Count Data Sheet
+                </button>
             </div>
 
             <!-- Controls / Filters & Download Section -->
             <div class="bg-white rounded-xl p-5 border border-slate-200 card-shadow flex flex-col md:flex-row justify-between items-center gap-4">
                 
-                <!-- Filter Dropdowns -->
                 <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                    <!-- 1. Vertical Filter -->
+                    <div class="flex items-center gap-2">
+                        <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical:</label>
+                        <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                            <option value="ALL">📦 All Verticals (Parcel + MO + IRGB)</option>
+                            <option value="PARCEL">📦 Parcel Vertical</option>
+                            <option value="MAIL">✉️ Mail Operations (MO)</option>
+                            <option value="IRGB">✈️ IR & GB Vertical</option>
+                        </select>
+                    </div>
+
+                    <!-- 2. Division Filter -->
                     <div class="flex items-center gap-2">
                         <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division:</label>
                         <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
@@ -99,7 +97,7 @@
 
                 <!-- Instant Search & Export -->
                 <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-                    <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Search Office / SO / BO..." class="w-full md:w-64 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Search..." class="w-full md:w-48 bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     
                     <button onclick="exportToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow transition flex items-center gap-1.5 whitespace-nowrap">
                         <span>📊</span> Export Excel
@@ -109,17 +107,17 @@
 
             <!-- Status Indicator -->
             <div id="statusMsg" class="bg-white rounded-xl p-8 border border-slate-200 text-center font-semibold text-slate-600 card-shadow">
-                Google Sheet से लाइव डाटा फेच हो रहा है, कृपया प्रतीक्षा करें...
+                Google Sheets से दोनों शीट्स (Revenue एवं Count) का ताज़ा लाइव डेटा लोड हो रहा है, कृपया प्रतीक्षा करें...
             </div>
 
             <!-- Main Data Table Container -->
             <div id="tableCard" class="bg-white rounded-xl border border-slate-200 card-shadow overflow-hidden hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                    <h2 id="tableTitle" class="text-base font-bold text-slate-800">📋 Live Google Spreadsheet Data</h2>
-                    <span id="rowCountBadge" class="text-xs font-semibold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">0 Records Found</span>
+                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
+                    <h2 id="tableTitle" class="text-base font-bold text-slate-800">📋 Revenue Data Sheet</h2>
+                    <span id="rowCountBadge" class="text-xs font-bold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">0 Records Found</span>
                 </div>
 
-                <div class="overflow-x-auto max-h-[550px] custom-scrollbar">
+                <div class="overflow-x-auto max-h-[580px] custom-scrollbar">
                     <table id="dataTable" class="w-full text-left text-sm border-collapse">
                         <thead id="tableHead"></thead>
                         <tbody id="tableBody" class="divide-y divide-slate-200 font-medium text-slate-700"></tbody>
@@ -139,76 +137,136 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // Target Google Sheet Direct Export Link
-        const SPREADSHEET_ID = "1ZWqCZifDA1acmTNGpWBfE9_GX-DqM_OyGjOkSFoixps";
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=0`;
+        // Exact User Provided Live CSV Links from Google Sheet
+        const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
+        const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
 
-        let globalHeaders = [];
-        let globalRows = [];
+        let currentDataType = 'revenue'; // 'revenue' or 'count'
+        
+        let revenueHeaders = [], revenueRows = [];
+        let countHeaders = [], countRows = [];
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
             return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
-        async function fetchSheetData() {
+        async function fetchAllSheetData() {
             const statusMsg = document.getElementById('statusMsg');
             try {
-                const res = await fetch(CSV_URL + '&t=' + new Date().getTime());
-                if (!res.ok) throw new Error("Fetch failed");
-                
-                const text = await res.text();
-                const parsed = parseCSV(text);
-                
-                globalHeaders = parsed[0] || [];
-                globalRows = parsed.slice(1) || [];
+                // 1. Fetch Revenue Sheet Data
+                const revRes = await fetch(REVENUE_CSV_URL + '&t=' + new Date().getTime());
+                const revText = await revRes.text();
+                const revParsed = parseCSV(revText);
+                revenueHeaders = revParsed[0] || [];
+                revenueRows = revParsed.slice(1) || [];
+
+                // 2. Fetch Count Sheet Data
+                const countRes = await fetch(COUNT_CSV_URL + '&t=' + new Date().getTime());
+                const countText = await countRes.text();
+                const countParsed = parseCSV(countText);
+                countHeaders = countParsed[0] || [];
+                countRows = countParsed.slice(1) || [];
 
                 statusMsg.classList.add('hidden');
                 document.getElementById('tableCard').classList.remove('hidden');
-                document.getElementById('kpiStatus').innerText = "Live";
 
                 updateDashboard();
             } catch (err) {
                 console.error("Data fetch error:", err);
-                statusMsg.innerText = "गूगल शीट से डाटा कनेक्ट करने में समस्या आई। कृपया पब्लिश लिंक की जांच करें।";
-                document.getElementById('kpiStatus').innerText = "Error";
+                statusMsg.innerText = "गूगल शीट से डेटा कनेक्ट करने में समस्या आई। कृपया पब्लिश लिंक जांचें।";
             }
         }
 
+        function switchDataType(type) {
+            currentDataType = type;
+            
+            const tabRev = document.getElementById('tab-revenue');
+            const tabCount = document.getElementById('tab-count');
+
+            if (type === 'revenue') {
+                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            } else {
+                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            }
+
+            updateDashboard();
+        }
+
+        function isTitleOrStructuralRow(row) {
+            let rowStr = row.join(" ").toUpperCase();
+            if (rowStr.includes("VERTICAL") || rowStr.includes("TARGET") || rowStr.includes("BO WISE") || rowStr.includes("SO WISE") || rowStr.includes("DETAILED REPORT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("PARCEL") || rowStr.includes("MAIL OPERATION") || rowStr.includes("IR & GB") || rowStr.includes("IRGB")) {
+                return true;
+            }
+            return false;
+        }
+
         function updateDashboard() {
+            const selectedVert = document.getElementById('verticalSelect').value.toUpperCase();
             const selectedDiv = document.getElementById('divisionSelect').value.toUpperCase();
 
-            // Render Table Header
+            const headers = (currentDataType === 'revenue') ? revenueHeaders : countHeaders;
+            const dataRows = (currentDataType === 'revenue') ? revenueRows : countRows;
+
+            document.getElementById('tableTitle').innerText = (currentDataType === 'revenue') ? "📋 Live Revenue Data Sheet" : "📦 Live Article Count Data Sheet";
+
+            // 1. ALWAYS Render the Main Fixed Top Headers (so user never loses column context)
             let theadHtml = '<tr>';
-            globalHeaders.forEach(h => {
+            headers.forEach(h => {
                 theadHtml += `<th class="p-3.5 border-b border-slate-700 font-bold uppercase text-xs tracking-wider">${h || ''}</th>`;
             });
             theadHtml += '</tr>';
             document.getElementById('tableHead').innerHTML = theadHtml;
 
-            // Render Filtered Rows
+            // 2. Render Data Rows while filtering Division & Vertical, but PRESERVING context headers
             let tbodyHtml = '';
-            let filteredCount = 0;
+            let recordCount = 0;
+            let currentVerticalSection = 'PARCEL'; // default starting assumption
 
-            globalRows.forEach(row => {
+            dataRows.forEach(row => {
                 let rowStr = row.join(" ").toUpperCase();
-                if (selectedDiv !== 'ALL' && !rowStr.includes(selectedDiv)) return;
 
-                tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-slate-200">';
-                row.forEach(cell => {
-                    tbodyHtml += `<td class="p-3 border-r border-slate-100">${cell !== undefined ? cell : ''}</td>`;
-                });
-                tbodyHtml += '</tr>';
-                filteredCount++;
+                // Track vertical sections dynamically as we read through rows
+                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("MAIL OPERATIONS") || rowStr.includes("SPEED POST") || rowStr.includes("MO VERTICAL")) {
+                    currentVerticalSection = "MAIL";
+                } else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB") || rowStr.includes("INTERNATIONAL")) {
+                    currentVerticalSection = "IRGB";
+                } else if (rowStr.includes("PARCEL")) {
+                    currentVerticalSection = "PARCEL";
+                }
+
+                // Filter by Vertical if selected
+                if (selectedVert !== 'ALL') {
+                    if (selectedVert === 'PARCEL' && currentVerticalSection !== 'PARCEL' && !rowStr.includes("PARCEL")) return;
+                    if (selectedVert === 'MAIL' && currentVerticalSection !== 'MAIL' && !rowStr.includes("MAIL")) return;
+                    if (selectedVert === 'IRGB' && currentVerticalSection !== 'IRGB' && !rowStr.includes("IRGB")) return;
+                }
+
+                // Check if row is a section title row (e.g. "Parcel Vertical", "Mail Operations")
+                let isStructural = isTitleOrStructuralRow(row);
+
+                // Filter by Division (Always keep structural title rows so heading doesn't disappear)
+                if (!isStructural && selectedDiv !== 'ALL') {
+                    if (!rowStr.includes(selectedDiv)) return;
+                }
+
+                // Apply styling based on row type
+                if (isStructural) {
+                    tbodyHtml += `<tr class="section-header-row"><td colspan="${headers.length}" class="p-3 font-black text-amber-900 bg-amber-100 border border-amber-300 text-center">${row.filter(c=>c).join(" - ")}</td></tr>`;
+                } else {
+                    tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-slate-200">';
+                    row.forEach(cell => {
+                        tbodyHtml += `<td class="p-3 border-r border-slate-100">${cell !== undefined ? cell : ''}</td>`;
+                    });
+                    tbodyHtml += '</tr>';
+                    recordCount++;
+                }
             });
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
-            document.getElementById('rowCountBadge').innerText = `${filteredCount} Records Found`;
-
-            // Update KPI Cards
-            document.getElementById('kpiTotalRows').innerText = globalRows.length;
-            document.getElementById('kpiFilteredRows').innerText = filteredCount;
-            document.getElementById('kpiActiveDiv').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
+            document.getElementById('rowCountBadge').innerText = `${recordCount} Data Records Displayed`;
         }
 
         function filterBySearch() {
@@ -224,11 +282,11 @@
             const wb = XLSX.utils.book_new();
             const table = document.getElementById('dataTable');
             const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet_Report");
-            XLSX.writeFile(wb, `Indore_Region_Verticals_Report.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, currentDataType.toUpperCase());
+            XLSX.writeFile(wb, `Indore_Region_${currentDataType.toUpperCase()}_Report.xlsx`);
         }
 
-        window.onload = fetchSheetData;
+        window.onload = fetchAllSheetData;
     </script>
 </body>
 </html>
