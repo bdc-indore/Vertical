@@ -294,6 +294,26 @@
                     </div>
                 </div>
 
+                <!-- KPI Cards for Sub-Division Month-Wise -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="card p-4 border-l-4 border-purple-600">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL SUB-DIVISIONS</div>
+                        <div id="sdMKpiTotalSD" class="text-xl font-black text-slate-900 mt-1">0</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-blue-600">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL OFFICES</div>
+                        <div id="sdMKpiTotalOffices" class="text-xl font-black text-blue-700 mt-1">0</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-emerald-500">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL BOOKINGS</div>
+                        <div id="sdMKpiTotalBookings" class="text-xl font-black text-emerald-600 mt-1">0</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-amber-500">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">AVERAGE BOOKING / OFFICE</div>
+                        <div id="sdMKpiAvgBooking" class="text-xl font-black text-amber-700 mt-1">0</div>
+                    </div>
+                </div>
+
                 <div class="card p-6">
                     <div class="overflow-x-auto max-h-[500px]">
                         <table id="sdMTable" class="w-full text-left text-xs border-collapse">
@@ -359,6 +379,22 @@
                                 📊 Export Post Office Excel
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards for Post Office Month-Wise -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="card p-4 border-l-4 border-emerald-600">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">FILTERED POST OFFICES</div>
+                        <div id="poMKpiTotalOffices" class="text-xl font-black text-slate-900 mt-1">0</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-blue-600">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL FILTERED BOOKINGS</div>
+                        <div id="poMKpiTotalBookings" class="text-xl font-black text-blue-700 mt-1">0</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-amber-500">
+                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">AVERAGE BOOKING / OFFICE</div>
+                        <div id="poMKpiAvgBooking" class="text-xl font-black text-amber-700 mt-1">0</div>
                     </div>
                 </div>
 
@@ -780,7 +816,7 @@
             let name = (offName || '').trim().toUpperCase();
 
             if (cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
-                return "Indore Central Sub Division"; 
+                return "Indore East"; 
             }
             return sd || 'UNASSIGNED';
         }
@@ -1113,6 +1149,8 @@
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let divGroup = new Map();
+            let totalSDCount = 0, totalOffCount = 0, totalBookingCount = 0;
+            let sdNameSet = new Set();
 
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
@@ -1122,6 +1160,8 @@
 
                 let div = o.div || 'UNKNOWN';
                 let sd = o.sd || 'UNASSIGNED';
+
+                sdNameSet.add(sd);
 
                 if (!divGroup.has(div)) divGroup.set(div, new Map());
                 let sdMap = divGroup.get(div);
@@ -1135,12 +1175,30 @@
 
                 let item = sdMap.get(sd);
                 item.count++;
+                totalOffCount++;
 
-                item.apr.p += o.parcel_apr || 0; item.apr.m += o.mo_apr || 0; item.apr.i += o.irgb_apr || 0;
-                item.may.p += o.parcel_may || 0; item.may.m += o.mo_may || 0; item.may.i += o.irgb_may || 0;
-                item.jun.p += o.parcel_jun || 0; item.jun.m += o.mo_jun || 0; item.jun.i += o.irgb_jun || 0;
-                item.jul.p += o.parcel_jul || 0; item.jul.m += o.mo_jul || 0; item.jul.i += o.irgb_jul || 0;
+                let pApr = o.parcel_apr||0, mApr = o.mo_apr||0, iApr = o.irgb_apr||0;
+                let pMay = o.parcel_may||0, mMay = o.mo_may||0, iMay = o.irgb_may||0;
+                let pJun = o.parcel_jun||0, mJun = o.mo_jun||0, iJun = o.irgb_jun||0;
+                let pJul = o.parcel_jul||0, mJul = o.mo_jul||0, iJul = o.irgb_jul||0;
+
+                item.apr.p += pApr; item.apr.m += mApr; item.apr.i += iApr;
+                item.may.p += pMay; item.may.m += mMay; item.may.i += iMay;
+                item.jun.p += pJun; item.jun.m += mJun; item.jun.i += iJun;
+                item.jul.p += pJul; item.jul.m += mJul; item.jul.i += iJul;
+
+                if (vert === 'PARCEL') totalBookingCount += (pApr + pMay + pJun + pJul);
+                else if (vert === 'MAIL') totalBookingCount += (mApr + mMay + mJun + mJul);
+                else if (vert === 'IRGB') totalBookingCount += (iApr + iMay + iJun + iJul);
+                else totalBookingCount += (pApr + mApr + iApr + pMay + mMay + iMay + pJun + mJun + iJun + pJul + mJul + iJul);
             });
+
+            totalSDCount = sdNameSet.size;
+            document.getElementById('sdMKpiTotalSD').innerText = totalSDCount.toLocaleString('en-IN');
+            document.getElementById('sdMKpiTotalOffices').innerText = totalOffCount.toLocaleString('en-IN');
+            document.getElementById('sdMKpiTotalBookings').innerText = totalBookingCount.toLocaleString('en-IN');
+            let avgBkg = totalOffCount > 0 ? (totalBookingCount / totalOffCount).toFixed(1) : 0;
+            document.getElementById('sdMKpiAvgBooking').innerText = avgBkg;
 
             let tbodyHtml = '';
 
@@ -1213,9 +1271,24 @@
                 return matchDiv && matchSd && matchCls;
             });
 
+            let totalPoCount = filtered.length;
+            let totalPoBookings = 0;
             let tbodyHtml = '';
 
             filtered.forEach(o => {
+                let pApr = o.parcel_apr||0, mApr = o.mo_apr||0, iApr = o.irgb_apr||0;
+                let pMay = o.parcel_may||0, mMay = o.mo_may||0, iMay = o.irgb_may||0;
+                let pJun = o.parcel_jun||0, mJun = o.mo_jun||0, iJun = o.irgb_jun||0;
+                let pJul = o.parcel_jul||0, mJul = o.mo_jul||0, iJul = o.irgb_jul||0;
+
+                let rowTot = 0;
+                if (vert === 'PARCEL') rowTot = (pApr + pMay + pJun + pJul);
+                else if (vert === 'MAIL') rowTot = (mApr + mMay + mJun + mJul);
+                else if (vert === 'IRGB') rowTot = (iApr + iMay + iJun + iJul);
+                else rowTot = (pApr + mApr + iApr + pMay + mMay + iMay + pJun + mJun + iJun + pJul + mJul + iJul);
+
+                totalPoBookings += rowTot;
+
                 tbodyHtml += `<tr class="hover:bg-slate-50 border-b border-slate-200">
                     <td class="p-2.5 font-mono text-slate-600">${o.id}</td>
                     <td class="p-2.5 font-bold text-slate-900">${o.name}</td>
@@ -1224,10 +1297,10 @@
                     <td class="p-2.5 text-slate-600">${o.div}</td>`;
 
                 let mData = [
-                    { p: o.parcel_apr||0, m: o.mo_apr||0, i: o.irgb_apr||0 },
-                    { p: o.parcel_may||0, m: o.mo_may||0, i: o.irgb_may||0 },
-                    { p: o.parcel_jun||0, m: o.mo_jun||0, i: o.irgb_jun||0 },
-                    { p: o.parcel_jul||0, m: o.mo_jul||0, i: o.irgb_jul||0 }
+                    { p: pApr, m: mApr, i: iApr },
+                    { p: pMay, m: mMay, i: iMay },
+                    { p: pJun, m: mJun, i: iJun },
+                    { p: pJul, m: mJul, i: iJul }
                 ];
 
                 let totP = 0, totM = 0, totI = 0;
@@ -1249,6 +1322,10 @@
 
                 tbodyHtml += `</tr>`;
             });
+
+            document.getElementById('poMKpiTotalOffices').innerText = totalPoCount.toLocaleString('en-IN');
+            document.getElementById('poMKpiTotalBookings').innerText = totalPoBookings.toLocaleString('en-IN');
+            document.getElementById('poMKpiAvgBooking').innerText = totalPoCount > 0 ? (totalPoBookings / totalPoCount).toFixed(1) : 0;
 
             document.getElementById('poMTableBody').innerHTML = tbodyHtml;
         }
