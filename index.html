@@ -224,7 +224,7 @@
                 </div>
             </div>
 
-            <!-- NEW SUB-DIVISION & OFFICE ANALYTICS SECTION -->
+            <!-- SUB-DIVISION & OFFICE ANALYTICS SECTION -->
             <div id="officeAnalyticsView" class="hidden space-y-6">
                 <!-- Filters Header -->
                 <div class="bg-white rounded-xl p-6 border border-rose-100 card space-y-4">
@@ -238,8 +238,8 @@
                                 <option value="apr">April 2026</option>
                                 <option value="may">May 2026</option>
                                 <option value="jun">June 2026</option>
-                                <option value="jul">July 2026 (Live)</option>
-                                <option value="q1" selected>Q-1 Total (Apr-Jun)</option>
+                                <option value="jul" selected>July 2026 (Live)</option>
+                                <option value="q1">Q-1 Total (Apr-Jun)</option>
                             </select>
                         </div>
                         <div>
@@ -266,8 +266,8 @@
                             <label class="text-xs font-bold text-slate-600 uppercase">Office Class:</label>
                             <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5">
                                 <option value="ALL">All Classes (BO/SO/HO)</option>
-                                <option value="BO">BO (Branch Office - 2,492)</option>
-                                <option value="SO">SO (Sub Office - 292)</option>
+                                <option value="BO">BO (Branch Office)</option>
+                                <option value="SO">SO (Sub Office)</option>
                                 <option value="HO">HO (Head Office)</option>
                                 <option value="RMS">RMS / Counter</option>
                             </select>
@@ -343,7 +343,7 @@
                 </div>
             </div>
 
-            <!-- NEW DEDICATED Q-1 DATA SECTION -->
+            <!-- DEDICATED Q-1 DATA SECTION -->
             <div id="q1DataView" class="hidden space-y-6">
                 <!-- Q1 Controls -->
                 <div class="bg-white rounded-xl p-5 border border-teal-100 card space-y-4">
@@ -511,11 +511,8 @@
     <script>
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
-        
-        // --- NEW LIVE JULY OFFICE WISE GS CSV LINK ---
         const JULY_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
 
-        // --- VERIFIED HISTORICAL LAST YEAR (FY 2025-26) LOOKUP TABLE ---
         const HISTORICAL_LY_DATA = {
             "MAIL": {
                 "count": {
@@ -547,7 +544,6 @@
             }
         };
 
-        // --- HARDCODED Q-1 COUNT TARGETS ---
         const Q1_COUNT_TARGETS = {
             "PARCEL": {
                 "Indore City": { apr: 49060, may: 48941, jun: 53019 },
@@ -581,9 +577,8 @@
             }
         };
 
-        // Static Master Database for 2,806 Post Offices (April, May, June counts from uploaded Excel)
         let masterOfficeDatabase = []; 
-        let currentFilteredNilOffices = []; // For NIL offices export
+        let currentFilteredNilOffices = [];
 
         let currentActiveView = 'revenue'; 
         let currentDataType = 'revenue';
@@ -627,24 +622,26 @@
             try {
                 const timestamp = new Date().getTime();
                 
-                const [revRes, countRes] = await Promise.all([
+                const [revRes, countRes, julyOffRes] = await Promise.all([
                     fetch(REVENUE_CSV_URL + '&t=' + timestamp),
-                    fetch(COUNT_CSV_URL + '&t=' + timestamp)
+                    fetch(COUNT_CSV_URL + '&t=' + timestamp),
+                    fetch(JULY_OFFICE_CSV_URL + '&t=' + timestamp)
                 ]);
 
                 const revText = await revRes.text();
                 const countText = await countRes.text();
+                const julyOffText = await julyOffRes.text();
 
                 revenueRecords = parseRevenueSheet(parseCSV(revText));
                 countRecords = parseCountSheet(parseCSV(countText));
+
+                // 1. Parse July CSV & populate master database dynamically
+                parseJulyMasterData(parseCSV(julyOffText));
 
                 updateDashboard();
 
                 document.getElementById('syncBadge').innerHTML = "🟢 Live Synced";
                 document.getElementById('syncBadge').className = "text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold";
-
-                // Fetch July Office Wise Data
-                fetchJulyOfficeData();
 
             } catch (e) {
                 console.error("Fetch Error:", e);
@@ -653,32 +650,50 @@
             }
         }
 
-        async function fetchJulyOfficeData() {
-            try {
-                const timestamp = new Date().getTime();
-                const res = await fetch(JULY_OFFICE_CSV_URL + '&t=' + timestamp);
-                const text = await res.text();
-                const rows = parseCSV(text);
-                
-                // Parse July GS sheet and map counts to offices in masterOfficeDatabase
-                if (rows && rows.length > 1) {
-                    rows.forEach((r, idx) => {
-                        if (idx === 0) return; // Header
-                        let offId = r[0] ? r[0].trim() : "";
-                        let cat = r[5] ? r[5].trim().toUpperCase() : "";
-                        let cnt = cleanNumber(r[6]);
+        function parseJulyMasterData(rows) {
+            masterOfficeDatabase = [];
+            let officeMap = new Map();
 
-                        let offObj = masterOfficeDatabase.find(x => x.id === offId);
-                        if (offObj) {
-                            if (cat.includes("PARCEL")) offObj.parcel_jul = cnt;
-                            else if (cat.includes("IRGB")) offObj.irgb_jul = cnt;
-                            else offObj.mo_jul += cnt; // Speed Post + Other
-                        }
+            if (!rows || rows.length <= 1) return;
+
+            rows.forEach((r, idx) => {
+                if (idx === 0) return; // Skip Header
+
+                let offId = r[0] ? r[0].trim() : "";
+                if (!offId) return;
+
+                let offName = r[1] ? r[1].trim() : "";
+                let offClass = r[2] ? r[2].trim() : "SO";
+                let subDiv = r[3] ? r[3].trim() : "Unassigned";
+                let divName = r[4] ? r[4].trim() : "";
+                let cat = r[5] ? r[5].trim().toUpperCase() : "";
+                let cnt = cleanNumber(r[6]);
+
+                if (!officeMap.has(offId)) {
+                    officeMap.set(offId, {
+                        id: offId,
+                        name: offName,
+                        cls: offClass,
+                        sd: subDiv,
+                        div: divName,
+                        parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
+                        mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
+                        irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0
                     });
                 }
-            } catch(e) {
-                console.log("July Office data fetch error or pending", e);
-            }
+
+                let offObj = officeMap.get(offId);
+                if (cat.includes("PARCEL")) {
+                    offObj.parcel_jul = cnt;
+                } else if (cat.includes("IRGB")) {
+                    offObj.irgb_jul = cnt;
+                } else {
+                    offObj.mo_jul += cnt;
+                }
+            });
+
+            masterOfficeDatabase = Array.from(officeMap.values());
+            populateOfficeSdOptions();
         }
 
         function parseRevenueSheet(rows) {
@@ -1072,16 +1087,21 @@
             document.getElementById('countMonthWiseFoot').innerHTML = footHtml;
         }
 
-        // --- SUB-DIVISION & OFFICE ANALYTICS LOGIC ---
+        // SUB-DIVISION & OFFICE ANALYTICS LOGIC (FIXED)
         function populateOfficeSdOptions() {
             const divSel = document.getElementById('offDivSelect').value;
             const sdSel = document.getElementById('offSdSelect');
 
-            let sds = [...new Set(masterOfficeDatabase.filter(o => divSel === 'ALL' || isMatchingDivision(o.div, divSel)).map(o => o.sd))].sort();
+            let filteredOffices = masterOfficeDatabase.filter(o => {
+                if (divSel === 'ALL') return true;
+                return isMatchingDivision(o.div, divSel);
+            });
+
+            let sds = [...new Set(filteredOffices.map(o => o.sd ? o.sd.trim() : ""))].filter(sd => sd !== "").sort();
 
             let html = '<option value="ALL">🌐 All Sub-Divisions</option>';
             sds.forEach(sd => {
-                if(sd && sd.trim() !== "") html += `<option value="${sd}">${sd}</option>`;
+                html += `<option value="${sd}">${sd}</option>`;
             });
             sdSel.innerHTML = html;
         }
@@ -1098,13 +1118,12 @@
             const clsKey = document.getElementById('offClassSelect').value;
             const vertKey = document.getElementById('offVertSelect').value;
 
-            // Filter Offices based on selections (Excluding Khudel BO if month is July)
             let filtered = masterOfficeDatabase.filter(o => {
                 if (mKey === 'jul' && o.id === '23106779') return false; // Khudel BO exception for July
 
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
-                let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
-                let matchCls = (clsKey === 'ALL') || (o.cls.toUpperCase() === clsKey.toUpperCase());
+                let matchSd = (sdKey === 'ALL') || (o.sd.trim().toUpperCase() === sdKey.trim().toUpperCase());
+                let matchCls = (clsKey === 'ALL') || (o.cls.trim().toUpperCase() === clsKey.trim().toUpperCase());
 
                 return matchDiv && matchSd && matchCls;
             });
@@ -1134,19 +1153,13 @@
                 if (vertKey === 'PARCEL') selectedCount = pCnt;
                 else if (vertKey === 'MAIL') selectedCount = mCnt;
                 else if (vertKey === 'IRGB') selectedCount = iCnt;
-                else selectedCount = pCnt + mCnt + iCnt; // ALL Verticals Sum
+                else selectedCount = pCnt + mCnt + iCnt;
 
                 totalBookings += selectedCount;
 
                 if (selectedCount > 10) activeOfficesCount++;
 
-                // NIL Logic: If Vertical ALL, all 3 verticals must be 0
-                let isNil = false;
-                if (vertKey === 'ALL') {
-                    isNil = (pCnt === 0 && mCnt === 0 && iCnt === 0);
-                } else {
-                    isNil = (selectedCount === 0);
-                }
+                let isNil = (vertKey === 'ALL') ? (pCnt === 0 && mCnt === 0 && iCnt === 0) : (selectedCount === 0);
 
                 if (isNil) {
                     nilOfficesCount++;
@@ -1201,11 +1214,9 @@
             XLSX.writeFile(wb, "NIL_Post_Offices_Report.xlsx");
         }
 
-        // --- Q-1 TABLES LOGIC ---
         function updateQ1Tables() {
             const vKey = document.getElementById('q1VerticalSelect').value;
 
-            // 1. Q1 Revenue Table Render
             let filteredRev = revenueRecords.filter(r => r.vertical === vKey);
             let revBodyHtml = '';
             let sumAnnT = 0, sumQ1T = 0, sumApr = 0, sumMay = 0, sumJun = 0, sumQ1Ach = 0;
@@ -1248,7 +1259,6 @@
                     <td class="p-3.5 text-center text-amber-300">${totalQ1RevPct}</td>
                 </tr>`;
 
-            // 2. Q1 Count Table Render
             let filteredCount = countRecords.filter(r => r.vertical === vKey);
             let countBodyHtml = '';
             let cSumApT = 0, cSumMyT = 0, cSumJnT = 0, cSumQ1T = 0;
@@ -1303,7 +1313,6 @@
                 </tr>`;
         }
 
-        // --- ACCURATE YOY TABLE ---
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
