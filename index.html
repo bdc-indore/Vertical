@@ -229,7 +229,7 @@
                 if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
 
                 let isIRGB = (currentVert === "IRGB");
-                let crDivisor = isIRGB ? 100 : 1; // Convert IRGB Lakhs to Crores
+                let crDivisor = isIRGB ? 100 : 1; 
 
                 let rawT = cleanNumber(row[1]);
                 let rawM = cleanNumber(row[2]);
@@ -268,38 +268,44 @@
             return records;
         }
 
-        // 🎯 EXACT FIX: Parsing Count Sheet Column Alignment based on your Google Sheet structure
+        // 🎯 FIX: Robust Article Count Sheet Parser
         function parseCountSheet(rows) {
             let currentVert = "PARCEL";
             let records = [];
 
             rows.forEach((row) => {
+                let firstCol = row[0] ? row[0].trim().toUpperCase() : "";
                 let rowStr = row.join(" ").toUpperCase();
 
-                if (rowStr.includes("MO ARTICLE COUNT") || rowStr.includes("MAIL OPERATION")) currentVert = "MAIL";
-                else if (rowStr.includes("IRGB ARTICLE COUNT") || rowStr.includes("IRGB")) currentVert = "IRGB";
-                else if (rowStr.includes("PARCEL ARTICLE COUNT") || rowStr.includes("PARCEL")) currentVert = "PARCEL";
+                // Section Headers detection
+                if (rowStr.includes("MO ARTICLE COUNT") || rowStr.includes("MAIL OPERATION")) {
+                    currentVert = "MAIL";
+                    return;
+                } else if (rowStr.includes("IRGB ARTICLE COUNT") || rowStr.includes("IRGB")) {
+                    currentVert = "IRGB";
+                    return;
+                } else if (rowStr.includes("PARCEL ARTICLE COUNT")) {
+                    currentVert = "PARCEL";
+                    return;
+                }
 
-                if (rowStr.includes("NAME OF DIVISON") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
+                // Table Header / Total / Empty row skips
+                if (!row[0] || firstCol === "" || firstCol.includes("NAME OF DIV") || firstCol === 'TOTAL' || firstCol.includes('GRAND TOTAL') || firstCol.includes('SL NO')) {
+                    return;
+                }
 
                 let divName = row[0].trim();
-                if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
 
-                // Absolute Mapping matching your Sheet Image:
-                // Col 1: April-26 Count
-                // Col 2: May-26 Count
-                // Col 3: June-26 Count
-                // Col 4: July-26 Target
-                // Col 5: July-26 Article Count
-                // Col 6: Achievement %
+                // Standard Count Sheet Mapping
+                // Col 1 = Apr Count, Col 2 = May Count, Col 3 = Jun Count, Col 4 = Jul Target, Col 5 = Jul Count, Col 6 = Ach %
                 let rawAp = cleanNumber(row[1]);
                 let rawMy = cleanNumber(row[2]);
                 let rawJn = cleanNumber(row[3]);
                 let rawJulyTarget = cleanNumber(row[4]);
                 let rawJulyCount = cleanNumber(row[5]);
-                let pctAch = row[6] || "0%";
+                let pctAch = row[6] ? row[6].toString().trim() : "0%";
 
-                let sumTillDate = rawAp + rawMy + rawJn + rawJulyCount;
+                let sumTotalAch = rawAp + rawMy + rawJn + rawJulyCount;
 
                 records.push({
                     divName: divName,
@@ -311,7 +317,7 @@
                     may: rawMy,
                     jun: rawJn,
                     jul: rawJulyCount,
-                    totalAch: sumTillDate,
+                    totalAch: sumTotalAch,
                     rawTarget: rawJulyTarget,
                     rawMonthly: rawJulyTarget,
                     rawTillMonth: rawJulyTarget,
@@ -319,7 +325,7 @@
                     rawMay: rawMy,
                     rawJun: rawJn,
                     rawJul: rawJulyCount,
-                    rawTotalAch: sumTillDate,
+                    rawTotalAch: sumTotalAch,
                     propPct: pctAch,
                     totalPct: pctAch,
                     isIRGB: false
@@ -383,8 +389,8 @@
             let unitSuffix = (currentDataType === 'revenue') ? (showLakhsOnly ? ' Lakhs' : ' Cr') : ' Articles';
             let decimals = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
 
-            document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toFixed(decimals)}${unitSuffix}`;
-            document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toFixed(decimals)}${unitSuffix}`;
+            document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toLocaleString('en-IN', { maximumFractionDigits: decimals })}${unitSuffix}`;
+            document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toLocaleString('en-IN', { maximumFractionDigits: decimals })}${unitSuffix}`;
             document.getElementById('kpiPropPct').innerText = achPct;
             document.getElementById('kpiTotalPct').innerText = achPct;
 
@@ -434,19 +440,18 @@
                 tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
                     <td class="p-3">${vertBadge}</td>
-                    <td class="p-3">${t.toFixed(dec)}</td>
-                    <td class="p-3">${ap.toFixed(dec)}</td>
-                    <td class="p-3">${my.toFixed(dec)}</td>
-                    <td class="p-3">${jn.toFixed(dec)}</td>
-                    <td class="p-3 font-bold text-blue-700">${jl.toFixed(dec)}</td>
-                    <td class="p-3 font-extrabold text-emerald-700">${ach.toFixed(dec)}</td>
+                    <td class="p-3">${t.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3">${ap.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3">${my.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3">${jn.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3 font-bold text-blue-700">${jl.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3 font-extrabold text-emerald-700">${ach.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3 font-semibold text-amber-700">${r.propPct}</td>
                 </tr>`;
             });
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
 
-            // 🎯 FIXED TOTAL ROW (Dynamic calculation without 0)
             let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
             let totalAchPct = sumT > 0 ? ((sumJl / sumT) * 100).toFixed(1) + "%" : "0%";
 
@@ -454,12 +459,12 @@
                 <tr class="bg-slate-900 text-white font-extrabold text-xs">
                     <td class="p-3.5 uppercase tracking-wider text-amber-300">TOTAL (SUMMARY)</td>
                     <td class="p-3.5">ALL FILTERED</td>
-                    <td class="p-3.5">${sumT.toFixed(dec)}</td>
-                    <td class="p-3.5">${sumAp.toFixed(dec)}</td>
-                    <td class="p-3.5">${sumMy.toFixed(dec)}</td>
-                    <td class="p-3.5">${sumJn.toFixed(dec)}</td>
-                    <td class="p-3.5 text-blue-300 font-bold">${sumJl.toFixed(dec)}</td>
-                    <td class="p-3.5 text-emerald-300 font-black">${sumAch.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumT.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3.5">${sumAp.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3.5">${sumMy.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3.5">${sumJn.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3.5 text-blue-300 font-bold">${sumJl.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
+                    <td class="p-3.5 text-emerald-300 font-black">${sumAch.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3.5 text-amber-300">${totalAchPct}</td>
                 </tr>`;
             document.getElementById('tableFoot').innerHTML = tfootHtml;
