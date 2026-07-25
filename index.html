@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indore Region - Verticals Performance Dashboard</title>
+    <title>Indore Region - Live Performance Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -173,6 +173,7 @@
                 <table id="dataTable" class="w-full text-left text-sm border-collapse">
                     <thead id="tableHead"></thead>
                     <tbody id="tableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    <tfoot id="tableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
                 </table>
             </div>
         </div>
@@ -238,7 +239,7 @@
                     currentVert = "PARCEL";
                 }
 
-                // Skip main sheet title / empty header rows
+                // Skip header rows or total rows during parsing
                 if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || rowStr.includes("NAME OF DIVISON") || rowStr.includes("TOTAL TARGET 2026-27") || !row[0] || row[0].trim() === "") {
                     return;
                 }
@@ -248,27 +249,42 @@
 
                 let isIRGB = (currentVert === "IRGB");
                 let isRevenue = (type === 'revenue');
-                let crDivisor = (isRevenue && isIRGB) ? 100 : 1;
+                let crDivisor = (isRevenue && isIRGB) ? 100 : 1; // Convert IRGB Lakhs to Crores in revenue mode
+
+                // Robust column mapping for June & July in both Revenue and Count sheets
+                let rawT = cleanNumber(row[1]);
+                let rawM = cleanNumber(row[2]);
+                let rawTM = cleanNumber(row[3]);
+                let rawAp = cleanNumber(row[4]);
+                let rawMy = cleanNumber(row[5]);
+                let rawJn = cleanNumber(row[6]);
+                let rawJl = cleanNumber(row[7]);
+                let rawAch = cleanNumber(row[8]);
+
+                // Auto fallback for total achievement if column 8 is missing/0
+                if (rawAch === 0 && (rawAp + rawMy + rawJn + rawJl) > 0) {
+                    rawAch = rawAp + rawMy + rawJn + rawJl;
+                }
 
                 records.push({
                     divName: divName,
                     vertical: currentVert,
-                    target: cleanNumber(row[1]) / crDivisor,
-                    monthly: cleanNumber(row[2]) / crDivisor,
-                    tillMonth: cleanNumber(row[3]) / crDivisor,
-                    apr: cleanNumber(row[4]) / crDivisor,
-                    may: cleanNumber(row[5]) / crDivisor,
-                    jun: cleanNumber(row[6]) / crDivisor,
-                    jul: cleanNumber(row[7]) / crDivisor,
-                    totalAch: cleanNumber(row[8]) / crDivisor,
-                    rawTarget: cleanNumber(row[1]),
-                    rawMonthly: cleanNumber(row[2]),
-                    rawTillMonth: cleanNumber(row[3]),
-                    rawApr: cleanNumber(row[4]),
-                    rawMay: cleanNumber(row[5]),
-                    rawJun: cleanNumber(row[6]),
-                    rawJul: cleanNumber(row[7]),
-                    rawTotalAch: cleanNumber(row[8]),
+                    target: rawT / crDivisor,
+                    monthly: rawM / crDivisor,
+                    tillMonth: rawTM / crDivisor,
+                    apr: rawAp / crDivisor,
+                    may: rawMy / crDivisor,
+                    jun: rawJn / crDivisor,
+                    jul: rawJl / crDivisor,
+                    totalAch: rawAch / crDivisor,
+                    rawTarget: rawT,
+                    rawMonthly: rawM,
+                    rawTillMonth: rawTM,
+                    rawApr: rawAp,
+                    rawMay: rawMy,
+                    rawJun: rawJn,
+                    rawJul: rawJl,
+                    rawTotalAch: rawAch,
                     propPct: row[9] || "0%",
                     totalPct: row[10] || "0%",
                     isIRGB: isIRGB
@@ -314,6 +330,7 @@
                 return matchDiv && matchVert;
             });
 
+            // Calculate KPIs
             let sumTarget = 0, sumMonthly = 0, sumTillMonth = 0, sumAch = 0;
             let showLakhsOnly = (currentDataType === 'revenue' && currentVertical === 'IRGB');
 
@@ -353,7 +370,7 @@
             document.getElementById('kpiActiveDivText').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
             document.getElementById('kpiActiveVertText').innerText = currentVertical === 'ALL' ? "All Verticals Combined" : `${currentVertical} Vertical`;
 
-            // Render Table
+            // Render Table & Total Row
             renderTable(filtered, showLakhsOnly);
 
             // Render Charts
@@ -380,6 +397,8 @@
             document.getElementById('tableHead').innerHTML = theadHtml;
 
             let tbodyHtml = '';
+            let sumT = 0, sumM = 0, sumAp = 0, sumMy = 0, sumJn = 0, sumJl = 0, sumAch = 0;
+
             filteredData.forEach(r => {
                 let vertBadge = r.vertical === 'PARCEL' ? '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">📦 Parcel</span>' :
                                 (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
@@ -396,6 +415,9 @@
                 let jn = useLakhs ? r.rawJun : r.jun;
                 let jl = useLakhs ? r.rawJul : r.jul;
                 let ach = useLakhs ? r.rawTotalAch : r.totalAch;
+
+                // Accumulate totals for bottom TOTAL row
+                sumT += t; sumM += m; sumAp += ap; sumMy += my; sumJn += jn; sumJl += jl; sumAch += ach;
 
                 let dec = isRev ? (useLakhs ? 2 : 3) : 0;
                 let unitTag = (isRev && isIRGB && !useLakhs) ? ' <span class="text-[10px] text-purple-600 font-normal">(Cr)</span>' : '';
@@ -416,6 +438,28 @@
             });
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
+
+            // Dynamic TOTAL Row Calculation at Table Bottom (No 0s!)
+            let dec = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
+            let totPropPct = (sumM > 0) ? ((sumAch / sumM) * 100).toFixed(1) + "%" : "0%";
+            let totTotalPct = (sumT > 0) ? ((sumAch / sumT) * 100).toFixed(1) + "%" : "0%";
+
+            let tfootHtml = `
+                <tr class="bg-slate-900 text-white font-extrabold text-xs">
+                    <td class="p-3.5 uppercase tracking-wider text-amber-300">TOTAL (SUMMARY)</td>
+                    <td class="p-3.5">ALL FILTERED</td>
+                    <td class="p-3.5">${sumT.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumM.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumAp.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumMy.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumJn.toFixed(dec)}</td>
+                    <td class="p-3.5">${sumJl.toFixed(dec)}</td>
+                    <td class="p-3.5 text-emerald-300 font-black">${sumAch.toFixed(dec)}</td>
+                    <td class="p-3.5 text-amber-300">${totPropPct}</td>
+                    <td class="p-3.5 text-blue-300">${totTotalPct}</td>
+                </tr>`;
+            document.getElementById('tableFoot').innerHTML = tfootHtml;
+
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
         }
 
