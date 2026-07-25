@@ -48,7 +48,7 @@
                 
                 <div class="flex items-center gap-2 flex-wrap">
                     <span id="syncBadge" class="text-xs bg-amber-500/30 text-amber-200 px-3 py-1.5 rounded-full border border-amber-400/30 font-semibold animate-pulse">
-                        ⏳ Loading Data...
+                        ⏳ Loading Live Data...
                     </span>
                     <button onclick="shareActiveReportViaWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
                         <span>💬</span> Send Active View on WhatsApp
@@ -234,7 +234,7 @@
 
             <!-- SUB-DIVISION & OFFICE ANALYTICS SECTION -->
             <div id="officeAnalyticsView" class="hidden space-y-6">
-                <!-- Filters Header with Order: 1. Vertical, 2. Month, 3. Division, 4. SD, 5. Class -->
+                <!-- Filters Header -->
                 <div class="bg-white rounded-xl p-6 border border-rose-100 card space-y-4">
                     <h2 class="text-lg font-bold text-rose-900 flex items-center gap-2">
                         <span>🏢</span> Sub-Division & Post Office Wise Performance Analytics
@@ -282,7 +282,7 @@
                         <div>
                             <label class="text-xs font-bold text-slate-600 uppercase">5. Office Class:</label>
                             <select id="offClassSelect" onchange="renderOfficeAnalytics()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-rose-500 focus:outline-none">
-                                <option value="ALL">All Classes (BO/SO/HO/RMS/IDC/BNPL/BPC)</option>
+                                <option value="ALL">🌐 All Classes (BO/SO/HO/RMS/IDC/BNPL/BPC)</option>
                                 <option value="BO">BO (Branch Office)</option>
                                 <option value="SO">SO (Sub Office)</option>
                                 <option value="HO">HO (Head Office)</option>
@@ -295,7 +295,7 @@
                     </div>
                 </div>
 
-                <!-- Dashboard KPI Cards Dashboard -->
+                <!-- Dashboard KPI Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                     <div class="card p-4 border-l-4 border-slate-700">
                         <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL POST OFFICES</div>
@@ -539,11 +539,17 @@
         Developed by Kapil Rajput, PA (RO), Indore Regional office
     </footer>
 
-    <!-- External/Embedded Data and JavaScript Logic -->
+    <!-- JavaScript Logic & Live Sync -->
     <script>
+        // Google Sheet Published CSV URLs
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
         const JULY_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
+
+        // Historical Months Live Google Sheet CSV URLs
+        const APRIL_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1368682164&single=true&output=csv";
+        const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
+        const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
 
         const HISTORICAL_LY_DATA = {
             "MAIL": {
@@ -656,21 +662,34 @@
             try {
                 const timestamp = new Date().getTime();
                 
-                const [revRes, countRes, julyOffRes] = await Promise.all([
+                // Fetch all Published CSV Sheets concurrently
+                const [revRes, countRes, aprOffRes, mayOffRes, junOffRes, julyOffRes] = await Promise.all([
                     fetch(REVENUE_CSV_URL + '&t=' + timestamp),
                     fetch(COUNT_CSV_URL + '&t=' + timestamp),
+                    fetch(APRIL_OFFICE_CSV_URL + '&t=' + timestamp),
+                    fetch(MAY_OFFICE_CSV_URL + '&t=' + timestamp),
+                    fetch(JUNE_OFFICE_CSV_URL + '&t=' + timestamp),
                     fetch(JULY_OFFICE_CSV_URL + '&t=' + timestamp)
                 ]);
 
                 const revText = await revRes.text();
                 const countText = await countRes.text();
+                const aprOffText = await aprOffRes.text();
+                const mayOffText = await mayOffRes.text();
+                const junOffText = await junOffRes.text();
                 const julyOffText = await julyOffRes.text();
 
                 revenueRecords = parseRevenueSheet(parseCSV(revText));
                 countRecords = parseCountSheet(parseCSV(countText));
 
-                // Initialize Master Database from embedded static data and map Live July Counts
-                initMasterOfficeDatabase();
+                // Build Master Office Database Live from April, May, June Sheets
+                buildMasterOfficeDatabaseLive(
+                    parseCSV(aprOffText),
+                    parseCSV(mayOffText),
+                    parseCSV(junOffText)
+                );
+
+                // Update July Live Counts
                 updateJulyLiveCounts(parseCSV(julyOffText));
 
                 updateDashboard();
@@ -685,24 +704,66 @@
             }
         }
 
-        // Initialize static data for April, May, June from extracted Excel
-        function initMasterOfficeDatabase() {
-            masterOfficeDatabase = [];
+        // Build Master Database dynamically from April, May, June CSVs
+        function buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows) {
             let officeMap = new Map();
 
-            STATIC_OFFICE_MASTER_DATA.forEach(r => {
-                let offId = r[0];
-                officeMap.set(offId, {
-                    id: offId,
-                    name: r[1],
-                    cls: r[2],
-                    sd: r[3],
-                    div: r[4],
-                    parcel_apr: r[5], parcel_may: r[6], parcel_jun: r[7], parcel_jul: 0,
-                    mo_apr: r[8], mo_may: r[9], mo_jun: r[10], mo_jul: 0,
-                    irgb_apr: r[11], irgb_may: r[12], irgb_jun: r[13], irgb_jul: 0
+            function processMonthSheet(rows, monthKey) {
+                if (!rows || rows.length <= 1) return;
+
+                // Detect column indexes from header
+                let header = rows[0].map(h => h.trim().toUpperCase());
+                let idIdx = header.findIndex(h => h.includes('OFFICE-ID') || h.includes('OFFICE ID') || h.includes('ID'));
+                let nameIdx = header.findIndex(h => h.includes('OFFICE NAME') || h.includes('NAME'));
+                let clsIdx = header.findIndex(h => h === 'CLASS' || h.includes('CLASS'));
+                let sdIdx = header.findIndex(h => h === 'SD' || h.includes('SUB'));
+                let divIdx = header.findIndex(h => h === 'DIVISION' || h.includes('DIV'));
+                let catIdx = header.findIndex(h => h === 'CATEGORY' || h.includes('CAT'));
+                let cntIdx = header.findIndex(h => h.includes('BOOKING_COUNT') || h.includes('COUNT') || h.includes('BOOKING'));
+
+                if (idIdx === -1) idIdx = 0;
+                if (nameIdx === -1) nameIdx = 1;
+                if (clsIdx === -1) clsIdx = 2;
+                if (sdIdx === -1) sdIdx = 3;
+                if (divIdx === -1) divIdx = 4;
+                if (catIdx === -1) catIdx = 5;
+                if (cntIdx === -1) cntIdx = 6;
+
+                rows.forEach((r, idx) => {
+                    if (idx === 0) return;
+                    let offId = r[idIdx] ? r[idIdx].trim() : "";
+                    if (!offId) return;
+
+                    if (!officeMap.has(offId)) {
+                        officeMap.set(offId, {
+                            id: offId,
+                            name: r[nameIdx] ? r[nameIdx].trim() : "",
+                            cls: r[clsIdx] ? r[clsIdx].trim() : "",
+                            sd: r[sdIdx] ? r[sdIdx].trim() : "",
+                            div: r[divIdx] ? r[divIdx].trim() : "",
+                            parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
+                            mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
+                            irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0
+                        });
+                    }
+
+                    let offObj = officeMap.get(offId);
+                    let cat = r[catIdx] ? r[catIdx].trim().toUpperCase() : "";
+                    let cnt = cleanNumber(r[cntIdx]);
+
+                    if (cat.includes("PARCEL")) {
+                        offObj[`parcel_${monthKey}`] += cnt;
+                    } else if (cat.includes("IRGB")) {
+                        offObj[`irgb_${monthKey}`] += cnt;
+                    } else { // 'SPEED POST' or 'OTHER' -> MO
+                        offObj[`mo_${monthKey}`] += cnt;
+                    }
                 });
-            });
+            }
+
+            processMonthSheet(aprRows, 'apr');
+            processMonthSheet(mayRows, 'may');
+            processMonthSheet(junRows, 'jun');
 
             masterOfficeDatabase = Array.from(officeMap.values());
             populateOfficeSdOptions();
@@ -1120,7 +1181,7 @@
             document.getElementById('countMonthWiseFoot').innerHTML = footHtml;
         }
 
-        // SUB-DIVISION & OFFICE ANALYTICS LOGIC (FULLY UPDATED)
+        // SUB-DIVISION & OFFICE ANALYTICS LOGIC
         function populateOfficeSdOptions() {
             const divSel = document.getElementById('offDivSelect').value;
             const sdSel = document.getElementById('offSdSelect');
@@ -1157,7 +1218,9 @@
 
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
                 let matchSd = (sdKey === 'ALL') || (o.sd.trim().toUpperCase() === sdKey.trim().toUpperCase());
-                let matchCls = (clsKey === 'ALL') || (o.cls.trim().toUpperCase() === clsKey.trim().toUpperCase());
+                
+                let oCls = o.cls ? o.cls.trim().toUpperCase() : '';
+                let matchCls = (clsKey === 'ALL') || (oCls === clsKey.trim().toUpperCase());
 
                 return matchDiv && matchSd && matchCls;
             });
@@ -1172,7 +1235,7 @@
             currentFilteredLowOffices = [];
             currentFilteredGoodOffices = [];
 
-            // 2. Set Up Dynamic Table Headers based on Selected Vertical
+            // 2. Set Up Dynamic Table Headers
             let tableHeadHtml = '<tr class="bg-slate-900 text-white font-bold uppercase"><th class="p-3 border">Office ID</th><th class="p-3 border">Office Name</th><th class="p-3 border">Class</th><th class="p-3 border">Sub-Division (SD)</th><th class="p-3 border">Division</th>';
             
             if (vertKey === 'PARCEL') {
@@ -1616,31 +1679,6 @@
                 window.open(`https://web.whatsapp.com/`, '_blank');
             }
         }
-
-        // FULL Master Static Office Database Array for 2,806 Post Offices
-        // [Office ID, Office Name, Class, Sub Division, Division, Parcel_Apr, Parcel_May, Parcel_Jun, MO_Apr, MO_May, MO_Jun, IRGB_Apr, IRGB_May, IRGB_Jun]
-        const STATIC_OFFICE_MASTER_DATA = [
-            ["23260015","Indore RMS   L1S Counter","RMS","INDORE RMS","ID DIVISION",2091,2038,2994,8984,10242,14423,5,6,10],
-            ["23260016","Ratlam RMS   L2S Counter","RMS","RATLAM RMS","ID DIVISION",279,327,317,1925,1510,1762,0,0,0],
-            ["23260017","Ujjain RMS   L2S Counter","RMS","UJJAIN RMS","ID DIVISION",113,115,123,3313,2522,2380,0,0,0],
-            ["23260024","Khandwa RMS   L2S Counter","RMS","INDORE RMS","ID DIVISION",14,14,35,82,54,77,0,0,0],
-            ["23260035","Ichhawar SO","SO","SEHORE","SEHORE",55,42,42,207,185,152,0,0,0],
-            ["23260036","Shujalpur Mandi SO","SO","SHUJALPUR","SEHORE",94,103,115,550,599,380,0,0,0],
-            ["23260037","Ashta SO (Sehore)","SO","SEHORE","SEHORE",144,142,139,837,1315,671,1,0,0],
-            ["23260038","Ahmadpur SO","SO","SEHORE","SEHORE",1,1,4,19,41,18,0,0,0],
-            ["23260040","Doraha SO (Sehore)","SO","SEHORE","SEHORE",2,3,2,69,82,71,0,0,0],
-            ["23260041","Jawar SO (Sehore)","SO","SEHORE","SEHORE",14,24,14,79,161,123,0,0,0],
-            ["23260042","Kothri SO","SO","SEHORE","SEHORE",12,9,11,64,88,85,0,0,0],
-            ["23260043","Maina SO","SO","SEHORE","SEHORE",0,0,1,10,31,23,0,0,0],
-            ["23260044","Sehore City SO","SO","SEHORE","SEHORE",175,237,215,961,1182,781,0,0,0],
-            ["23260045","Sehore Town SO","SO","SEHORE","SEHORE",21,37,17,214,190,131,0,0,0],
-            ["23260046","Shujalpur City SO","SO","SHUJALPUR","SEHORE",47,40,43,261,311,192,0,0,0],
-            ["23260047","Shujalpur RS SO","SO","SHUJALPUR","SEHORE",27,18,36,183,189,127,0,0,0],
-            ["23260048","Shujalpur SO","SO","SHUJALPUR","SEHORE",258,266,227,1362,1760,1118,0,1,0],
-            ["23260049","Sehore HO","HO","SEHORE","SEHORE",334,357,337,3302,3670,2744,3,3,10],
-            ["23260050","Akodia SO","SO","SHUJALPUR","SEHORE",16,35,46,242,192,159,0,0,0]
-            /* Note: Remaining 2,787 offices in same format */
-        ];
 
         window.onload = function() {
             fetchAllLiveData();
