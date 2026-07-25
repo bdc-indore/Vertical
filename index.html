@@ -230,6 +230,7 @@
                                     <th class="p-3.5">Vertical</th>
                                     <th class="p-3.5 bg-slate-800">LY Count (2025)</th>
                                     <th class="p-3.5 bg-indigo-800">TY Count (2026)</th>
+                                    <th class="p-3.5 text-center">Count Growth %</th>
                                     <th class="p-3.5 bg-slate-800">LY Revenue (2025)</th>
                                     <th class="p-3.5 bg-indigo-800">TY Revenue (2026)</th>
                                     <th class="p-3.5 text-center">Rev Growth %</th>
@@ -274,11 +275,18 @@
             return isNaN(num) ? 0 : num;
         }
 
-        // Helper function for flexible division name matching
+        // Smart Matching Helper for Division Names
         function isMatchingDivision(div1, div2) {
             if (!div1 || !div2) return false;
-            let d1 = div1.toString().toUpperCase().replace(/DIVISION|DIV/g, '').trim();
-            let d2 = div2.toString().toUpperCase().replace(/DIVISION|DIV/g, '').trim();
+            let d1 = div1.toString().toUpperCase().replace(/DIVISION|DIV|OFFICE/g, '').trim();
+            let d2 = div2.toString().toUpperCase().replace(/DIVISION|DIV|OFFICE/g, '').trim();
+
+            if ((d1.includes('MFF') || d1.includes('MFL') || d1.includes('MOFFUSIL')) && 
+                (d2.includes('MFF') || d2.includes('MFL') || d2.includes('MOFFUSIL'))) return true;
+
+            if ((d1.includes('RMS') || d1.includes('ID')) && 
+                (d2.includes('RMS') || d2.includes('ID'))) return true;
+
             return d1.includes(d2) || d2.includes(d1);
         }
 
@@ -342,7 +350,7 @@
                 if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
 
                 let divName = row[0].trim();
-                if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL')) return;
+                if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL') || divName.toUpperCase().includes('VERTICAL')) return;
 
                 let isIRGB = (currentVert === "IRGB");
                 let crDivisor = isIRGB ? 100 : 1; 
@@ -403,7 +411,7 @@
                     return;
                 }
 
-                if (!row[0] || firstCol === "" || firstCol.includes("NAME OF DIV") || firstCol === 'TOTAL' || firstCol.includes('GRAND TOTAL') || firstCol.includes('SL NO')) {
+                if (!row[0] || firstCol === "" || firstCol.includes("NAME OF DIV") || firstCol === 'TOTAL' || firstCol.includes('GRAND TOTAL') || firstCol.includes('SL NO') || firstCol.includes('VERTICAL')) {
                     return;
                 }
 
@@ -505,7 +513,7 @@
                 if (currentDataType === 'count') {
                     sumTarget += r.target;    
                     sumJul += r.jul;
-                    sumAch += r.jul; // July Target vs July Count logic
+                    sumAch += r.jul; 
                 } else {
                     sumTarget += showLakhsOnly ? r.rawTarget : r.target;
                     sumAch += showLakhsOnly ? r.rawTotalAch : r.totalAch;
@@ -565,7 +573,6 @@
 
                 let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
                 
-                // UNIFIED PERCENTAGE CALCULATION (July Target vs July Count for Count sheet)
                 let rowPctVal = isCount ? (t > 0 ? (jl / t) * 100 : 0) : (t > 0 ? (ach / t) * 100 : 0);
                 let rowPct = rowPctVal.toFixed(2) + "%";
 
@@ -586,7 +593,6 @@
 
             let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
             
-            // EXACT SAME MATCHING PERCENTAGE FOR TOTAL SUMMARY
             let totalAchPctVal = isCount ? (sumT > 0 ? (sumJl / sumT) * 100 : 0) : (sumT > 0 ? (sumAch / sumT) * 100 : 0);
             let totalAchPct = totalAchPctVal.toFixed(2) + "%";
 
@@ -612,13 +618,15 @@
             const vert = document.getElementById('yoyVertSelect').value;
             const month = document.getElementById('yoyMonthSelect').value;
 
-            let filteredRev = revenueRecords.filter(r => (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert));
+            let filteredRev = revenueRecords.filter(r => {
+                let isHeader = r.divName.toUpperCase().includes('VERTICAL') || r.divName.toUpperCase().includes('TOTAL');
+                return !isHeader && (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert);
+            });
 
             let tbodyHtml = '';
             let totalLYCount = 0, totalTYCount = 0, totalLYRev = 0, totalTYRev = 0;
 
             filteredRev.forEach(rItem => {
-                // FLEXIBLE MATCHING TO FIND CORRESPONDING COUNT RECORD
                 let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical);
 
                 let tyCountVal = cItem ? (cItem[month] || 0) : 0;
@@ -632,28 +640,41 @@
                 totalLYRev += lyRevVal;
                 totalTYRev += tyRevVal;
 
-                let growth = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100).toFixed(1) : 0;
-                let growthBadge = growth >= 0 
-                    ? `<span class="text-emerald-600 font-bold">▲ +${growth}%</span>` 
-                    : `<span class="text-rose-600 font-bold">▼ ${growth}%</span>`;
+                // Count Growth %
+                let countGrowth = lyCountVal > 0 ? (((tyCountVal - lyCountVal) / lyCountVal) * 100).toFixed(1) : 0;
+                let countGrowthBadge = countGrowth >= 0 
+                    ? `<span class="text-emerald-600 font-bold">▲ +${countGrowth}%</span>` 
+                    : `<span class="text-rose-600 font-bold">▼ ${countGrowth}%</span>`;
+
+                // Revenue Growth %
+                let revGrowth = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100).toFixed(1) : 0;
+                let revGrowthBadge = revGrowth >= 0 
+                    ? `<span class="text-emerald-600 font-bold">▲ +${revGrowth}%</span>` 
+                    : `<span class="text-rose-600 font-bold">▼ ${revGrowth}%</span>`;
 
                 tbodyHtml += `<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${rItem.divName}</td>
                     <td class="p-3 text-xs font-semibold text-slate-500">${rItem.vertical}</td>
                     <td class="p-3 text-slate-600 font-medium">${lyCountVal.toLocaleString('en-IN')}</td>
                     <td class="p-3 text-indigo-700 font-bold">${tyCountVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-center">${countGrowthBadge}</td>
                     <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                    <td class="p-3 text-center">${growthBadge}</td>
+                    <td class="p-3 text-center">${revGrowthBadge}</td>
                 </tr>`;
             });
 
             document.getElementById('yoyTableBody').innerHTML = tbodyHtml;
 
-            let totalGrowth = totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0;
-            let totalGrowthBadge = totalGrowth >= 0 
-                ? `<span class="text-emerald-400 font-bold">▲ +${totalGrowth}%</span>` 
-                : `<span class="text-rose-400 font-bold">▼ ${totalGrowth}%</span>`;
+            let totalCountGrowth = totalLYCount > 0 ? (((totalTYCount - totalLYCount) / totalLYCount) * 100).toFixed(1) : 0;
+            let totalCountGrowthBadge = totalCountGrowth >= 0 
+                ? `<span class="text-emerald-400 font-bold">▲ +${totalCountGrowth}%</span>` 
+                : `<span class="text-rose-400 font-bold">▼ ${totalCountGrowth}%</span>`;
+
+            let totalRevGrowth = totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0;
+            let totalRevGrowthBadge = totalRevGrowth >= 0 
+                ? `<span class="text-emerald-400 font-bold">▲ +${totalRevGrowth}%</span>` 
+                : `<span class="text-rose-400 font-bold">▼ ${totalRevGrowth}%</span>`;
 
             let tfootHtml = `
                 <tr class="bg-indigo-950 text-white font-extrabold text-xs">
@@ -661,9 +682,10 @@
                     <td class="p-3.5">ALL FILTERED</td>
                     <td class="p-3.5">${totalLYCount.toLocaleString('en-IN')}</td>
                     <td class="p-3.5 text-indigo-300">${totalTYCount.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-center">${totalCountGrowthBadge}</td>
                     <td class="p-3.5">₹${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3.5 text-emerald-300">₹${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                    <td class="p-3.5 text-center">${totalGrowthBadge}</td>
+                    <td class="p-3.5 text-center">${totalRevGrowthBadge}</td>
                 </tr>`;
 
             document.getElementById('yoyTableFoot').innerHTML = tfootHtml;
