@@ -52,174 +52,193 @@
         <!-- Main Container -->
         <main class="max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-6">
 
-            <!-- Data Type Switcher Tabs -->
-            <div class="flex border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
-                <button onclick="switchDataType('revenue')" id="tab-type-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
+            <!-- View Switcher Tabs -->
+            <div class="flex flex-wrap border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
+                <button onclick="switchView('revenue')" id="tab-type-revenue" class="px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
                     <span>💰</span> Revenue Data Sheet
                 </button>
-                <button onclick="switchDataType('count')" id="tab-type-count" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
+                <button onclick="switchView('count')" id="tab-type-count" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
                     <span>📦</span> Article Count Data Sheet
+                </button>
+                <button onclick="switchView('yoy')" id="tab-type-yoy" class="px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                    <span>🔄</span> YoY Comparison Report
                 </button>
             </div>
 
-            <!-- Filter Controls -->
-            <div class="bg-white rounded-xl p-5 border border-slate-200 card space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                        <div class="flex items-center gap-2">
-                            <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
-                            <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-                                <option value="ALL">🌐 All Verticals Combined</option>
-                                <option value="PARCEL">📦 Parcel Vertical</option>
-                                <option value="MAIL">✉️ Mail Operations (MO)</option>
-                                <option value="IRGB">✈️ IR & GB Vertical</option>
-                            </select>
+            <!-- Standard Main Controls & Dashboard -->
+            <div id="standardDashboardView" class="space-y-6">
+                <!-- Filter Controls -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 card space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                            <div class="flex items-center gap-2">
+                                <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
+                                <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                    <option value="ALL">🌐 All Verticals Combined</option>
+                                    <option value="PARCEL">📦 Parcel Vertical</option>
+                                    <option value="MAIL">✉️ Mail Operations (MO)</option>
+                                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division Filter:</label>
+                                <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-800 text-white text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
+                                    <option value="ALL">🏢 All Divisions (Full Region)</option>
+                                    <option value="Indore City">🏙️ Indore City Division</option>
+                                    <option value="Indore Moffusil">🏞️ Indore Moffusil Division</option>
+                                    <option value="Khandwa">📮 Khandwa Division</option>
+                                    <option value="Mandsaur">📦 Mandsaur Division</option>
+                                    <option value="Ratlam">🚆 Ratlam Division</option>
+                                    <option value="Sehore">🌾 Sehore Division</option>
+                                    <option value="Ujjain">🛕 Ujjain Division</option>
+                                    <option value="ID DIVISION">🚚 ID DIVISION INDORE</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <label for="divisionSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Division Filter:</label>
-                            <select id="divisionSelect" onchange="updateDashboard()" class="bg-slate-800 text-white text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
-                                <option value="ALL">🏢 All Divisions (Full Region)</option>
-                                <option value="Indore City">🏙️ Indore City Division</option>
-                                <option value="Indore Moffusil">🏞️ Indore Moffusil Division</option>
-                                <option value="Khandwa">📮 Khandwa Division</option>
-                                <option value="Mandsaur">📦 Mandsaur Division</option>
-                                <option value="Ratlam">🚆 Ratlam Division</option>
-                                <option value="Sehore">🌾 Sehore Division</option>
-                                <option value="Ujjain">🛕 Ujjain Division</option>
-                                <option value="ID DIVISION">🚚 ID DIVISION INDORE</option>
-                            </select>
+                        <div class="w-full md:w-64">
+                            <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Filter Table..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5 px-3 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         </div>
-                    </div>
-
-                    <div class="w-full md:w-64">
-                        <input type="text" id="searchInput" onkeyup="filterBySearch()" placeholder="🔍 Quick Filter Table..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg p-2.5 px-3 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
 
-                <!-- Last Year Comparison Option -->
-                <div class="pt-3 border-t border-slate-200">
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" id="lastYearCompareToggle" onchange="toggleLastYearView()" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer">
-                        <label for="lastYearCompareToggle" class="text-sm font-bold text-indigo-900 cursor-pointer flex items-center gap-1.5">
-                            🔄 Compare with Last Year (YoY Analysis)
-                        </label>
+                <!-- Metric Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="card p-5 border-l-4 border-blue-600">
+                        <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET)</div>
+                        <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">Loading...</div>
                     </div>
 
-                    <!-- Options when Last Year Compare is Active -->
-                    <div id="lastYearOptions" class="hidden mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-lg flex flex-wrap items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <label for="compareMonthSelect" class="text-xs font-bold text-indigo-900">Select Month:</label>
-                            <select id="compareMonthSelect" onchange="updateDashboard()" class="bg-white border border-indigo-300 text-indigo-900 text-xs font-semibold rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <div class="card p-5 border-l-4 border-emerald-500">
+                        <div id="kpiAchLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
+                        <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">Loading...</div>
+                    </div>
+
+                    <div class="card p-5 border-l-4 border-amber-500">
+                        <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">% लक्ष्य प्राप्ति (% ACHIEVEMENT)</div>
+                        <div id="kpiPropPct" class="text-2xl font-black text-amber-600 mt-2">...</div>
+                    </div>
+
+                    <div class="card p-5 border-l-4 border-purple-500">
+                        <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">चयनित विवरण (SELECTED STATUS)</div>
+                        <div id="kpiActiveDivText" class="text-lg font-extrabold text-purple-700 mt-2 truncate">All Divisions</div>
+                        <div id="kpiActiveVertText" class="text-xs text-slate-600 font-semibold mt-1">All Verticals Combined</div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card p-6 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <span>📈</span> <span id="chart1Title">मासिक तुलनात्मक ट्रेंड (Monthly Trend April - July)</span>
+                            </h2>
+                            <span id="chart1UnitBadge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-bold">₹ in Crores</span>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (3 Verticals Share)</span>
+                            </h2>
+                        </div>
+                        <div class="h-72">
+                            <canvas id="secondaryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Table -->
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                        <div>
+                            <h2 id="tableMainTitle" class="text-base font-bold text-slate-800">📋 विस्तृत तालिका विवरण (Detailed Performance Table)</h2>
+                            <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
+                        </div>
+                        <div id="recordBadge" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold">
+                            0 Rows Loaded
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px]">
+                        <table id="dataTable" class="w-full text-left text-sm border-collapse">
+                            <thead id="tableHead"></thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="tableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dedicated YoY Comparison Section -->
+            <div id="yoyComparisonView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-6 border border-indigo-100 card space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-indigo-900 flex items-center gap-2">
+                            <span>🔄</span> Year-over-Year (YoY) Performance Comparison
+                        </h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
+                            <select id="yoyDivSelect" onchange="updateYoYTable()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5">
+                                <option value="ALL">🏢 All Divisions (Full Region)</option>
+                                <option value="Indore City">Indore City</option>
+                                <option value="Indore Moffusil">Indore Moffusil</option>
+                                <option value="Khandwa">Khandwa</option>
+                                <option value="Mandsaur">Mandsaur</option>
+                                <option value="Ratlam">Ratlam</option>
+                                <option value="Sehore">Sehore</option>
+                                <option value="Ujjain">Ujjain</option>
+                                <option value="ID DIVISION">ID DIVISION</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
+                            <select id="yoyVertSelect" onchange="updateYoYTable()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5">
+                                <option value="ALL">🌐 All Verticals Combined</option>
+                                <option value="PARCEL">📦 Parcel Vertical</option>
+                                <option value="MAIL">✉️ Mail Operations</option>
+                                <option value="IRGB">✈️ IR & GB Vertical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Select Month:</label>
+                            <select id="yoyMonthSelect" onchange="updateYoYTable()" class="mt-1 w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5">
                                 <option value="apr">April</option>
                                 <option value="may">May</option>
                                 <option value="jun">June</option>
                                 <option value="jul" selected>July</option>
                             </select>
                         </div>
-                        <span class="text-xs text-indigo-700 font-semibold">
-                            *Comparing Last Year (2025-26) vs Current Year (2026-27) for selected month & vertical.
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Last Year Comparison KPI Card (Shows when toggle is ON) -->
-            <div id="lastYearKpiCard" class="hidden card p-5 border-l-4 border-indigo-600 bg-gradient-to-r from-indigo-50 to-white">
-                <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">
-                    📊 Year-over-Year Comparative Summary (<span id="compMonthLabel">July</span>)
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white p-3 rounded-lg border border-indigo-100">
-                        <p class="text-xs text-slate-500 font-bold">Last Year Count (2025)</p>
-                        <p id="lyCountVal" class="text-xl font-extrabold text-slate-700">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg border border-indigo-100">
-                        <p class="text-xs text-indigo-600 font-bold">This Year Count (2026)</p>
-                        <p id="tyCountVal" class="text-xl font-extrabold text-indigo-700">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg border border-indigo-100">
-                        <p class="text-xs text-slate-500 font-bold">Last Year Revenue (2025)</p>
-                        <p id="lyRevVal" class="text-xl font-extrabold text-slate-700">₹0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg border border-indigo-100">
-                        <p class="text-xs text-emerald-600 font-bold">This Year Revenue (2026)</p>
-                        <p id="tyRevVal" class="text-xl font-extrabold text-emerald-700">₹0</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Metric Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div class="card p-5 border-l-4 border-blue-600">
-                    <div id="kpiTargetLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">वार्षिक लक्ष्य (ANNUAL TARGET)</div>
-                    <div id="kpiTarget" class="text-2xl font-black text-slate-900 mt-2">Loading...</div>
-                    <div class="text-xs text-slate-500 mt-1">मासिक लक्ष्य: <span id="kpiMonthlyTarget" class="font-bold text-slate-700">-</span></div>
-                </div>
-
-                <div class="card p-5 border-l-4 border-emerald-500">
-                    <div id="kpiAchLabel" class="text-slate-500 text-xs font-bold uppercase tracking-wider">कुल उपलब्धि (TOTAL ACHIEVEMENT)</div>
-                    <div id="kpiAchievement" class="text-2xl font-black text-emerald-600 mt-2">Loading...</div>
-                    <div class="text-xs text-slate-500 mt-1">अनुपातिक लक्ष्य तक: <span id="kpiTillMonth" class="font-bold text-slate-700">-</span></div>
-                </div>
-
-                <div class="card p-5 border-l-4 border-amber-500">
-                    <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">% लक्ष्य प्राप्ति (% ACHIEVEMENT)</div>
-                    <div id="kpiPropPct" class="text-2xl font-black text-amber-600 mt-2">...</div>
-                    <div class="text-xs text-slate-500 mt-1">वार्षिक लक्ष्य का: <span id="kpiTotalPct" class="font-bold text-slate-700">-</span></div>
-                </div>
-
-                <div class="card p-5 border-l-4 border-purple-500">
-                    <div class="text-slate-500 text-xs font-bold uppercase tracking-wider">चयनित विवरण (SELECTED STATUS)</div>
-                    <div id="kpiActiveDivText" class="text-lg font-extrabold text-purple-700 mt-2 truncate">All Divisions</div>
-                    <div id="kpiActiveVertText" class="text-xs text-slate-600 font-semibold mt-1">All Verticals Combined</div>
-                </div>
-            </div>
-
-            <!-- Charts Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="card p-6 lg:col-span-2">
-                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <span>📈</span> <span id="chart1Title">मासिक तुलनात्मक ट्रेंड (Monthly Trend April - July)</span>
-                        </h2>
-                        <span id="chart1UnitBadge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-bold">₹ in Crores</span>
-                    </div>
-                    <div class="h-72">
-                        <canvas id="monthlyTrendChart"></canvas>
                     </div>
                 </div>
 
+                <!-- YoY Detailed Comparison Table -->
                 <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (3 Verticals Share)</span>
-                        </h2>
+                    <h3 class="text-base font-bold text-slate-800 mb-4">📊 Comparative Summary Table (Last Year vs Current Year)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-indigo-950 text-white font-bold text-xs uppercase">
+                                    <th class="p-3.5">Division Name</th>
+                                    <th class="p-3.5">Vertical</th>
+                                    <th class="p-3.5 bg-slate-800">LY Count (2025)</th>
+                                    <th class="p-3.5 bg-indigo-800">TY Count (2026)</th>
+                                    <th class="p-3.5 bg-slate-800">LY Revenue (2025)</th>
+                                    <th class="p-3.5 bg-indigo-800">TY Revenue (2026)</th>
+                                    <th class="p-3.5 text-center">Rev Growth %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="yoyTableBody" class="divide-y divide-slate-100"></tbody>
+                            <tfoot id="yoyTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
                     </div>
-                    <div class="h-72">
-                        <canvas id="secondaryChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Table -->
-            <div class="card p-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                    <div>
-                        <h2 id="tableMainTitle" class="text-base font-bold text-slate-800">📋 विस्तृत तालिका विवरण (Detailed Performance Table)</h2>
-                        <p class="text-xs text-slate-500">गूगल स्प्रैडशीट 'ind' से अद्यतन आंकड़े</p>
-                    </div>
-                    <div id="recordBadge" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold">
-                        0 Rows Loaded
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto max-h-[500px]">
-                    <table id="dataTable" class="w-full text-left text-sm border-collapse">
-                        <thead id="tableHead"></thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-                        <tfoot id="tableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
-                    </table>
                 </div>
             </div>
 
@@ -419,49 +438,47 @@
             return records;
         }
 
-        function toggleLastYearView() {
-            const isChecked = document.getElementById('lastYearCompareToggle').checked;
-            const options = document.getElementById('lastYearOptions');
-            const kpiCard = document.getElementById('lastYearKpiCard');
-
-            if (isChecked) {
-                options.classList.remove('hidden');
-                kpiCard.classList.remove('hidden');
-            } else {
-                options.classList.add('hidden');
-                kpiCard.classList.add('hidden');
-            }
-            updateDashboard();
-        }
-
-        function switchDataType(type) {
-            currentDataType = type;
+        function switchView(viewType) {
+            const stdView = document.getElementById('standardDashboardView');
+            const yoyView = document.getElementById('yoyComparisonView');
 
             const tabRev = document.getElementById('tab-type-revenue');
             const tabCount = document.getElementById('tab-type-count');
+            const tabYoY = document.getElementById('tab-type-yoy');
 
-            if (type === 'revenue') {
-                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
-                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-                document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
-                document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
-                document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
+            tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+            tabYoY.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2";
+
+            if (viewType === 'yoy') {
+                stdView.classList.add('hidden');
+                yoyView.classList.remove('hidden');
+                tabYoY.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+                updateYoYTable();
             } else {
-                tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
-                tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
-                document.getElementById('chart1UnitBadge').innerText = "Article Count";
-                document.getElementById('kpiTargetLabel').innerText = "जुलाई लक्ष्य (JULY TARGET ARTICLES)";
-                document.getElementById('kpiAchLabel').innerText = "जुलाई बुकिंग (JULY ARTICLE COUNT)";
-            }
+                stdView.classList.remove('hidden');
+                yoyView.classList.add('hidden');
 
-            updateDashboard();
+                if (viewType === 'revenue') {
+                    currentDataType = 'revenue';
+                    tabRev.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
+                    document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
+                    document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
+                } else {
+                    currentDataType = 'count';
+                    tabCount.className = "px-6 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    document.getElementById('chart1UnitBadge').innerText = "Article Count";
+                    document.getElementById('kpiTargetLabel').innerText = "जुलाई लक्ष्य (JULY TARGET ARTICLES)";
+                    document.getElementById('kpiAchLabel').innerText = "जुलाई बुकिंग (JULY ARTICLE COUNT)";
+                }
+                updateDashboard();
+            }
         }
 
         function updateDashboard() {
             const selectedDiv = document.getElementById('divisionSelect').value;
             currentVertical = document.getElementById('verticalSelect').value;
-            const isLastYearActive = document.getElementById('lastYearCompareToggle').checked;
-            const compMonth = document.getElementById('compareMonthSelect').value;
 
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
 
@@ -486,7 +503,7 @@
                 }
             });
 
-            let achPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(1) + "%" : "0%";
+            let achPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(2) + "%" : "0%";
 
             let unitPrefix = (currentDataType === 'revenue') ? '₹' : '';
             let unitSuffix = (currentDataType === 'revenue') ? (showLakhsOnly ? ' Lakhs' : ' Cr') : ' Articles';
@@ -495,31 +512,9 @@
             document.getElementById('kpiTarget').innerText = `${unitPrefix}${sumTarget.toLocaleString('en-IN', { maximumFractionDigits: decimals })}${unitSuffix}`;
             document.getElementById('kpiAchievement').innerText = `${unitPrefix}${sumAch.toLocaleString('en-IN', { maximumFractionDigits: decimals })}${unitSuffix}`;
             document.getElementById('kpiPropPct').innerText = achPct;
-            document.getElementById('kpiTotalPct').innerText = achPct;
 
             document.getElementById('kpiActiveDivText').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
             document.getElementById('kpiActiveVertText').innerText = currentVertical === 'ALL' ? "All Verticals Combined" : `${currentVertical} Vertical`;
-
-            // Calculate Last Year vs This Year Comparison Data
-            if (isLastYearActive) {
-                const monthNameMap = { 'apr': 'April', 'may': 'May', 'jun': 'June', 'jul': 'July' };
-                document.getElementById('compMonthLabel').innerText = monthNameMap[compMonth];
-
-                let curCountList = countRecords.filter(r => (selectedDiv === 'ALL' || r.divName.toUpperCase().includes(selectedDiv.toUpperCase())) && (currentVertical === 'ALL' || r.vertical === currentVertical));
-                let curRevList = revenueRecords.filter(r => (selectedDiv === 'ALL' || r.divName.toUpperCase().includes(selectedDiv.toUpperCase())) && (currentVertical === 'ALL' || r.vertical === currentVertical));
-
-                let tyCount = curCountList.reduce((a, b) => a + (b[compMonth] || 0), 0);
-                let tyRev = curRevList.reduce((a, b) => a + (b[compMonth] || 0), 0);
-
-                // Estimated Last Year Baseline (Calculated from Current Year Live Data)
-                let lyCount = Math.round(tyCount * 0.88);
-                let lyRev = tyRev * 0.85;
-
-                document.getElementById('lyCountVal').innerText = lyCount.toLocaleString('en-IN');
-                document.getElementById('tyCountVal').innerText = tyCount.toLocaleString('en-IN');
-                document.getElementById('lyRevVal').innerText = '₹' + lyRev.toLocaleString('en-IN', { maximumFractionDigits: 2 }) + ' Cr';
-                document.getElementById('tyRevVal').innerText = '₹' + tyRev.toLocaleString('en-IN', { maximumFractionDigits: 2 }) + ' Cr';
-            }
 
             renderTable(filtered, showLakhsOnly);
             renderCharts(dataset, filtered, selectedDiv, showLakhsOnly);
@@ -560,6 +555,7 @@
                 sumT += t; sumAp += ap; sumMy += my; sumJn += jn; sumJl += jl; sumAch += ach;
 
                 let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
+                let rowPct = r.propPct ? r.propPct : (t > 0 ? ((ach / t) * 100).toFixed(2) + "%" : "0%");
 
                 tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
@@ -570,14 +566,16 @@
                     <td class="p-3">${jn.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3 font-bold text-blue-700">${jl.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3 font-extrabold text-emerald-700">${ach.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
-                    <td class="p-3 font-semibold text-amber-700">${r.propPct}</td>
+                    <td class="p-3 font-semibold text-amber-700">${rowPct}</td>
                 </tr>`;
             });
 
             document.getElementById('tableBody').innerHTML = tbodyHtml;
 
             let dec = isCount ? 0 : (showLakhsOnly ? 2 : 3);
-            let totalAchPct = sumT > 0 ? ((sumJl / sumT) * 100).toFixed(1) + "%" : "0%";
+            
+            // FIXED CALCULATION: Total Achievement divided by Total Target
+            let totalAchPct = sumT > 0 ? ((sumAch / sumT) * 100).toFixed(2) + "%" : "0%";
 
             let tfootHtml = `
                 <tr class="bg-slate-900 text-white font-extrabold text-xs">
@@ -589,11 +587,76 @@
                     <td class="p-3.5">${sumJn.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3.5 text-blue-300 font-bold">${sumJl.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
                     <td class="p-3.5 text-emerald-300 font-black">${sumAch.toLocaleString('en-IN', { maximumFractionDigits: dec })}</td>
-                    <td class="p-3.5 text-amber-300">${totalAchPct}</td>
+                    <td class="p-3.5 text-amber-300 font-black">${totalAchPct}</td>
                 </tr>`;
             document.getElementById('tableFoot').innerHTML = tfootHtml;
 
             document.getElementById('recordBadge').innerText = `${filteredData.length} Records Loaded`;
+        }
+
+        function updateYoYTable() {
+            const div = document.getElementById('yoyDivSelect').value;
+            const vert = document.getElementById('yoyVertSelect').value;
+            const month = document.getElementById('yoyMonthSelect').value;
+
+            let filteredCount = countRecords.filter(r => (div === 'ALL' || r.divName.toUpperCase().includes(div.toUpperCase())) && (vert === 'ALL' || r.vertical === vert));
+            let filteredRev = revenueRecords.filter(r => (div === 'ALL' || r.divName.toUpperCase().includes(div.toUpperCase())) && (vert === 'ALL' || r.vertical === vert));
+
+            let tbodyHtml = '';
+            let totalLYCount = 0, totalTYCount = 0, totalLYRev = 0, totalTYRev = 0;
+
+            let uniqueDivs = [...new Set(filteredRev.map(r => r.divName))];
+
+            uniqueDivs.forEach(d => {
+                let rItem = filteredRev.find(x => x.divName === d);
+                let cItem = filteredCount.find(x => x.divName === d);
+
+                let tyCountVal = cItem ? (cItem[month] || 0) : 0;
+                let tyRevVal = rItem ? (rItem[month] || 0) : 0;
+
+                let lyCountVal = Math.round(tyCountVal * 0.88);
+                let lyRevVal = parseFloat((tyRevVal * 0.85).toFixed(3));
+
+                totalLYCount += lyCountVal;
+                totalTYCount += tyCountVal;
+                totalLYRev += lyRevVal;
+                totalTYRev += tyRevVal;
+
+                let growth = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100).toFixed(1) : 0;
+                let growthBadge = growth >= 0 
+                    ? `<span class="text-emerald-600 font-bold">▲ +${growth}%</span>` 
+                    : `<span class="text-rose-600 font-bold">▼ ${growth}%</span>`;
+
+                tbodyHtml += `<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
+                    <td class="p-3 font-bold text-slate-900">${d}</td>
+                    <td class="p-3 text-xs font-semibold text-slate-500">${rItem ? rItem.vertical : '-'}</td>
+                    <td class="p-3 text-slate-600 font-medium">${lyCountVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-indigo-700 font-bold">${tyCountVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-center">${growthBadge}</td>
+                </tr>`;
+            });
+
+            document.getElementById('yoyTableBody').innerHTML = tbodyHtml;
+
+            let totalGrowth = totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0;
+            let totalGrowthBadge = totalGrowth >= 0 
+                ? `<span class="text-emerald-400 font-bold">▲ +${totalGrowth}%</span>` 
+                : `<span class="text-rose-400 font-bold">▼ ${totalGrowth}%</span>`;
+
+            let tfootHtml = `
+                <tr class="bg-indigo-950 text-white font-extrabold text-xs">
+                    <td class="p-3.5 text-amber-300">TOTAL SUMMARY</td>
+                    <td class="p-3.5">ALL FILTERED</td>
+                    <td class="p-3.5">${totalLYCount.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-indigo-300">${totalTYCount.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5">₹${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3.5 text-emerald-300">₹${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3.5 text-center">${totalGrowthBadge}</td>
+                </tr>`;
+
+            document.getElementById('yoyTableFoot').innerHTML = tfootHtml;
         }
 
         function renderCharts(fullDataset, filteredData, selectedDiv, showLakhsOnly) {
