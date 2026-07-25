@@ -1118,14 +1118,12 @@
         function onPoMDivChange() { populateSubDivDropdown('poMDivSelect', 'poMSdSelect'); renderPoMonthAnalysis(); }
         function onOffDivChange() { populateSubDivDropdown('offDivSelect', 'offSdSelect'); renderOfficeAnalytics(); }
 
-        // DYNAMIC SUB-DIVISION MONTH-WISE ANALYSIS
         function renderSdMonthAnalysis() {
             const vert = document.getElementById('sdMVertSelect').value;
             const divKey = document.getElementById('sdMDivSelect').value;
             const sdKey = document.getElementById('sdMSdSelect').value;
             const cls = document.getElementById('sdMClassSelect').value;
 
-            // Generate Dynamic Table Header
             let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-[11px]">
                 <th class="p-2.5 border" rowspan="2">Division Name</th>
                 <th class="p-2.5 border" rowspan="2">Sub Division Name</th>
@@ -1232,7 +1230,6 @@
             document.getElementById('sdMTableBody').innerHTML = tbodyHtml;
         }
 
-        // DYNAMIC POST OFFICE MONTH-WISE ANALYSIS
         function renderPoMonthAnalysis() {
             const vert = document.getElementById('poMVertSelect').value;
             const divKey = document.getElementById('poMDivSelect').value;
@@ -1330,7 +1327,6 @@
             document.getElementById('poMTableBody').innerHTML = tbodyHtml;
         }
 
-        // NIL BOOKING REPORT ANALYTICS
         function renderOfficeAnalytics() {
             const vertKey = document.getElementById('offVertSelect').value;
             const divKey = document.getElementById('offDivSelect').value;
@@ -1513,8 +1509,8 @@
 
             filteredData.forEach(r => {
                 let vertBadge = r.vertical === 'PARCEL' ? '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">📦 Parcel</span>' :
-                                (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
-                                '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
+                            (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
+                            '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
 
                 let t = showLakhsOnly ? r.rawTarget : r.target;
                 let ap = showLakhsOnly ? r.rawApr : r.apr;
