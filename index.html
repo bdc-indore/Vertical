@@ -815,7 +815,7 @@
             let cls = (clsName || '').trim().toUpperCase();
             let name = (offName || '').trim().toUpperCase();
 
-            // Indore East sub-division ko combine karna aur variants handle karna[cite: 1]
+            // Indore East sub-division ko combine karna
             if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
                 return "Indore East"; 
             }
@@ -850,11 +850,6 @@
                     let offId = r[idIdx].trim();
                     let offName = r[nameIdx] ? r[nameIdx].trim() : "";
                     let offCls = r[clsIdx] ? r[clsIdx].trim().toUpperCase() : "";
-
-                    // Khudel BO July se khatam hai, lekin Khudel SO exist karta hai[cite: 1]
-                    if (offName.toUpperCase() === 'KHUDEL' && offCls === 'BO' && (monthKey === 'jul' || monthKey === 'aug' || monthKey === 'sep')) {
-                        return; 
-                    }
 
                     let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName);
 
@@ -902,7 +897,7 @@
                 let offName = r[1] ? r[1].trim().toUpperCase() : "";
                 let offCls = r[2] ? r[2].trim().toUpperCase() : "";
 
-                // Khudel BO ko July mein exclude karna, Khudel SO ko allow karna[cite: 1]
+                // July se Khudel BO band hai, isliye ise live count/report se exclude kiya gaya hai (Khudel SO chalu rahega)
                 if (offName === 'KHUDEL' && offCls === 'BO') {
                     return; 
                 }
@@ -1155,6 +1150,11 @@
 
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
+                // July ke liye Khudel BO ko sub-division month-wise analysis se bhi hatana
+                if (o.name && o.name.toUpperCase() === 'KHUDEL' && oCls === 'BO') {
+                    return; 
+                }
+
                 if (cls !== 'ALL' && oCls !== cls.trim().toUpperCase()) return;
                 if (divKey !== 'ALL' && !isMatchingDivision(o.div, divKey)) return;
                 if (sdKey !== 'ALL' && o.sd !== sdKey) return;
@@ -1264,9 +1264,13 @@
             document.getElementById('poMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
+                let oCls = (o.cls || '').trim().toUpperCase();
+                if (o.name && o.name.toUpperCase() === 'KHUDEL' && oCls === 'BO') {
+                    return false; // Khudel BO exclude
+                }
+
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
                 let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
-                let oCls = (o.cls || '').trim().toUpperCase();
                 let matchCls = (clsKey === 'ALL') || (oCls === clsKey.trim().toUpperCase());
                 return matchDiv && matchSd && matchCls;
             });
@@ -1347,6 +1351,12 @@
 
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
+
+                // Agar July select hai, toh Khudel BO ko Nil booking report se completely exclude karna
+                if (mKey === 'jul' && o.name && o.name.toUpperCase() === 'KHUDEL' && oCls === 'BO') {
+                    return; 
+                }
+
                 if (clsKey !== 'ALL' && oCls !== clsKey.trim().toUpperCase()) return;
                 if (divKey !== 'ALL' && !isMatchingDivision(o.div, divKey)) return;
                 if (sdKey !== 'ALL' && o.sd !== sdKey) return;
@@ -1736,13 +1746,7 @@
             if (trendChart) trendChart.destroy();
 
             let months = ['April 26', 'May 26', 'June 26', 'July 26'];
-
-            // Performance boost: animations disable ki gayi hai taaki lag na ho
-            const chartOptions = { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                animation: false 
-            };
+            const chartOptions = { responsive: true, maintainAspectRatio: false, animation: false };
 
             if (selectedDiv !== 'ALL') {
                 document.getElementById('chart1Title').innerText = `${selectedDiv} - Monthly Comparison (April - July)`;
