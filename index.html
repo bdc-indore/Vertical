@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -50,10 +50,6 @@
                     <span id="syncBadge" class="text-xs bg-amber-500/30 text-amber-200 px-3 py-1.5 rounded-full border border-amber-400/30 font-semibold animate-pulse">
                         ⏳ Loading Live Data...
                     </span>
-
-                    <button onclick="shareActiveReportViaWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                        <span>💬</span> Send Active View on WhatsApp
-                    </button>
                 </div>
             </div>
         </header>
@@ -520,7 +516,7 @@
                     </div>
                 </div>
 
-                <!-- NEW: Q-1 Article Count Table -->
+                <!-- Q-1 Article Count Table -->
                 <div class="card p-6 space-y-3">
                     <h3 class="text-base font-bold text-indigo-900 flex items-center gap-2">📦 Q-1 Article Count Performance Table</h3>
                     <div class="overflow-x-auto">
@@ -544,7 +540,7 @@
                 </div>
             </div>
 
-            <!-- NEW: DEDICATED MOM (MONTH-OVER-MONTH) ANALYSIS SECTION -->
+            <!-- DEDICATED MOM (MONTH-OVER-MONTH) ANALYSIS SECTION -->
             <div id="momAnalysisView" class="hidden space-y-6">
                 <div class="bg-white rounded-xl p-6 border border-amber-100 card space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -634,6 +630,8 @@
                                 <option value="may">May</option>
                                 <option value="jun">June</option>
                                 <option value="jul" selected>July</option>
+                                <option value="aug">August</option>
+                                <option value="sep">September</option>
                             </select>
                         </div>
                     </div>
@@ -661,7 +659,7 @@
                 </div>
             </div>
 
-            <!-- NEW: DEDICATED TOP 20 & BOTTOM 20 PERFORMERS TAB -->
+            <!-- DEDICATED TOP 20 & BOTTOM 20 PERFORMERS TAB -->
             <div id="rankingsView" class="hidden space-y-6">
                 <div class="bg-white rounded-xl p-6 border border-emerald-100 card space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -722,7 +720,7 @@
                                     <option value="may">May 2026</option>
                                     <option value="jun">June 2026</option>
                                     <option value="jul" selected>July 2026</option>
-                                    <option value="total">Cumulative Q-1 Total</option>
+                                    <option value="total">Cumulative Total (Till Date)</option>
                                 </select>
                             </div>
                             <button onclick="exportTableByID('rankingsTable', 'Office_Performance_Rankings.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
@@ -834,10 +832,8 @@
             }
         };
 
-        // Month-Wise Office Active/Closed Logic Checker
         function isOfficeActiveInMonth(office, monthKey) {
             if (!office) return false;
-            // Khudel BO जुलाई से बंद माना जाएगा (जुलाई में एक्टिव नहीं रहेगा)
             if (office.closedMonth === 'jul' && monthKey === 'jul') {
                 return false;
             }
@@ -985,11 +981,11 @@
                             cls: offCls,
                             sd: normSd,
                             div: rawDiv,
-                            closedMonth: isKhudelBO ? 'jul' : null, // Khudel BO जुलाई से बंद Marked रहेगा
+                            closedMonth: isKhudelBO ? 'jul' : null,
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
-                            parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
-                            mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
-                            irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0
+                            parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0, parcel_aug: 0, parcel_sep: 0,
+                            mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0, mo_aug: 0, mo_sep: 0,
+                            irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0, irgb_aug: 0, irgb_sep: 0
                         });
                     }
 
@@ -1307,7 +1303,6 @@
 
                 let item = sdMap.get(sd);
 
-                // Khudel BO जैसे जुलाई में बंद ऑफिसों को केवल जुलाई के एक्टिव काउंट में न जोड़ें
                 if (isOfficeActiveInMonth(o, 'jul')) {
                     item.count++;
                     totalOffCount++;
@@ -1405,7 +1400,7 @@
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
-                if (!isOfficeActiveInMonth(o, 'jul')) return false; // Strictly omit closed offices from July Active List
+                if (!isOfficeActiveInMonth(o, 'jul')) return false; 
                 let oCls = (o.cls || '').trim().toUpperCase();
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
                 let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
@@ -1522,7 +1517,6 @@
             currentFilteredGoodOffices = [];
 
             masterOfficeDatabase.forEach(o => {
-                // चुने हुए महीने (mKey) के हिसाब से एक्टिव ऑफिस ही प्रोसेस होंगे
                 if (!isOfficeActiveInMonth(o, mKey)) return; 
 
                 let oCls = (o.cls || '').trim().toUpperCase();
@@ -2106,7 +2100,6 @@
             const month = document.getElementById('rankMonthSelect').value;
 
             let filtered = masterOfficeDatabase.filter(o => {
-                // चुना गया महीना यदि जुलाई है और ऑफिस बंद है तो रैंकिंग में नहीं दिखेगा
                 if (!isOfficeActiveInMonth(o, month)) return false; 
                 let matchDiv = (div === 'ALL') || isMatchingDivision(o.div, div);
                 let matchSd = (sd === 'ALL') || (o.sd === sd);
@@ -2125,7 +2118,11 @@
                 };
 
                 if (month === 'total') {
-                    cnt = getMonthCount('apr') + getMonthCount('may') + getMonthCount('jun') + getMonthCount('jul');
+                    // अब यह सिर्फ Q-1 सीमित नहीं है, उपलब्ध सभी महीनों (Apr, May, Jun, Jul, Aug, Sep...) का कुल योग निकालेगा
+                    let allMonths = ['apr', 'may', 'jun', 'jul', 'aug', 'sep'];
+                    allMonths.forEach(m => {
+                        cnt += getMonthCount(m);
+                    });
                 } else {
                     cnt = getMonthCount(month);
                 }
@@ -2239,60 +2236,6 @@
 
             XLSX.utils.book_append_sheet(wb, ws, "Report");
             XLSX.writeFile(wb, defaultFileName);
-        }
-
-        // डायरेक्ट एक्सेल फाइल व्हाट्सएप / मोबाइल पर शेयर करने का फंक्शन
-        async function shareActiveReportViaWhatsApp() {
-            let activeTableId = 'dataTable', fileName = 'Indore_Region_Performance_Report.xlsx';
-            let appendNote = false;
-
-            if (currentActiveView === 'sdMonth') { activeTableId = 'sdMTable'; fileName = 'MonthWise_Report.xlsx'; }
-            else if (currentActiveView === 'office') { activeTableId = 'sdPerformanceTable'; fileName = 'Nil_Booking_Report.xlsx'; appendNote = true; }
-            else if (currentActiveView === 'mom') { activeTableId = 'momDataTable'; fileName = 'MoM_Growth_Report.xlsx'; }
-            else if (currentActiveView === 'yoy') { activeTableId = 'yoyDataTable'; fileName = 'Indore_Region_YoY_Report.xlsx'; }
-            else if (currentActiveView === 'q1') { activeTableId = 'q1RevTable'; fileName = 'Indore_Region_Q1_Report.xlsx'; }
-            else if (currentActiveView === 'rankings') { activeTableId = 'rankingsTable'; fileName = 'Office_Performance_Rankings.xlsx'; }
-
-            const tableElement = document.getElementById(activeTableId);
-            if (!tableElement) return;
-
-            // 1. एक्सेल वर्कबुक तैयार करें
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.table_to_sheet(tableElement);
-
-            if (appendNote) {
-                let range = XLSX.utils.decode_range(ws['!ref']);
-                let nextRow = range.e.r + 2;
-                XLSX.utils.sheet_add_aoa(ws, [["*Note: IDC offices are non-booking offices and included under Low Booking."]], {origin: {r: nextRow, c: 0}});
-            }
-
-            XLSX.utils.book_append_sheet(wb, ws, "Report");
-
-            // 2. एक्सेल को फाइल ऑब्जेक्ट में बदलें
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-            // 3. मोबाइल Web Share API का इस्तेमाल (फ़ाइल डायरेक्ट अटैच होगी)
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Indore Region Performance Report',
-                        text: 'Indore Region Performance Excel Report'
-                    });
-                    return; 
-                } catch (err) {
-                    console.log('Share canceled or failed', err);
-                }
-            }
-
-            // 4. बैकअप तरीका (डेस्कटॉप या पुराने ब्राउज़र के लिए)
-            XLSX.writeFile(wb, fileName);
-            let msgText = encodeURIComponent(`Hello! I have generated the Indore Region Performance Excel Report (${fileName}). Downloaded to device, attaching here.`);
-            let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) window.location.href = `whatsapp://send?text=${msgText}`;
-            else window.open(`https://web.whatsapp.com/`, '_blank');
         }
 
         window.onload = function() {
