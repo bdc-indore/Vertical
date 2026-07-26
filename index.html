@@ -749,13 +749,18 @@
             }
         }
 
-        function normalizeSubDivisionName(sdName, clsName, offName) {
+        /* FIXED FUNCTION: Division filtering added to avoid false Indore East mapping for Ujjain & Khandwa */
+        function normalizeSubDivisionName(sdName, clsName, offName, divName) {
             let sd = (sdName || '').trim();
             let cls = (clsName || '').trim().toUpperCase();
             let name = (offName || '').trim().toUpperCase();
+            let div = (divName || '').trim().toUpperCase();
 
-            if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
-                return "Indore East"; 
+            // Only apply 'Indore East' logic if the division is Indore City
+            if (div.includes('CITY') || div.includes('INDORE CITY')) {
+                if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
+                    return "Indore East"; 
+                }
             }
             return sd || 'UNASSIGNED';
         }
@@ -788,8 +793,10 @@
                     let offId = r[idIdx].trim();
                     let offName = r[nameIdx] ? r[nameIdx].trim() : "";
                     let offCls = r[clsIdx] ? r[clsIdx].trim().toUpperCase() : "";
+                    let rawDiv = r[divIdx] ? r[divIdx].trim() : "";
 
-                    let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName);
+                    /* Passed rawDiv as the 4th parameter */
+                    let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName, rawDiv);
 
                     if (!officeMap.has(offId)) {
                         officeMap.set(offId, {
@@ -797,7 +804,7 @@
                             name: offName,
                             cls: offCls,
                             sd: normSd,
-                            div: r[divIdx] ? r[divIdx].trim() : "",
+                            div: rawDiv,
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
                             parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
                             mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
