@@ -63,23 +63,29 @@
 
             <!-- View Switcher Tabs -->
             <div class="flex flex-wrap border-b border-slate-200 bg-white rounded-t-xl px-4 pt-2 shadow-sm gap-2">
-                <button onclick="switchView('revenue')" id="tab-type-revenue" class="px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2">
-                    <span>💰</span> Revenue Data
+                <button onclick="switchView('revenue')" id="tab-type-revenue" class="px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5">
+                    <span>💰</span> Revenue
                 </button>
-                <button onclick="switchView('count')" id="tab-type-count" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2">
+                <button onclick="switchView('count')" id="tab-type-count" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-1.5">
                     <span>📦</span> Article Count
                 </button>
-                <button onclick="switchView('sdMonth')" id="tab-type-sdMonth" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-purple-600 transition flex items-center gap-2">
-                    <span>🏢</span> Sub-Division / Post Office Month-Wise Analysis
+                <button onclick="switchView('sdMonth')" id="tab-type-sdMonth" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-purple-600 transition flex items-center gap-1.5">
+                    <span>🏢</span> Sub-Division Analysis
                 </button>
-                <button onclick="switchView('office')" id="tab-type-office" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-rose-600 transition flex items-center gap-2">
-                    <span>📊</span> Nil Booking Report
+                <button onclick="switchView('office')" id="tab-type-office" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-rose-600 transition flex items-center gap-1.5">
+                    <span>📊</span> Nil Booking
                 </button>
-                <button onclick="switchView('q1')" id="tab-type-q1" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-2">
+                <button onclick="switchView('q1')" id="tab-type-q1" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-1.5">
                     <span>📊</span> Q-1 Report
                 </button>
-                <button onclick="switchView('yoy')" id="tab-type-yoy" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-2">
+                <button onclick="switchView('mom')" id="tab-type-mom" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 transition flex items-center gap-1.5">
+                    <span>📉</span> MoM Analysis
+                </button>
+                <button onclick="switchView('yoy')" id="tab-type-yoy" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-indigo-600 transition flex items-center gap-1.5">
                     <span>🔄</span> YoY Comparison
+                </button>
+                <button onclick="switchView('rankings')" id="tab-type-rankings" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-emerald-600 transition flex items-center gap-1.5">
+                    <span>🏆</span> Top/Bottom 20
                 </button>
             </div>
 
@@ -242,7 +248,6 @@
                             <span>🏢</span> Month-Wise Analysis (April to July)
                         </h2>
                         <div class="flex flex-wrap items-center gap-3">
-                            <!-- View Type Filter Added -->
                             <div>
                                 <label class="text-xs font-bold text-purple-900 uppercase">View Type:</label>
                                 <select id="sdMViewTypeSelect" onchange="renderSdMonthAnalysis()" class="bg-purple-100 border border-purple-300 text-purple-900 font-bold text-xs rounded-lg p-2 focus:ring-2 focus:ring-purple-500">
@@ -476,7 +481,7 @@
                 </div>
             </div>
 
-            <!-- DEDICATED Q-1 DATA SECTION -->
+            <!-- DEDICATED Q-1 DATA SECTION (REVENUE + COUNT) -->
             <div id="q1DataView" class="hidden space-y-6">
                 <div class="bg-white rounded-xl p-5 border border-teal-100 card space-y-4">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -491,7 +496,9 @@
                     </div>
                 </div>
 
-                <div class="card p-6">
+                <!-- Q-1 Revenue Table -->
+                <div class="card p-6 space-y-3">
+                    <h3 class="text-base font-bold text-teal-900 flex items-center gap-2">💰 Q-1 Revenue Performance Table</h3>
                     <div class="overflow-x-auto">
                         <table id="q1RevTable" class="w-full text-left text-sm border-collapse">
                             <thead>
@@ -503,12 +510,91 @@
                                     <th class="p-3.5">April 26</th>
                                     <th class="p-3.5">May 26</th>
                                     <th class="p-3.5">June 26</th>
-                                    <th class="p-3.5 font-black text-emerald-300 bg-teal-900">Q-1 Total Achievement</th>
-                                    <th class="p-3.5 text-center bg-teal-800">Q-1 % Achievement</th>
+                                    <th class="p-3.5 font-black text-emerald-300 bg-teal-900">Q-1 Total Revenue</th>
+                                    <th class="p-3.5 text-center bg-teal-800">Q-1 % Ach</th>
                                 </tr>
                             </thead>
                             <tbody id="q1RevTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
                             <tfoot id="q1RevTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- NEW: Q-1 Article Count Table -->
+                <div class="card p-6 space-y-3">
+                    <h3 class="text-base font-bold text-indigo-900 flex items-center gap-2">📦 Q-1 Article Count Performance Table</h3>
+                    <div class="overflow-x-auto">
+                        <table id="q1CountTable" class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-indigo-950 text-white font-bold text-xs uppercase">
+                                    <th class="p-3.5">Division Name</th>
+                                    <th class="p-3.5">Vertical</th>
+                                    <th class="p-3.5 bg-indigo-900">Q-1 Target Count</th>
+                                    <th class="p-3.5">April 26 Count</th>
+                                    <th class="p-3.5">May 26 Count</th>
+                                    <th class="p-3.5">June 26 Count</th>
+                                    <th class="p-3.5 font-black text-emerald-300 bg-indigo-900">Q-1 Total Article Count</th>
+                                    <th class="p-3.5 text-center bg-indigo-800">Q-1 % Ach</th>
+                                </tr>
+                            </thead>
+                            <tbody id="q1CountTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="q1CountTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: DEDICATED MOM (MONTH-OVER-MONTH) ANALYSIS SECTION -->
+            <div id="momAnalysisView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-6 border border-amber-100 card space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-amber-900 flex items-center gap-2">
+                            <span>📉</span> Month-over-Month (MoM) Growth Comparison
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Analysis Level:</label>
+                                <select id="momLevelSelect" onchange="renderMomAnalysis()" class="bg-amber-100 border border-amber-300 text-amber-900 font-bold text-xs rounded-lg p-2">
+                                    <option value="DIV">🏢 Division / Vertical Level (Revenue & Count)</option>
+                                    <option value="SD">🏬 Sub-Division Level (Article Count Only)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
+                                <select id="momVertSelect" onchange="renderMomAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">🌐 All Verticals Combined</option>
+                                    <option value="PARCEL">📦 Parcel Vertical</option>
+                                    <option value="MAIL">✉️ Mail Operations</option>
+                                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
+                                <select id="momDivSelect" onchange="renderMomAnalysis()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">🏢 All Divisions</option>
+                                    <option value="Indore City">Indore City</option>
+                                    <option value="Indore Moffusil">Indore Moffusil</option>
+                                    <option value="Khandwa">Khandwa</option>
+                                    <option value="Mandsaur">Mandsaur</option>
+                                    <option value="Ratlam">Ratlam</option>
+                                    <option value="Sehore">Sehore</option>
+                                    <option value="Ujjain">Ujjain</option>
+                                    <option value="ID DIVISION">ID DIVISION</option>
+                                </select>
+                            </div>
+                            <button onclick="exportTableByID('momDataTable', 'MoM_Growth_Report.xlsx')" class="bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
+                                📊 Export MoM Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div class="overflow-x-auto">
+                        <table id="momDataTable" class="w-full text-left text-xs border-collapse">
+                            <thead id="momTableHead"></thead>
+                            <tbody id="momTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="momTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -570,6 +656,97 @@
                             </thead>
                             <tbody id="yoyTableBody" class="divide-y divide-slate-100"></tbody>
                             <tfoot id="yoyTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: DEDICATED TOP 20 & BOTTOM 20 PERFORMERS TAB -->
+            <div id="rankingsView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-6 border border-emerald-100 card space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+                            <span>🏆</span> Top 20 & Bottom 20 Office Performance Rankings
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Rank Mode:</label>
+                                <select id="rankModeSelect" onchange="renderRankings()" class="bg-emerald-100 border border-emerald-300 text-emerald-900 font-extrabold text-xs rounded-lg p-2">
+                                    <option value="TOP">🥇 Top 20 Performers</option>
+                                    <option value="BOTTOM">🔻 Bottom 20 Performers</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
+                                <select id="rankVertSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">🌐 All Verticals Combined</option>
+                                    <option value="PARCEL">📦 Parcel Vertical</option>
+                                    <option value="MAIL">✉️ Mail Operations</option>
+                                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
+                                <select id="rankDivSelect" onchange="onRankDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">🏢 All Divisions</option>
+                                    <option value="INDORE CITY">Indore City</option>
+                                    <option value="INDORE MFL">Indore Moffusil</option>
+                                    <option value="KHANDWA">Khandwa</option>
+                                    <option value="MANDSAUR">Mandsaur</option>
+                                    <option value="RATLAM">Ratlam</option>
+                                    <option value="SEHORE">Sehore</option>
+                                    <option value="UJJAIN">Ujjain</option>
+                                    <option value="ID DIVISION">ID DIVISION</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Sub-Division:</label>
+                                <select id="rankSdSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">All Sub-Divisions</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Class:</label>
+                                <select id="rankClassSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">All Classes</option>
+                                    <option value="BO">BO (Branch Office)</option>
+                                    <option value="SO">SO (Sub Office)</option>
+                                    <option value="HO">HO (Head Office)</option>
+                                    <option value="RMS">RMS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Month:</label>
+                                <select id="rankMonthSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <option value="apr">April 2026</option>
+                                    <option value="may">May 2026</option>
+                                    <option value="jun">June 2026</option>
+                                    <option value="jul" selected>July 2026</option>
+                                    <option value="total">Cumulative Q-1 Total</option>
+                                </select>
+                            </div>
+                            <button onclick="exportTableByID('rankingsTable', 'Office_Performance_Rankings.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
+                                📊 Export Ranking Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div class="overflow-x-auto">
+                        <table id="rankingsTable" class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-white font-bold uppercase">
+                                    <th class="p-3 border text-center">Rank</th>
+                                    <th class="p-3 border">Office ID</th>
+                                    <th class="p-3 border">Office Name</th>
+                                    <th class="p-3 border">Class</th>
+                                    <th class="p-3 border">Sub Division</th>
+                                    <th class="p-3 border">Division</th>
+                                    <th class="p-3 border text-right bg-emerald-900 text-emerald-100">Booking Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankingsTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
                         </table>
                     </div>
                 </div>
@@ -657,9 +834,12 @@
             }
         };
 
-        function isKhudelClosedBO(o) {
-            return !!(o && o.name && o.name.toString().trim().toUpperCase() === 'KHUDEL' &&
-                      (o.cls || '').toString().trim().toUpperCase() === 'BO');
+        // Solid Closed Office Checker Strategy
+        function isClosedOffice(o) {
+            if (!o) return false;
+            let name = (o.name || '').toString().trim().toUpperCase();
+            let cls = (o.cls || '').toString().trim().toUpperCase();
+            return (name === 'KHUDEL' && cls === 'BO') || o.isClosed === true;
         }
 
         let masterOfficeDatabase = []; 
@@ -749,14 +929,12 @@
             }
         }
 
-        /* FIXED FUNCTION: Division filtering added to avoid false Indore East mapping for Ujjain & Khandwa */
         function normalizeSubDivisionName(sdName, clsName, offName, divName) {
             let sd = (sdName || '').trim();
             let cls = (clsName || '').trim().toUpperCase();
             let name = (offName || '').trim().toUpperCase();
             let div = (divName || '').trim().toUpperCase();
 
-            // Only apply 'Indore East' logic if the division is Indore City
             if (div.includes('CITY') || div.includes('INDORE CITY')) {
                 if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
                     return "Indore East"; 
@@ -795,8 +973,8 @@
                     let offCls = r[clsIdx] ? r[clsIdx].trim().toUpperCase() : "";
                     let rawDiv = r[divIdx] ? r[divIdx].trim() : "";
 
-                    /* Passed rawDiv as the 4th parameter */
                     let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName, rawDiv);
+                    let closedFlag = (offName.toUpperCase() === 'KHUDEL' && offCls === 'BO');
 
                     if (!officeMap.has(offId)) {
                         officeMap.set(offId, {
@@ -805,6 +983,7 @@
                             cls: offCls,
                             sd: normSd,
                             div: rawDiv,
+                            isClosed: closedFlag,
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
                             parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
                             mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
@@ -816,13 +995,9 @@
                     let cat = r[catIdx] ? r[catIdx].trim().toUpperCase() : "";
                     let cnt = cleanNumber(r[cntIdx]);
 
-                    if (cat.includes("PARCEL")) {
-                        offObj[`parcel_${monthKey}`] += cnt;
-                    } else if (cat.includes("IRGB")) {
-                        offObj[`irgb_${monthKey}`] += cnt;
-                    } else { 
-                        offObj[`mo_${monthKey}`] += cnt;
-                    }
+                    if (cat.includes("PARCEL")) offObj[`parcel_${monthKey}`] += cnt;
+                    else if (cat.includes("IRGB")) offObj[`irgb_${monthKey}`] += cnt;
+                    else offObj[`mo_${monthKey}`] += cnt;
                 });
             }
 
@@ -839,13 +1014,6 @@
             rows.forEach((r, idx) => {
                 if (idx === 0) return;
                 let offId = r[0] ? r[0].trim() : "";
-                let offName = r[1] ? r[1].trim().toUpperCase() : "";
-                let offCls = r[2] ? r[2].trim().toUpperCase() : "";
-
-                if (offName === 'KHUDEL' && offCls === 'BO') {
-                    return; 
-                }
-
                 if (!offId) return;
 
                 let cat = r[5] ? r[5].trim().toUpperCase() : "";
@@ -980,17 +1148,17 @@
 
         function switchView(viewType) {
             currentActiveView = viewType;
-            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'yoyComparisonView'];
+            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView'];
             views.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
 
-            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'yoy'];
+            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-type-${t}`);
                 if (btn) {
-                    btn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+                    btn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-1.5";
                 }
             });
 
@@ -998,33 +1166,42 @@
 
             if (viewType === 'sdMonth') {
                 document.getElementById('sdMonthView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-purple-600 text-purple-600 transition flex items-center gap-2";
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-purple-600 text-purple-600 transition flex items-center gap-1.5";
                 populateSubDivDropdown('sdMDivSelect', 'sdMSdSelect');
                 renderSdMonthAnalysis();
             } else if (viewType === 'office') {
                 document.getElementById('officeAnalyticsView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-rose-600 text-rose-600 transition flex items-center gap-2";
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-rose-600 text-rose-600 transition flex items-center gap-1.5";
                 populateSubDivDropdown('offDivSelect', 'offSdSelect');
                 renderOfficeAnalytics();
             } else if (viewType === 'q1') {
                 document.getElementById('q1DataView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-2";
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-1.5";
                 updateQ1Tables();
+            } else if (viewType === 'mom') {
+                document.getElementById('momAnalysisView').classList.remove('hidden');
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-amber-600 text-amber-600 transition flex items-center gap-1.5";
+                renderMomAnalysis();
             } else if (viewType === 'yoy') {
                 document.getElementById('yoyComparisonView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2";
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-1.5";
                 updateYoYTable();
+            } else if (viewType === 'rankings') {
+                document.getElementById('rankingsView').classList.remove('hidden');
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-emerald-600 text-emerald-600 transition flex items-center gap-1.5";
+                populateSubDivDropdown('rankDivSelect', 'rankSdSelect');
+                renderRankings();
             } else {
                 document.getElementById('standardDashboardView').classList.remove('hidden');
                 if (viewType === 'revenue') {
                     currentDataType = 'revenue';
-                    if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5";
                     document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
                     document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
                     document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
                 } else {
                     currentDataType = 'count';
-                    if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
+                    if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5";
                     document.getElementById('chart1UnitBadge').innerText = "Article Count";
                     document.getElementById('kpiTargetLabel').innerText = "जुलाई लक्ष्य (JULY TARGET ARTICLES)";
                     document.getElementById('kpiAchLabel').innerText = "जुलाई बुकिंग (JULY ARTICLE COUNT)";
@@ -1053,15 +1230,14 @@
 
         function onSdMDivChange() { populateSubDivDropdown('sdMDivSelect', 'sdMSdSelect'); renderSdMonthAnalysis(); }
         function onOffDivChange() { populateSubDivDropdown('offDivSelect', 'offSdSelect'); renderOfficeAnalytics(); }
+        function onRankDivChange() { populateSubDivDropdown('rankDivSelect', 'rankSdSelect'); renderRankings(); }
 
-        // Click Handler for Sub-Division Name Click
         function selectSubDivisionAndSwitchToPO(sdName) {
             document.getElementById('sdMSdSelect').value = sdName;
             document.getElementById('sdMViewTypeSelect').value = 'PO';
             renderSdMonthAnalysis();
         }
 
-        // Combined Sub-Division / Post Office Renderer with Dynamic Chart
         function renderSdMonthAnalysis() {
             const viewType = document.getElementById('sdMViewTypeSelect').value;
             const vert = document.getElementById('sdMVertSelect').value;
@@ -1107,7 +1283,6 @@
 
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
-                let isKhudelClosed = isKhudelClosedBO(o);
 
                 if (cls !== 'ALL' && oCls !== cls.trim().toUpperCase()) return;
                 if (divKey !== 'ALL' && !isMatchingDivision(o.div, divKey)) return;
@@ -1129,7 +1304,7 @@
                 }
 
                 let item = sdMap.get(sd);
-                if (!isKhudelClosed) {
+                if (!isClosedOffice(o)) {
                     item.count++;
                     totalOffCount++;
                 }
@@ -1226,6 +1401,7 @@
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
+                if (isClosedOffice(o)) return false; // Strictly omit closed offices from Office Count list
                 let oCls = (o.cls || '').trim().toUpperCase();
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
                 let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
@@ -1233,8 +1409,7 @@
                 return matchDiv && matchSd && matchCls;
             });
 
-            let countableOffices = filtered.filter(o => !isKhudelClosedBO(o));
-            let totalPoCount = countableOffices.length;
+            let totalPoCount = filtered.length;
             let totalPoBookings = 0;
             let rows = [];
             let chartLabels = [];
@@ -1252,9 +1427,7 @@
                 else if (vert === 'IRGB') rowTot = (iApr + iMay + iJun + iJul);
                 else rowTot = (pApr + mApr + iApr + pMay + mMay + iMay + pJun + mJun + iJun + pJul + mJul + iJul);
 
-                if (!isKhudelClosedBO(o)) {
-                    totalPoBookings += rowTot;
-                }
+                totalPoBookings += rowTot;
 
                 chartLabels.push(o.name);
                 chartData.push(rowTot);
@@ -1303,7 +1476,6 @@
             renderSdMChart(chartLabels.slice(0, 20), chartData.slice(0, 20), "Post Office Total Bookings (Top 20)", "#10b981");
         }
 
-        // Render dynamic chart for Sub-Division / Post Office Level
         function renderSdMChart(labels, dataValues, datasetLabel, colorHex) {
             const ctx = document.getElementById('sdMChart').getContext('2d');
             if (sdMChart) sdMChart.destroy();
@@ -1346,11 +1518,9 @@
             currentFilteredGoodOffices = [];
 
             masterOfficeDatabase.forEach(o => {
-                let oCls = (o.cls || '').trim().toUpperCase();
+                if (isClosedOffice(o)) return; // Strictly ignore closed offices from active office list count
 
-                if (mKey === 'jul' && isKhudelClosedBO(o)) {
-                    return; 
-                }
+                let oCls = (o.cls || '').trim().toUpperCase();
 
                 if (clsKey !== 'ALL' && oCls !== clsKey.trim().toUpperCase()) return;
                 if (divKey !== 'ALL' && !isMatchingDivision(o.div, divKey)) return;
@@ -1643,15 +1813,17 @@
 
         function updateQ1Tables() {
             const vKey = document.getElementById('q1VerticalSelect').value;
+            
+            // 1. Q-1 Revenue Rendering
             let filteredRev = revenueRecords.filter(r => r.vertical === vKey);
-            let rows = [], sumAnnT = 0, sumQ1T = 0, sumApr = 0, sumMay = 0, sumJun = 0, sumQ1Ach = 0;
+            let rowsRev = [], sumAnnT = 0, sumQ1T = 0, sumAprR = 0, sumMayR = 0, sumJunR = 0, sumQ1AchR = 0;
 
             filteredRev.forEach(r => {
                 let annT = r.target, q1T = annT / 4, ap = r.apr, my = r.may, jn = r.jun;
                 let q1Ach = ap + my + jn, q1Pct = q1T > 0 ? ((q1Ach / q1T) * 100).toFixed(1) + "%" : "0%";
-                sumAnnT += annT; sumQ1T += q1T; sumApr += ap; sumMay += my; sumJun += jn; sumQ1Ach += q1Ach;
+                sumAnnT += annT; sumQ1T += q1T; sumAprR += ap; sumMayR += my; sumJunR += jn; sumQ1AchR += q1Ach;
 
-                rows.push(`<tr class="border-b border-slate-200 hover:bg-teal-50/50">
+                rowsRev.push(`<tr class="border-b border-slate-200 hover:bg-teal-50/50">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
                     <td class="p-3 text-xs font-semibold text-slate-500">${r.vertical}</td>
                     <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
@@ -1664,18 +1836,203 @@
                 </tr>`);
             });
 
-            document.getElementById('q1RevTableBody').innerHTML = rows.join('');
+            document.getElementById('q1RevTableBody').innerHTML = rowsRev.join('');
             document.getElementById('q1RevTableFoot').innerHTML = `<tr class="bg-teal-950 text-white font-extrabold text-xs">
                     <td class="p-3.5 text-amber-300">TOTAL Q-1 REVENUE</td>
                     <td class="p-3.5">${vKey}</td>
                     <td class="p-3.5">₹${sumAnnT.toFixed(3)} Cr</td>
                     <td class="p-3.5 text-teal-200">₹${sumQ1T.toFixed(3)} Cr</td>
-                    <td class="p-3.5">${sumApr.toFixed(3)}</td>
-                    <td class="p-3.5">${sumMay.toFixed(3)}</td>
-                    <td class="p-3.5">${sumJun.toFixed(3)}</td>
-                    <td class="p-3.5 text-emerald-300">₹${sumQ1Ach.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-center text-amber-300">${sumQ1T > 0 ? ((sumQ1Ach/sumQ1T)*100).toFixed(1) : 0}%</td>
+                    <td class="p-3.5">${sumAprR.toFixed(3)}</td>
+                    <td class="p-3.5">${sumMayR.toFixed(3)}</td>
+                    <td class="p-3.5">${sumJunR.toFixed(3)}</td>
+                    <td class="p-3.5 text-emerald-300">₹${sumQ1AchR.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-center text-amber-300">${sumQ1T > 0 ? ((sumQ1AchR/sumQ1T)*100).toFixed(1) : 0}%</td>
                 </tr>`;
+
+            // 2. NEW: Q-1 Article Count Rendering
+            let filteredCount = countRecords.filter(r => r.vertical === vKey);
+            let rowsCnt = [], sumQ1CountTgt = 0, sumAprC = 0, sumMayC = 0, sumJunC = 0, sumQ1AchC = 0;
+
+            filteredCount.forEach(r => {
+                let stdKey = getStandardDivKey(r.divName);
+                let q1Tgts = (Q1_COUNT_TARGETS[vKey] && Q1_COUNT_TARGETS[vKey][stdKey]) ? Q1_COUNT_TARGETS[vKey][stdKey] : { apr: 0, may: 0, jun: 0 };
+                let q1TgtCount = q1Tgts.apr + q1Tgts.may + q1Tgts.jun;
+
+                let ap = r.apr, my = r.may, jn = r.jun;
+                let q1Ach = ap + my + jn;
+                let q1Pct = q1TgtCount > 0 ? ((q1Ach / q1TgtCount) * 100).toFixed(1) + "%" : "0%";
+
+                sumQ1CountTgt += q1TgtCount; sumAprC += ap; sumMayC += my; sumJunC += jn; sumQ1AchC += q1Ach;
+
+                rowsCnt.push(`<tr class="border-b border-slate-200 hover:bg-indigo-50/50">
+                    <td class="p-3 font-bold text-slate-900">${r.divName}</td>
+                    <td class="p-3 text-xs font-semibold text-slate-500">${r.vertical}</td>
+                    <td class="p-3 font-bold text-indigo-800">${q1TgtCount.toLocaleString('en-IN')}</td>
+                    <td class="p-3">${ap.toLocaleString('en-IN')}</td>
+                    <td class="p-3">${my.toLocaleString('en-IN')}</td>
+                    <td class="p-3">${jn.toLocaleString('en-IN')}</td>
+                    <td class="p-3 font-extrabold text-emerald-700">${q1Ach.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-center font-black text-indigo-700">${q1Pct}</td>
+                </tr>`);
+            });
+
+            document.getElementById('q1CountTableBody').innerHTML = rowsCnt.join('');
+            document.getElementById('q1CountTableFoot').innerHTML = `<tr class="bg-indigo-950 text-white font-extrabold text-xs">
+                    <td class="p-3.5 text-amber-300">TOTAL Q-1 ARTICLE COUNT</td>
+                    <td class="p-3.5">${vKey}</td>
+                    <td class="p-3.5 text-indigo-200">${sumQ1CountTgt.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5">${sumAprC.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5">${sumMayC.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5">${sumJunC.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-emerald-300">${sumQ1AchC.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-center text-amber-300">${sumQ1CountTgt > 0 ? ((sumQ1AchC/sumQ1CountTgt)*100).toFixed(1) : 0}%</td>
+                </tr>`;
+        }
+
+        // NEW: Month-over-Month (MoM) Analysis Logic
+        function renderMomAnalysis() {
+            const level = document.getElementById('momLevelSelect').value;
+            const vert = document.getElementById('momVertSelect').value;
+            const div = document.getElementById('momDivSelect').value;
+
+            if (level === 'DIV') {
+                renderMomDivisionLevel(vert, div);
+            } else {
+                renderMomSubDivisionLevel(vert, div);
+            }
+        }
+
+        function renderMomDivisionLevel(vert, div) {
+            let theadHtml = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase">
+                <th class="p-3">Division Name</th>
+                <th class="p-3">Vertical</th>
+                <th class="p-3 bg-amber-900">Apr Rev</th>
+                <th class="p-3 bg-amber-900">May Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">May/Apr Growth</th>
+                <th class="p-3 bg-amber-900">Jun Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jun/May Growth</th>
+                <th class="p-3 bg-amber-900">Jul Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jul/Jun Growth</th>
+                <th class="p-3 bg-slate-800">Apr Count</th>
+                <th class="p-3 bg-slate-800">May Count</th>
+                <th class="p-3 bg-slate-700 text-amber-200">May/Apr Growth</th>
+                <th class="p-3 bg-slate-800">Jun Count</th>
+                <th class="p-3 bg-slate-700 text-amber-200">Jun/May Growth</th>
+                <th class="p-3 bg-slate-800">Jul Count</th>
+                <th class="p-3 bg-slate-700 text-amber-200">Jul/Jun Growth</th>
+            </tr>`;
+            document.getElementById('momTableHead').innerHTML = theadHtml;
+
+            let filteredRev = revenueRecords.filter(r => (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert));
+            let rows = [];
+
+            filteredRev.forEach(r => {
+                let c = countRecords.find(x => isMatchingDivision(x.divName, r.divName) && x.vertical === r.vertical) || {};
+
+                let apR = r.apr, myR = r.may, jnR = r.jun, jlR = r.jul;
+                let apC = c.apr||0, myC = c.may||0, jnC = c.jun||0, jlC = c.jul||0;
+
+                let gRevMay = apR > 0 ? (((myR - apR)/apR)*100).toFixed(1) : 0;
+                let gRevJun = myR > 0 ? (((jnR - myR)/myR)*100).toFixed(1) : 0;
+                let gRevJul = jnR > 0 ? (((jlR - jnR)/jnR)*100).toFixed(1) : 0;
+
+                let gCntMay = apC > 0 ? (((myC - apC)/apC)*100).toFixed(1) : 0;
+                let gCntJun = myC > 0 ? (((jnC - myC)/myC)*100).toFixed(1) : 0;
+                let gCntJul = jnC > 0 ? (((jlC - jnC)/jnC)*100).toFixed(1) : 0;
+
+                let formatG = (v) => v >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${v}%</span>` : `<span class="text-rose-600 font-bold">▼ ${v}%</span>`;
+
+                rows.push(`<tr class="hover:bg-amber-50/40 border-b border-slate-200">
+                    <td class="p-2.5 font-bold text-slate-900">${r.divName}</td>
+                    <td class="p-2.5 text-xs text-slate-500 font-semibold">${r.vertical}</td>
+                    <td class="p-2.5">₹${apR.toFixed(3)}</td>
+                    <td class="p-2.5">₹${myR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gRevMay)}</td>
+                    <td class="p-2.5">₹${jnR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gRevJun)}</td>
+                    <td class="p-2.5 font-bold text-emerald-700">₹${jlR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-100">${formatG(gRevJul)}</td>
+                    <td class="p-2.5 border-l">${apC.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5">${myC.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-slate-100">${formatG(gCntMay)}</td>
+                    <td class="p-2.5">${jnC.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-slate-100">${formatG(gCntJun)}</td>
+                    <td class="p-2.5 font-bold text-blue-700">${jlC.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-slate-200">${formatG(gCntJul)}</td>
+                </tr>`);
+            });
+
+            document.getElementById('momTableBody').innerHTML = rows.join('');
+            document.getElementById('momTableFoot').innerHTML = '';
+        }
+
+        function renderMomSubDivisionLevel(vert, div) {
+            let theadHtml = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase">
+                <th class="p-3">Division Name</th>
+                <th class="p-3">Sub-Division Name</th>
+                <th class="p-3 bg-slate-800">April Booking Count</th>
+                <th class="p-3 bg-slate-800">May Booking Count</th>
+                <th class="p-3 bg-amber-800 text-amber-200">May/Apr Count Growth</th>
+                <th class="p-3 bg-slate-800">June Booking Count</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jun/May Count Growth</th>
+                <th class="p-3 bg-slate-800">July Booking Count</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jul/Jun Count Growth</th>
+            </tr>`;
+            document.getElementById('momTableHead').innerHTML = theadHtml;
+
+            let sdMap = new Map();
+
+            masterOfficeDatabase.forEach(o => {
+                if (div !== 'ALL' && !isMatchingDivision(o.div, div)) return;
+
+                let divName = o.div || 'UNKNOWN';
+                let sdName = o.sd || 'UNASSIGNED';
+                let key = `${divName}___${sdName}`;
+
+                if (!sdMap.has(key)) {
+                    sdMap.set(key, { div: divName, sd: sdName, apr:0, may:0, jun:0, jul:0 });
+                }
+
+                let obj = sdMap.get(key);
+                let pA = o.parcel_apr||0, mA = o.mo_apr||0, iA = o.irgb_apr||0;
+                let pM = o.parcel_may||0, mM = o.mo_may||0, iM = o.irgb_may||0;
+                let pJ = o.parcel_jun||0, mJ = o.mo_jun||0, iJ = o.irgb_jun||0;
+                let pJl = o.parcel_jul||0, mJl = o.mo_jul||0, iJl = o.irgb_jul||0;
+
+                if (vert === 'PARCEL') { obj.apr += pA; obj.may += pM; obj.jun += pJ; obj.jul += pJl; }
+                else if (vert === 'MAIL') { obj.apr += mA; obj.may += mM; obj.jun += mJ; obj.jul += mJl; }
+                else if (vert === 'IRGB') { obj.apr += iA; obj.may += iM; obj.jun += iJ; obj.jul += iJl; }
+                else {
+                    obj.apr += (pA + mA + iA);
+                    obj.may += (pM + mM + iM);
+                    obj.jun += (pJ + mJ + iJ);
+                    obj.jul += (pJl + mJl + iJl);
+                }
+            });
+
+            let rows = [];
+            let formatG = (v) => v >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${v}%</span>` : `<span class="text-rose-600 font-bold">▼ ${v}%</span>`;
+
+            sdMap.forEach(item => {
+                let gMay = item.apr > 0 ? (((item.may - item.apr)/item.apr)*100).toFixed(1) : 0;
+                let gJun = item.may > 0 ? (((item.jun - item.may)/item.may)*100).toFixed(1) : 0;
+                let gJul = item.jun > 0 ? (((item.jul - item.jun)/item.jun)*100).toFixed(1) : 0;
+
+                rows.push(`<tr class="hover:bg-amber-50/40 border-b border-slate-200">
+                    <td class="p-2.5 font-bold text-slate-900">${item.div}</td>
+                    <td class="p-2.5 font-bold text-purple-700">${item.sd}</td>
+                    <td class="p-2.5">${item.apr.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5">${item.may.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gMay)}</td>
+                    <td class="p-2.5">${item.jun.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gJun)}</td>
+                    <td class="p-2.5 font-extrabold text-blue-700">${item.jul.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-amber-100">${formatG(gJul)}</td>
+                </tr>`);
+            });
+
+            document.getElementById('momTableBody').innerHTML = rows.join('');
+            document.getElementById('momTableFoot').innerHTML = '';
         }
 
         function updateYoYTable() {
@@ -1734,6 +2091,68 @@
                     <td class="p-3.5 text-emerald-300">₹${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3.5 text-center">${totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0}%</td>
                 </tr>`;
+        }
+
+        // NEW: Top 20 / Bottom 20 Performance Rankings Logic
+        function renderRankings() {
+            const mode = document.getElementById('rankModeSelect').value;
+            const vert = document.getElementById('rankVertSelect').value;
+            const div = document.getElementById('rankDivSelect').value;
+            const sd = document.getElementById('rankSdSelect').value;
+            const cls = document.getElementById('rankClassSelect').value;
+            const month = document.getElementById('rankMonthSelect').value;
+
+            let filtered = masterOfficeDatabase.filter(o => {
+                if (isClosedOffice(o)) return false; // Exclude closed office from active rankings
+                let matchDiv = (div === 'ALL') || isMatchingDivision(o.div, div);
+                let matchSd = (sd === 'ALL') || (o.sd === sd);
+                let matchCls = (cls === 'ALL') || (o.cls === cls.trim().toUpperCase());
+                return matchDiv && matchSd && matchCls;
+            });
+
+            let rankedList = filtered.map(o => {
+                let cnt = 0;
+                let getMonthCount = (m) => {
+                    let p = o[`parcel_${m}`]||0, mC = o[`mo_${m}`]||0, i = o[`irgb_${m}`]||0;
+                    if (vert === 'PARCEL') return p;
+                    if (vert === 'MAIL') return mC;
+                    if (vert === 'IRGB') return i;
+                    return p + mC + i;
+                };
+
+                if (month === 'total') {
+                    cnt = getMonthCount('apr') + getMonthCount('may') + getMonthCount('jun') + getMonthCount('jul');
+                } else {
+                    cnt = getMonthCount(month);
+                }
+
+                return { id: o.id, name: o.name, cls: o.cls, sd: o.sd, div: o.div, count: cnt };
+            });
+
+            if (mode === 'TOP') {
+                rankedList.sort((a, b) => b.count - a.count);
+            } else {
+                rankedList.sort((a, b) => a.count - b.count);
+            }
+
+            let top20 = rankedList.slice(0, 20);
+            let rows = [];
+
+            top20.forEach((item, idx) => {
+                let badgeClass = mode === 'TOP' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+
+                rows.push(`<tr class="hover:bg-slate-50 border-b border-slate-200">
+                    <td class="p-3 text-center font-black">${idx + 1}</td>
+                    <td class="p-3 font-mono text-slate-600">${item.id}</td>
+                    <td class="p-3 font-bold text-slate-900">${item.name}</td>
+                    <td class="p-3 font-semibold text-slate-500">${item.cls}</td>
+                    <td class="p-3 text-slate-600">${item.sd}</td>
+                    <td class="p-3 text-slate-600">${item.div}</td>
+                    <td class="p-3 text-right font-black text-sm ${badgeClass}">${item.count.toLocaleString('en-IN')}</td>
+                </tr>`);
+            });
+
+            document.getElementById('rankingsTableBody').innerHTML = rows.join('');
         }
 
         function renderCharts(fullDataset, filteredData, selectedDiv, showLakhsOnly) {
@@ -1823,8 +2242,10 @@
             let appendNote = false;
             if (currentActiveView === 'sdMonth') { activeTableId = 'sdMTable'; fileName = 'MonthWise_Report.xlsx'; }
             else if (currentActiveView === 'office') { activeTableId = 'sdPerformanceTable'; fileName = 'Nil_Booking_Report.xlsx'; appendNote = true; }
+            else if (currentActiveView === 'mom') { activeTableId = 'momDataTable'; fileName = 'MoM_Growth_Report.xlsx'; }
             else if (currentActiveView === 'yoy') { activeTableId = 'yoyDataTable'; fileName = 'Indore_Region_YoY_Report.xlsx'; }
             else if (currentActiveView === 'q1') { activeTableId = 'q1RevTable'; fileName = 'Indore_Region_Q1_Report.xlsx'; }
+            else if (currentActiveView === 'rankings') { activeTableId = 'rankingsTable'; fileName = 'Office_Performance_Rankings.xlsx'; }
 
             exportTableByID(activeTableId, fileName, appendNote);
             let msgText = encodeURIComponent(`Hello! I have downloaded the Indore Region Performance Excel Report (${fileName}). Attaching it here.`);
