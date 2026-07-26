@@ -837,7 +837,7 @@
         // Month-Wise Office Active/Closed Logic Checker
         function isOfficeActiveInMonth(office, monthKey) {
             if (!office) return false;
-            // यदि ऑफिस जुलाई में बंद हुआ है और जुलाई की रिपोर्ट देख रहे हैं, तो एक्टिव नहीं रहेगा
+            // Khudel BO जुलाई से बंद माना जाएगा (जुलाई में एक्टिव नहीं रहेगा)
             if (office.closedMonth === 'jul' && monthKey === 'jul') {
                 return false;
             }
@@ -985,7 +985,7 @@
                             cls: offCls,
                             sd: normSd,
                             div: rawDiv,
-                            closedMonth: isKhudelBO ? 'jul' : null, // Khudel BO यहाँ Marked रहेगा (July से Closed)
+                            closedMonth: isKhudelBO ? 'jul' : null, // Khudel BO जुलाई से बंद Marked रहेगा
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
                             parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
                             mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
@@ -2241,9 +2241,11 @@
             XLSX.writeFile(wb, defaultFileName);
         }
 
+        // डायरेक्ट एक्सेल फाइल व्हाट्सएप / मोबाइल पर शेयर करने का फंक्शन
         async function shareActiveReportViaWhatsApp() {
             let activeTableId = 'dataTable', fileName = 'Indore_Region_Performance_Report.xlsx';
             let appendNote = false;
+
             if (currentActiveView === 'sdMonth') { activeTableId = 'sdMTable'; fileName = 'MonthWise_Report.xlsx'; }
             else if (currentActiveView === 'office') { activeTableId = 'sdPerformanceTable'; fileName = 'Nil_Booking_Report.xlsx'; appendNote = true; }
             else if (currentActiveView === 'mom') { activeTableId = 'momDataTable'; fileName = 'MoM_Growth_Report.xlsx'; }
@@ -2251,8 +2253,43 @@
             else if (currentActiveView === 'q1') { activeTableId = 'q1RevTable'; fileName = 'Indore_Region_Q1_Report.xlsx'; }
             else if (currentActiveView === 'rankings') { activeTableId = 'rankingsTable'; fileName = 'Office_Performance_Rankings.xlsx'; }
 
-            exportTableByID(activeTableId, fileName, appendNote);
-            let msgText = encodeURIComponent(`Hello! I have downloaded the Indore Region Performance Excel Report (${fileName}). Attaching it here.`);
+            const tableElement = document.getElementById(activeTableId);
+            if (!tableElement) return;
+
+            // 1. एक्सेल वर्कबुक तैयार करें
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(tableElement);
+
+            if (appendNote) {
+                let range = XLSX.utils.decode_range(ws['!ref']);
+                let nextRow = range.e.r + 2;
+                XLSX.utils.sheet_add_aoa(ws, [["*Note: IDC offices are non-booking offices and included under Low Booking."]], {origin: {r: nextRow, c: 0}});
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, "Report");
+
+            // 2. एक्सेल को फाइल ऑब्जेक्ट में बदलें
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+            // 3. मोबाइल Web Share API का इस्तेमाल (फ़ाइल डायरेक्ट अटैच होगी)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Indore Region Performance Report',
+                        text: 'Indore Region Performance Excel Report'
+                    });
+                    return; 
+                } catch (err) {
+                    console.log('Share canceled or failed', err);
+                }
+            }
+
+            // 4. बैकअप तरीका (डेस्कटॉप या पुराने ब्राउज़र के लिए)
+            XLSX.writeFile(wb, fileName);
+            let msgText = encodeURIComponent(`Hello! I have generated the Indore Region Performance Excel Report (${fileName}). Downloaded to device, attaching here.`);
             let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (isMobile) window.location.href = `whatsapp://send?text=${msgText}`;
             else window.open(`https://web.whatsapp.com/`, '_blank');
