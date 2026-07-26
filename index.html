@@ -70,10 +70,7 @@
                     <span>📦</span> Article Count
                 </button>
                 <button onclick="switchView('sdMonth')" id="tab-type-sdMonth" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-purple-600 transition flex items-center gap-2">
-                    <span>🏢</span> Sub-Division Month-Wise Analysis
-                </button>
-                <button onclick="switchView('poMonth')" id="tab-type-poMonth" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-emerald-600 transition flex items-center gap-2">
-                    <span>📮</span> Post Office Month-Wise Analysis
+                    <span>🏢</span> Sub-Division / Post Office Month-Wise Analysis
                 </button>
                 <button onclick="switchView('office')" id="tab-type-office" class="px-5 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-rose-600 transition flex items-center gap-2">
                     <span>📊</span> Nil Booking Report
@@ -237,14 +234,22 @@
                 </div>
             </div>
 
-            <!-- SUB-DIVISION MONTH-WISE ANALYSIS SECTION -->
+            <!-- COMBINED SUB-DIVISION / POST OFFICE MONTH-WISE ANALYSIS SECTION -->
             <div id="sdMonthView" class="hidden space-y-6">
                 <div class="bg-white rounded-xl p-5 border border-purple-100 card space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <h2 class="text-base font-bold text-purple-900 flex items-center gap-2">
-                            <span>🏢</span> Sub-Division Month-Wise Analysis (April to July)
+                            <span>🏢</span> Month-Wise Analysis (April to July)
                         </h2>
                         <div class="flex flex-wrap items-center gap-3">
+                            <!-- View Type Filter Added -->
+                            <div>
+                                <label class="text-xs font-bold text-purple-900 uppercase">View Type:</label>
+                                <select id="sdMViewTypeSelect" onchange="renderSdMonthAnalysis()" class="bg-purple-100 border border-purple-300 text-purple-900 font-bold text-xs rounded-lg p-2 focus:ring-2 focus:ring-purple-500">
+                                    <option value="SD">🏢 Sub-Division Level</option>
+                                    <option value="PO">📮 Post Office Level</option>
+                                </select>
+                            </div>
                             <div>
                                 <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
                                 <select id="sdMVertSelect" onchange="renderSdMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
@@ -287,14 +292,14 @@
                                     <option value="BPC">BPC</option>
                                 </select>
                             </div>
-                            <button onclick="exportTableByID('sdMTable', 'Sub_Division_MonthWise_Report.xlsx')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
-                                📊 Export Sub-Division Excel
+                            <button onclick="exportTableByID('sdMTable', 'MonthWise_Report.xlsx')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
+                                📊 Export Excel
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- KPI Cards for Sub-Division Month-Wise -->
+                <!-- KPI Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="card p-4 border-l-4 border-purple-600">
                         <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL SUB-DIVISIONS</div>
@@ -314,96 +319,23 @@
                     </div>
                 </div>
 
+                <!-- Dynamic Chart Container -->
+                <div class="card p-6">
+                    <h3 id="sdMChartTitle" class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span>📊</span> Sub-Division Month-Wise Total Booking Chart
+                    </h3>
+                    <div class="h-72">
+                        <canvas id="sdMChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Dynamic Table Container -->
                 <div class="card p-6">
                     <div class="overflow-x-auto max-h-[500px]">
                         <table id="sdMTable" class="w-full text-left text-xs border-collapse">
                             <thead id="sdMTableHead"></thead>
                             <tbody id="sdMTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
                             <tfoot id="sdMTableFoot" class="bg-slate-900 text-white font-black text-xs uppercase"></tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- POST OFFICE MONTH-WISE ANALYSIS SECTION -->
-            <div id="poMonthView" class="hidden space-y-6">
-                <div class="bg-white rounded-xl p-5 border border-emerald-100 card space-y-4">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <h2 class="text-base font-bold text-emerald-900 flex items-center gap-2">
-                            <span>📮</span> Post Office Month-Wise Analysis (April to July)
-                        </h2>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
-                                <select id="poMVertSelect" onchange="renderPoMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                    <option value="ALL">🌐 All Verticals Combined</option>
-                                    <option value="PARCEL">📦 Parcel Vertical</option>
-                                    <option value="MAIL">✉️ Mail Operations</option>
-                                    <option value="IRGB">✈️ IR & GB Vertical</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
-                                <select id="poMDivSelect" onchange="onPoMDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
-                                    <option value="ALL">🏢 All Divisions</option>
-                                    <option value="INDORE CITY">Indore City</option>
-                                    <option value="INDORE MFL">Indore Moffusil</option>
-                                    <option value="KHANDWA">Khandwa</option>
-                                    <option value="MANDSAUR">Mandsaur</option>
-                                    <option value="RATLAM">Ratlam</option>
-                                    <option value="SEHORE">Sehore</option>
-                                    <option value="UJJAIN">Ujjain</option>
-                                    <option value="ID DIVISION">ID DIVISION</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase">Sub-Division:</label>
-                                <select id="poMSdSelect" onchange="renderPoMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                    <option value="ALL">All Sub-Divisions</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase">Class:</label>
-                                <select id="poMClassSelect" onchange="renderPoMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                    <option value="ALL">All Classes (BO/SO/HO/RMS/IDC/BNPL/BPC)</option>
-                                    <option value="BO">BO (Branch Office)</option>
-                                    <option value="SO">SO (Sub Office)</option>
-                                    <option value="HO">HO (Head Office)</option>
-                                    <option value="RMS">RMS</option>
-                                    <option value="IDC">IDC</option>
-                                    <option value="BNPL">BNPL</option>
-                                    <option value="BPC">BPC</option>
-                                </select>
-                            </div>
-                            <button onclick="exportTableByID('poMTable', 'Post_Office_MonthWise_Report.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">
-                                📊 Export Post Office Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KPI Cards for Post Office Month-Wise -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <div class="card p-4 border-l-4 border-emerald-600">
-                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">FILTERED POST OFFICES</div>
-                        <div id="poMKpiTotalOffices" class="text-xl font-black text-slate-900 mt-1">0</div>
-                    </div>
-                    <div class="card p-4 border-l-4 border-blue-600">
-                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">TOTAL FILTERED BOOKINGS</div>
-                        <div id="poMKpiTotalBookings" class="text-xl font-black text-blue-700 mt-1">0</div>
-                    </div>
-                    <div class="card p-4 border-l-4 border-amber-500">
-                        <div class="text-slate-500 text-[11px] font-bold uppercase leading-tight">AVERAGE BOOKING / OFFICE</div>
-                        <div id="poMKpiAvgBooking" class="text-xl font-black text-amber-700 mt-1">0</div>
-                    </div>
-                </div>
-
-                <div class="card p-6">
-                    <div class="overflow-x-auto max-h-[500px]">
-                        <table id="poMTable" class="w-full text-left text-xs border-collapse">
-                            <thead id="poMTableHead"></thead>
-                            <tbody id="poMTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-                            <tfoot id="poMTableFoot" class="bg-slate-900 text-white font-black text-xs uppercase"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -725,9 +657,6 @@
             }
         };
 
-        // Helper: check if an office row is the closed Khudel BO (closed from July onward).
-        // Historical months (Apr/May/Jun) still keep this office's data intact; it is only
-        // excluded from OFFICE COUNTS / KPI totals, never deleted from underlying data.
         function isKhudelClosedBO(o) {
             return !!(o && o.name && o.name.toString().trim().toUpperCase() === 'KHUDEL' &&
                       (o.cls || '').toString().trim().toUpperCase() === 'BO');
@@ -741,7 +670,7 @@
         let currentActiveView = 'revenue'; 
         let currentDataType = 'revenue';
         let currentVertical = 'ALL';
-        let trendChart = null, secondChart = null;
+        let trendChart = null, secondChart = null, sdMChart = null;
 
         let revenueRecords = [];
         let countRecords = [];
@@ -790,12 +719,6 @@
             }
         }
 
-        // ---- PERFORMANCE FIX ----
-        // Previously all 6 CSV fetches ran one-after-another (sequential awaits),
-        // so total load time = sum of all 6 request times (this is what pushed
-        // load from ~3s to ~15s as the sheets grew). Now all 6 fetches run in
-        // PARALLEL via Promise.all, so total load time = the single slowest
-        // fetch, not the sum of all of them.
         async function fetchAllLiveData() {
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
@@ -831,7 +754,6 @@
             let cls = (clsName || '').trim().toUpperCase();
             let name = (offName || '').trim().toUpperCase();
 
-            // Indore East sub-division ko combine karna
             if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
                 return "Indore East"; 
             }
@@ -913,7 +835,6 @@
                 let offName = r[1] ? r[1].trim().toUpperCase() : "";
                 let offCls = r[2] ? r[2].trim().toUpperCase() : "";
 
-                // July se Khudel BO band hai, isliye ise live count/report se exclude kiya gaya hai (Khudel SO chalu rahega)
                 if (offName === 'KHUDEL' && offCls === 'BO') {
                     return; 
                 }
@@ -1052,13 +973,13 @@
 
         function switchView(viewType) {
             currentActiveView = viewType;
-            const views = ['standardDashboardView', 'sdMonthView', 'poMonthView', 'officeAnalyticsView', 'q1DataView', 'yoyComparisonView'];
+            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'yoyComparisonView'];
             views.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
 
-            const tabs = ['revenue', 'count', 'sdMonth', 'poMonth', 'office', 'q1', 'yoy'];
+            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'yoy'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-type-${t}`);
                 if (btn) {
@@ -1073,11 +994,6 @@
                 if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-purple-600 text-purple-600 transition flex items-center gap-2";
                 populateSubDivDropdown('sdMDivSelect', 'sdMSdSelect');
                 renderSdMonthAnalysis();
-            } else if (viewType === 'poMonth') {
-                document.getElementById('poMonthView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-emerald-600 text-emerald-600 transition flex items-center gap-2";
-                populateSubDivDropdown('poMDivSelect', 'poMSdSelect');
-                renderPoMonthAnalysis();
             } else if (viewType === 'office') {
                 document.getElementById('officeAnalyticsView').classList.remove('hidden');
                 if (activeBtn) activeBtn.className = "px-5 py-3 font-extrabold text-sm border-b-2 border-rose-600 text-rose-600 transition flex items-center gap-2";
@@ -1129,18 +1045,36 @@
         }
 
         function onSdMDivChange() { populateSubDivDropdown('sdMDivSelect', 'sdMSdSelect'); renderSdMonthAnalysis(); }
-        function onPoMDivChange() { populateSubDivDropdown('poMDivSelect', 'poMSdSelect'); renderPoMonthAnalysis(); }
         function onOffDivChange() { populateSubDivDropdown('offDivSelect', 'offSdSelect'); renderOfficeAnalytics(); }
 
+        // Click Handler for Sub-Division Name Click
+        function selectSubDivisionAndSwitchToPO(sdName) {
+            document.getElementById('sdMSdSelect').value = sdName;
+            document.getElementById('sdMViewTypeSelect').value = 'PO';
+            renderSdMonthAnalysis();
+        }
+
+        // Combined Sub-Division / Post Office Renderer with Dynamic Chart
         function renderSdMonthAnalysis() {
+            const viewType = document.getElementById('sdMViewTypeSelect').value;
             const vert = document.getElementById('sdMVertSelect').value;
             const divKey = document.getElementById('sdMDivSelect').value;
             const sdKey = document.getElementById('sdMSdSelect').value;
             const cls = document.getElementById('sdMClassSelect').value;
 
+            if (viewType === 'SD') {
+                renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls);
+            } else {
+                renderPostOfficeLevelAnalysis(vert, divKey, sdKey, cls);
+            }
+        }
+
+        function renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls) {
+            document.getElementById('sdMChartTitle').innerText = "📊 Sub-Division Month-Wise Total Booking Chart";
+
             let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-[11px]">
                 <th class="p-2.5 border" rowspan="2">Division Name</th>
-                <th class="p-2.5 border" rowspan="2">Sub Division Name</th>
+                <th class="p-2.5 border" rowspan="2">Sub Division Name (Click to view POs)</th>
                 <th class="p-2.5 border text-center bg-slate-800" rowspan="2">Offices</th>`;
 
             let months = ['April', 'May', 'June', 'July'];
@@ -1166,8 +1100,6 @@
 
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
-                // Khudel BO (closed from July): row still renders below so April-June
-                // data stays visible, but it is NOT counted in office-count KPIs.
                 let isKhudelClosed = isKhudelClosedBO(o);
 
                 if (cls !== 'ALL' && oCls !== cls.trim().toUpperCase()) return;
@@ -1219,12 +1151,14 @@
             document.getElementById('sdMKpiAvgBooking').innerText = avgBkg;
 
             let rows = [];
+            let chartLabels = [];
+            let chartData = [];
 
             divGroup.forEach((sdMap, divName) => {
                 sdMap.forEach((vals, sdName) => {
-                    let rowHtml = `<tr class="hover:bg-slate-50 border-b border-slate-200">
+                    let rowHtml = `<tr class="hover:bg-purple-50/50 border-b border-slate-200">
                         <td class="p-2.5 font-bold text-slate-900 border-r">${divName}</td>
-                        <td class="p-2.5 font-semibold text-slate-700">${sdName}</td>
+                        <td onclick="selectSubDivisionAndSwitchToPO('${sdName}')" class="p-2.5 font-bold text-purple-700 hover:underline cursor-pointer flex items-center gap-1" title="Click to view Post Office level data"><span>🏢</span> ${sdName}</td>
                         <td class="p-2.5 text-center font-bold bg-slate-50">${vals.count}</td>`;
 
                     let totP = 0, totM = 0, totI = 0;
@@ -1238,6 +1172,11 @@
                     });
 
                     let grandTot = totP + totM + totI;
+                    let displayGrandTot = (vert === 'PARCEL') ? totP : (vert === 'MAIL') ? totM : (vert === 'IRGB') ? totI : grandTot;
+
+                    chartLabels.push(sdName);
+                    chartData.push(displayGrandTot);
+
                     if (vert === 'PARCEL') rowHtml += `<td class="p-2 text-right font-black text-emerald-700 bg-emerald-50/30">${totP.toLocaleString('en-IN')}</td>`;
                     else if (vert === 'MAIL') rowHtml += `<td class="p-2 text-right font-black text-emerald-700 bg-emerald-50/30">${totM.toLocaleString('en-IN')}</td>`;
                     else if (vert === 'IRGB') rowHtml += `<td class="p-2 text-right font-black text-emerald-700 bg-emerald-50/30">${totI.toLocaleString('en-IN')}</td>`;
@@ -1249,13 +1188,11 @@
             });
 
             document.getElementById('sdMTableBody').innerHTML = rows.join('');
+            renderSdMChart(chartLabels, chartData, "Sub-Division Total Bookings", "#8b5cf6");
         }
 
-        function renderPoMonthAnalysis() {
-            const vert = document.getElementById('poMVertSelect').value;
-            const divKey = document.getElementById('poMDivSelect').value;
-            const sdKey = document.getElementById('poMSdSelect').value;
-            const clsKey = document.getElementById('poMClassSelect').value;
+        function renderPostOfficeLevelAnalysis(vert, divKey, sdKey, clsKey) {
+            document.getElementById('sdMChartTitle').innerText = `📮 Post Office Level Booking Chart (${sdKey !== 'ALL' ? sdKey : 'All Sub-Divisions'})`;
 
             let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-[11px]">
                 <th class="p-2.5 border" rowspan="2">Office ID</th>
@@ -1279,12 +1216,8 @@
                 }
             });
             theadHtml += `</tr>`;
-            document.getElementById('poMTableHead').innerHTML = theadHtml;
+            document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
-            // Note: Khudel BO row is intentionally kept in `filtered` so its
-            // April-June history still renders in the table (July will show 0
-            // automatically since the July CSV already excludes it). It is only
-            // removed from the KPI office-count total below via `countableOffices`.
             let filtered = masterOfficeDatabase.filter(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
@@ -1297,6 +1230,8 @@
             let totalPoCount = countableOffices.length;
             let totalPoBookings = 0;
             let rows = [];
+            let chartLabels = [];
+            let chartData = [];
 
             filtered.forEach(o => {
                 let pApr = o.parcel_apr||0, mApr = o.mo_apr||0, iApr = o.irgb_apr||0;
@@ -1310,12 +1245,12 @@
                 else if (vert === 'IRGB') rowTot = (iApr + iMay + iJun + iJul);
                 else rowTot = (pApr + mApr + iApr + pMay + mMay + iMay + pJun + mJun + iJun + pJul + mJul + iJul);
 
-                // Only count bookings toward the KPI total for offices that are
-                // still "countable" (i.e. not the closed Khudel BO), to keep the
-                // Total Bookings KPI consistent with the Total Offices KPI.
                 if (!isKhudelClosedBO(o)) {
                     totalPoBookings += rowTot;
                 }
+
+                chartLabels.push(o.name);
+                chartData.push(rowTot);
 
                 let rowHtml = `<tr class="hover:bg-slate-50 border-b border-slate-200">
                     <td class="p-2.5 font-mono text-slate-600">${o.id}</td>
@@ -1352,11 +1287,40 @@
                 rows.push(rowHtml);
             });
 
-            document.getElementById('poMKpiTotalOffices').innerText = totalPoCount.toLocaleString('en-IN');
-            document.getElementById('poMKpiTotalBookings').innerText = totalPoBookings.toLocaleString('en-IN');
-            document.getElementById('poMKpiAvgBooking').innerText = totalPoCount > 0 ? (totalPoBookings / totalPoCount).toFixed(1) : 0;
+            document.getElementById('sdMKpiTotalSD').innerText = (sdKey !== 'ALL') ? 1 : "-";
+            document.getElementById('sdMKpiTotalOffices').innerText = totalPoCount.toLocaleString('en-IN');
+            document.getElementById('sdMKpiTotalBookings').innerText = totalPoBookings.toLocaleString('en-IN');
+            document.getElementById('sdMKpiAvgBooking').innerText = totalPoCount > 0 ? (totalPoBookings / totalPoCount).toFixed(1) : 0;
 
-            document.getElementById('poMTableBody').innerHTML = rows.join('');
+            document.getElementById('sdMTableBody').innerHTML = rows.join('');
+            renderSdMChart(chartLabels.slice(0, 20), chartData.slice(0, 20), "Post Office Total Bookings (Top 20)", "#10b981");
+        }
+
+        // Render dynamic chart for Sub-Division / Post Office Level
+        function renderSdMChart(labels, dataValues, datasetLabel, colorHex) {
+            const ctx = document.getElementById('sdMChart').getContext('2d');
+            if (sdMChart) sdMChart.destroy();
+
+            sdMChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: datasetLabel,
+                        data: dataValues,
+                        backgroundColor: colorHex,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { font: { size: 10 } } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
 
         function renderOfficeAnalytics() {
@@ -1377,7 +1341,6 @@
             masterOfficeDatabase.forEach(o => {
                 let oCls = (o.cls || '').trim().toUpperCase();
 
-                // Agar July select hai, toh Khudel BO ko Nil booking report se completely exclude karna
                 if (mKey === 'jul' && isKhudelClosedBO(o)) {
                     return; 
                 }
@@ -1851,8 +1814,7 @@
         async function shareActiveReportViaWhatsApp() {
             let activeTableId = 'dataTable', fileName = 'Indore_Region_Performance_Report.xlsx';
             let appendNote = false;
-            if (currentActiveView === 'sdMonth') { activeTableId = 'sdMTable'; fileName = 'Sub_Division_MonthWise_Report.xlsx'; }
-            else if (currentActiveView === 'poMonth') { activeTableId = 'poMTable'; fileName = 'Post_Office_MonthWise_Report.xlsx'; }
+            if (currentActiveView === 'sdMonth') { activeTableId = 'sdMTable'; fileName = 'MonthWise_Report.xlsx'; }
             else if (currentActiveView === 'office') { activeTableId = 'sdPerformanceTable'; fileName = 'Nil_Booking_Report.xlsx'; appendNote = true; }
             else if (currentActiveView === 'yoy') { activeTableId = 'yoyDataTable'; fileName = 'Indore_Region_YoY_Report.xlsx'; }
             else if (currentActiveView === 'q1') { activeTableId = 'q1RevTable'; fileName = 'Indore_Region_Q1_Report.xlsx'; }
