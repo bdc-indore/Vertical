@@ -834,12 +834,14 @@
             }
         };
 
-        // Solid Closed Office Checker Strategy
-        function isClosedOffice(o) {
-            if (!o) return false;
-            let name = (o.name || '').toString().trim().toUpperCase();
-            let cls = (o.cls || '').toString().trim().toUpperCase();
-            return (name === 'KHUDEL' && cls === 'BO') || o.isClosed === true;
+        // Month-Wise Office Active/Closed Logic Checker
+        function isOfficeActiveInMonth(office, monthKey) {
+            if (!office) return false;
+            // यदि ऑफिस जुलाई में बंद हुआ है और जुलाई की रिपोर्ट देख रहे हैं, तो एक्टिव नहीं रहेगा
+            if (office.closedMonth === 'jul' && monthKey === 'jul') {
+                return false;
+            }
+            return true;
         }
 
         let masterOfficeDatabase = []; 
@@ -974,7 +976,7 @@
                     let rawDiv = r[divIdx] ? r[divIdx].trim() : "";
 
                     let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName, rawDiv);
-                    let closedFlag = (offName.toUpperCase() === 'KHUDEL' && offCls === 'BO');
+                    let isKhudelBO = (offName.toUpperCase().includes('KHUDEL') && offCls === 'BO');
 
                     if (!officeMap.has(offId)) {
                         officeMap.set(offId, {
@@ -983,7 +985,7 @@
                             cls: offCls,
                             sd: normSd,
                             div: rawDiv,
-                            isClosed: closedFlag,
+                            closedMonth: isKhudelBO ? 'jul' : null, // Khudel BO यहाँ Marked रहेगा (July से Closed)
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
                             parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0,
                             mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0,
@@ -1304,7 +1306,9 @@
                 }
 
                 let item = sdMap.get(sd);
-                if (!isClosedOffice(o)) {
+
+                // Khudel BO जैसे जुलाई में बंद ऑफिसों को केवल जुलाई के एक्टिव काउंट में न जोड़ें
+                if (isOfficeActiveInMonth(o, 'jul')) {
                     item.count++;
                     totalOffCount++;
                 }
@@ -1401,7 +1405,7 @@
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
-                if (isClosedOffice(o)) return false; // Strictly omit closed offices from Office Count list
+                if (!isOfficeActiveInMonth(o, 'jul')) return false; // Strictly omit closed offices from July Active List
                 let oCls = (o.cls || '').trim().toUpperCase();
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
                 let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
@@ -1518,7 +1522,8 @@
             currentFilteredGoodOffices = [];
 
             masterOfficeDatabase.forEach(o => {
-                if (isClosedOffice(o)) return; // Strictly ignore closed offices from active office list count
+                // चुने हुए महीने (mKey) के हिसाब से एक्टिव ऑफिस ही प्रोसेस होंगे
+                if (!isOfficeActiveInMonth(o, mKey)) return; 
 
                 let oCls = (o.cls || '').trim().toUpperCase();
 
@@ -1849,7 +1854,7 @@
                     <td class="p-3.5 text-center text-amber-300">${sumQ1T > 0 ? ((sumQ1AchR/sumQ1T)*100).toFixed(1) : 0}%</td>
                 </tr>`;
 
-            // 2. NEW: Q-1 Article Count Rendering
+            // 2. Q-1 Article Count Rendering
             let filteredCount = countRecords.filter(r => r.vertical === vKey);
             let rowsCnt = [], sumQ1CountTgt = 0, sumAprC = 0, sumMayC = 0, sumJunC = 0, sumQ1AchC = 0;
 
@@ -1889,7 +1894,6 @@
                 </tr>`;
         }
 
-        // NEW: Month-over-Month (MoM) Analysis Logic
         function renderMomAnalysis() {
             const level = document.getElementById('momLevelSelect').value;
             const vert = document.getElementById('momVertSelect').value;
@@ -2093,7 +2097,6 @@
                 </tr>`;
         }
 
-        // NEW: Top 20 / Bottom 20 Performance Rankings Logic
         function renderRankings() {
             const mode = document.getElementById('rankModeSelect').value;
             const vert = document.getElementById('rankVertSelect').value;
@@ -2103,7 +2106,8 @@
             const month = document.getElementById('rankMonthSelect').value;
 
             let filtered = masterOfficeDatabase.filter(o => {
-                if (isClosedOffice(o)) return false; // Exclude closed office from active rankings
+                // चुना गया महीना यदि जुलाई है और ऑफिस बंद है तो रैंकिंग में नहीं दिखेगा
+                if (!isOfficeActiveInMonth(o, month)) return false; 
                 let matchDiv = (div === 'ALL') || isMatchingDivision(o.div, div);
                 let matchSd = (sd === 'ALL') || (o.sd === sd);
                 let matchCls = (cls === 'ALL') || (o.cls === cls.trim().toUpperCase());
