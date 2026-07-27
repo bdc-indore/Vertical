@@ -646,18 +646,7 @@
                 <div class="card p-6">
                     <div class="overflow-x-auto">
                         <table id="yoyDataTable" class="w-full text-left text-sm border-collapse">
-                            <thead>
-                                <tr class="bg-indigo-950 text-white font-bold text-xs uppercase">
-                                    <th class="p-3.5">Division Name</th>
-                                    <th class="p-3.5">Vertical</th>
-                                    <th class="p-3.5 bg-slate-800">LY Count (2025)</th>
-                                    <th class="p-3.5 bg-indigo-800">TY Count (2026)</th>
-                                    <th class="p-3.5 text-center">Count Growth %</th>
-                                    <th class="p-3.5 bg-slate-800">LY Revenue (2025)</th>
-                                    <th class="p-3.5 bg-indigo-800">TY Revenue (2026)</th>
-                                    <th class="p-3.5 text-center">Rev Growth %</th>
-                                </tr>
-                            </thead>
+                            <thead></thead>
                             <tbody id="yoyTableBody" class="divide-y divide-slate-100"></tbody>
                             <tfoot id="yoyTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
                         </table>
@@ -851,9 +840,10 @@
             return isNaN(num) ? 0 : num;
         }
 
+        // Exact Division Name Key Fix for Google Sheets Matching
         function getStandardDivKey(divName) {
             if (!divName) return "";
-            let d = divName.toString().toUpperCase();
+            let d = divName.toString().toUpperCase().trim();
             if (d.includes("CITY")) return "Indore City";
             if (d.includes("MOFFUSIL") || d.includes("MF") || d.includes("MFL")) return "Indore Moffusil";
             if (d.includes("KHANDWA") || d.includes("KHA DWA")) return "Khandwa";
@@ -916,11 +906,10 @@
             }
         }
 
-        // पिछले साल (Count एवं Revenue) दोनों शीट्स की सटीक कॉलम मैपिंग
+        // पिछले साल (Count एवं Revenue) दोनों शीट्स की सटीक पार्सिंग
         function parseLastYearSheet(rows, dataType) {
             if (!rows || rows.length <= 1) return;
 
-            // अप्रैल से मार्च तक के कॉलम इंडेक्स (कॉलम 3 से शुरू)
             let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
             rows.forEach((row, idx) => {
@@ -940,7 +929,7 @@
                 if (!HISTORICAL_LY_DATA[vertKey][dataType]) HISTORICAL_LY_DATA[vertKey][dataType] = {};
 
                 monthKeys.forEach((m, colOffset) => {
-                    let colIdx = 3 + colOffset; // 3 = April, 4 = May, 5 = June, 6 = July...
+                    let colIdx = 3 + colOffset; // Col 3 (D) = April, Col 4 (E) = May, Col 5 (F) = June, Col 6 (G) = July ...
                     if (row[colIdx] !== undefined) {
                         let val = cleanNumber(row[colIdx]);
                         if (!HISTORICAL_LY_DATA[vertKey][dataType][m]) HISTORICAL_LY_DATA[vertKey][dataType][m] = {};
@@ -2056,10 +2045,35 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
+        // Updated YoY Table with Dynamic Year Headings & Exact Revenue Mapping
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
             const month = document.getElementById('yoyMonthSelect').value;
+
+            // Financial Year Transition Logic for Table Headings
+            let lyYearCount = 2025;
+            let tyYearCount = 2026;
+
+            if (['jan', 'feb', 'mar'].includes(month)) {
+                lyYearCount = 2026;
+                tyYearCount = 2027;
+            }
+
+            // Dynamic Table Headings Insertion
+            const theadHtml = `<tr class="bg-indigo-950 text-white font-bold text-xs uppercase">
+                <th class="p-3.5">Division Name</th>
+                <th class="p-3.5">Vertical</th>
+                <th class="p-3.5 bg-slate-800">LY Count (${lyYearCount})</th>
+                <th class="p-3.5 bg-indigo-800">TY Count (${tyYearCount})</th>
+                <th class="p-3.5 text-center">Count Growth %</th>
+                <th class="p-3.5 bg-slate-800">LY Revenue (${lyYearCount})</th>
+                <th class="p-3.5 bg-indigo-800">TY Revenue (${tyYearCount})</th>
+                <th class="p-3.5 text-center">Rev Growth %</th>
+            </tr>`;
+            
+            const tableHead = document.querySelector('#yoyDataTable thead');
+            if (tableHead) tableHead.innerHTML = theadHtml;
 
             let filteredRev = revenueRecords.filter(r => {
                 let isHeader = r.divName.toUpperCase().includes('VERTICAL') || r.divName.toUpperCase().includes('TOTAL');
