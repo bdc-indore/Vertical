@@ -1026,34 +1026,38 @@
             });
         }
 
-        // Parse SBN Current Financial Year Sheet
+        // FIXED: Parse SBN Current Financial Year Sheet (Reads Vertical Format)
         function parseSbnCurrentSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
-            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+            let monthKeyMap = {
+                "APRIL": "apr", "MAY": "may", "JUNE": "jun", "JULY": "jul", "AUGUST": "aug",
+                "SEPTEMBER": "sep", "OCTOBER": "oct", "NOVEMBER": "nov", "DECEMBER": "dec",
+                "JANUARY": "jan", "FEBRUARY": "feb", "MARCH": "mar"
+            };
+
             SBN_CURRENT_OPENED = {};
             SBN_CURRENT_NET = {};
 
             rows.forEach((r, idx) => {
                 if (idx === 0 || !r[0]) return;
+
                 let divName = getStandardDivKey(r[0]);
                 if (!divName) return;
 
-                let typeStr = r[1] ? r[1].toUpperCase() : "";
+                let opened = cleanNumber(r[2]);  // Column C: ACCOUNT OPENED
+                let netAdd = cleanNumber(r[4]);  // Column E: NET ADDITION
+                
+                let monthRaw = r[5] ? r[5].toUpperCase().split('-')[0].trim() : ""; // Column F: MONTH (e.g. April-2026)
+                let mKey = monthKeyMap[monthRaw];
 
-                monthKeys.forEach((m, colOffset) => {
-                    let colIdx = 2 + colOffset;
-                    if (r[colIdx] !== undefined) {
-                        let val = cleanNumber(r[colIdx]);
-                        if (typeStr.includes("OPENED") || typeStr.includes("A/C OPENED")) {
-                            if (!SBN_CURRENT_OPENED[m]) SBN_CURRENT_OPENED[m] = {};
-                            SBN_CURRENT_OPENED[m][divName] = val;
-                        } else if (typeStr.includes("NET") || typeStr.includes("ADDITION")) {
-                            if (!SBN_CURRENT_NET[m]) SBN_CURRENT_NET[m] = {};
-                            SBN_CURRENT_NET[m][divName] = val;
-                        }
-                    }
-                });
+                if (mKey) {
+                    if (!SBN_CURRENT_OPENED[mKey]) SBN_CURRENT_OPENED[mKey] = {};
+                    if (!SBN_CURRENT_NET[mKey]) SBN_CURRENT_NET[mKey] = {};
+
+                    SBN_CURRENT_OPENED[mKey][divName] = opened;
+                    SBN_CURRENT_NET[mKey][divName] = netAdd;
+                }
             });
         }
 
