@@ -86,6 +86,12 @@
                 <button onclick="switchView('historical')" id="tab-type-historical" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-sky-600 transition flex items-center gap-1.5">
                     <span>📜</span> Historical Data
                 </button>
+                <button onclick="switchView('posb')" id="tab-type-posb" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-emerald-600 transition flex items-center gap-1.5">
+                    <span>🏦</span> POSB
+                </button>
+                <button onclick="switchView('pli')" id="tab-type-pli" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-1.5">
+                    <span>🛡️</span> PLI
+                </button>
             </div>
 
             <!-- Standard Main Controls & Dashboard -->
@@ -796,6 +802,131 @@
                 </div>
             </div>
 
+            <!-- NAYA POSB DEDICATED VIEW -->
+            <div id="posbDataView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-5 border border-emerald-100 card space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+                            <span>🏦</span> POSB Performance & Analytics Dashboard
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button onclick="setPosbOption('net')" id="btn-posb-net" class="px-3.5 py-2 font-bold text-xs rounded-lg transition bg-emerald-700 text-white shadow">
+                                🏦 POSB Net Addition
+                            </button>
+                            <button onclick="setPosbOption('open')" id="btn-posb-open" class="px-3.5 py-2 font-bold text-xs rounded-lg transition bg-slate-100 text-slate-700 hover:bg-slate-200">
+                                📖 POSB Account Opening
+                            </button>
+                            <button onclick="setPosbOption('revenue')" id="btn-posb-revenue" class="px-3.5 py-2 font-bold text-xs rounded-lg transition bg-slate-100 text-slate-700 hover:bg-slate-200">
+                                💰 Revenue Target & Achievement
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Select Month:</label>
+                            <select id="posbMonthSelect" onchange="renderPosbDataView()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                <option value="apr">April</option>
+                                <option value="may">May</option>
+                                <option value="jun">June</option>
+                                <option value="jul" selected>July</option>
+                                <option value="aug">August</option>
+                                <option value="sep">September</option>
+                                <option value="oct">October</option>
+                                <option value="nov">November</option>
+                                <option value="dec">December</option>
+                                <option value="jan">January</option>
+                                <option value="feb">February</option>
+                                <option value="mar">March</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Division Filter:</label>
+                            <select id="posbDivSelect" onchange="renderPosbDataView()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
+                                <option value="ALL">🏢 All Divisions</option>
+                                <option value="Indore City">Indore City</option>
+                                <option value="Indore Moffusil">Indore Moffusil</option>
+                                <option value="Khandwa">Khandwa</option>
+                                <option value="Mandsaur">Mandsaur</option>
+                                <option value="Ratlam">Ratlam</option>
+                                <option value="Sehore">Sehore</option>
+                                <option value="Ujjain">Ujjain</option>
+                                <option value="ID DIVISION">ID DIVISION</option>
+                            </select>
+                        </div>
+                        <button onclick="exportTableByID('posbDataTable', 'POSB_Performance_Report.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center gap-1 ml-auto">
+                            📊 Export POSB Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div class="overflow-x-auto">
+                        <table id="posbDataTable" class="w-full text-left text-sm border-collapse">
+                            <thead id="posbTableHead"></thead>
+                            <tbody id="posbTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="posbTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEDICATED PLI REVENUE VIEW (SIRF REVENUE DISPLAY) -->
+            <div id="pliDataView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-5 border border-teal-100 card space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-teal-900 flex items-center gap-2">
+                            <span>🛡️</span> PLI / RPLI Revenue Target & Achievement
+                        </h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Select Month:</label>
+                            <select id="pliMonthSelect" onchange="renderPliDataView()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                <option value="apr">April</option>
+                                <option value="may">May</option>
+                                <option value="jun">June</option>
+                                <option value="jul" selected>July</option>
+                                <option value="aug">August</option>
+                                <option value="sep">September</option>
+                                <option value="oct">October</option>
+                                <option value="nov">November</option>
+                                <option value="dec">December</option>
+                                <option value="jan">January</option>
+                                <option value="feb">February</option>
+                                <option value="mar">March</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 uppercase">Division Filter:</label>
+                            <select id="pliDivSelect" onchange="renderPliDataView()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
+                                <option value="ALL">🏢 All Divisions</option>
+                                <option value="Indore City">Indore City</option>
+                                <option value="Indore Moffusil">Indore Moffusil</option>
+                                <option value="Khandwa">Khandwa</option>
+                                <option value="Mandsaur">Mandsaur</option>
+                                <option value="Ratlam">Ratlam</option>
+                                <option value="Sehore">Sehore</option>
+                                <option value="Ujjain">Ujjain</option>
+                                <option value="ID DIVISION">ID DIVISION</option>
+                            </select>
+                        </div>
+                        <button onclick="exportTableByID('pliDataTable', 'PLI_Revenue_Performance_Report.xlsx')" class="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center gap-1 ml-auto">
+                            📊 Export PLI Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div class="overflow-x-auto">
+                        <table id="pliDataTable" class="w-full text-left text-sm border-collapse">
+                            <thead id="pliTableHead"></thead>
+                            <tbody id="pliTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="pliTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -874,6 +1005,8 @@
             }
         };
 
+        let currentPosbOption = 'net'; // 'net', 'open', 'revenue'
+
         function isOfficeActiveInMonth(office, monthKey) {
             if (!office) return false;
             if (office.closedMonth === 'jul' && monthKey === 'jul') {
@@ -901,7 +1034,6 @@
             return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
-        // Updated cleanNumber to handle "0.1028 Cr" properly
         function cleanNumber(val) {
             if (val === undefined || val === null) return 0;
             let str = val.toString().replace(/,/g, '').replace(/%/g, '').replace(/CR/gi, '').trim();
@@ -969,7 +1101,7 @@
 
             revenueRecords = [];
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
-            if (sbPliRows.length > 0) parseSbPliSheet(sbPliRows); // Load POSB & PLI directly into revenueRecords
+            if (sbPliRows.length > 0) parseSbPliSheet(sbPliRows);
 
             if (countRows.length > 0) countRecords = parseCountSheet(countRows);
             
@@ -999,7 +1131,6 @@
             }
         }
 
-        // Parse SB and PLI Data directly from SB-PLI-R Sheet (gid=1664427756)
         function parseSbPliSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1052,7 +1183,6 @@
             });
         }
 
-        // Parse SBN Historical Sheet
         function parseSbnHistoricalSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1083,7 +1213,6 @@
             });
         }
 
-        // Parse SBN Current Financial Year Sheet
         function parseSbnCurrentSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1592,13 +1721,13 @@
 
         function switchView(viewType) {
             currentActiveView = viewType;
-            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView'];
+            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView', 'posbDataView', 'pliDataView'];
             views.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
 
-            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings', 'historical'];
+            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings', 'historical', 'posb', 'pli'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-type-${t}`);
                 if (btn) {
@@ -1640,6 +1769,14 @@
                 if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-sky-600 text-sky-600 transition flex items-center gap-1.5";
                 populateHistVerticalDropdown();
                 renderHistoricalTable();
+            } else if (viewType === 'posb') {
+                document.getElementById('posbDataView').classList.remove('hidden');
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-emerald-600 text-emerald-600 transition flex items-center gap-1.5";
+                renderPosbDataView();
+            } else if (viewType === 'pli') {
+                document.getElementById('pliDataView').classList.remove('hidden');
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-1.5";
+                renderPliDataView();
             } else {
                 document.getElementById('standardDashboardView').classList.remove('hidden');
                 if (viewType === 'revenue') {
@@ -1659,6 +1796,169 @@
                 }
                 updateDashboard();
             }
+        }
+
+        // Functions for POSB Dynamic Switching & Rendering
+        function setPosbOption(opt) {
+            currentPosbOption = opt;
+            ['net', 'open', 'revenue'].forEach(o => {
+                const btn = document.getElementById(`btn-posb-${o}`);
+                if (btn) {
+                    if (o === opt) {
+                        btn.className = "px-3.5 py-2 font-bold text-xs rounded-lg transition bg-emerald-700 text-white shadow";
+                    } else {
+                        btn.className = "px-3.5 py-2 font-bold text-xs rounded-lg transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+                    }
+                }
+            });
+            renderPosbDataView();
+        }
+
+        function renderPosbDataView() {
+            const mKey = document.getElementById('posbMonthSelect').value;
+            const divFilter = document.getElementById('posbDivSelect').value;
+            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
+
+            let theadHtml = "";
+            let tbodyRows = [];
+            let totals = { col1: 0, col2: 0, col3: 0, col4: 0 };
+
+            if (currentPosbOption === 'revenue') {
+                theadHtml = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase">
+                    <th class="p-3.5">Division Name</th>
+                    <th class="p-3.5 bg-emerald-900">Annual Target (Cr)</th>
+                    <th class="p-3.5 bg-emerald-800 text-amber-200">Monthly Target (Annual/12)</th>
+                    <th class="p-3.5">Achievement (${mKey.toUpperCase()})</th>
+                    <th class="p-3.5 text-center bg-emerald-900">% Achievement</th>
+                </tr>`;
+
+                let posbRevRecords = revenueRecords.filter(r => r.vertical === 'SB');
+                posbRevRecords.forEach(r => {
+                    if (divFilter !== 'ALL' && !isMatchingDivision(r.divName, divFilter)) return;
+
+                    let annT = r.target;
+                    let monT = annT / 12;
+                    let ach = r[mKey] || 0;
+                    let pct = monT > 0 ? ((ach / monT) * 100).toFixed(1) + "%" : "0%";
+
+                    totals.col1 += annT;
+                    totals.col2 += monT;
+                    totals.col3 += ach;
+
+                    tbodyRows.push(`<tr class="hover:bg-emerald-50/50 border-b border-slate-200">
+                        <td class="p-3 font-bold text-slate-900">${r.divName}</td>
+                        <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
+                        <td class="p-3 font-bold text-emerald-800 bg-emerald-50/50">₹${monT.toFixed(3)} Cr</td>
+                        <td class="p-3 font-extrabold text-blue-700">₹${ach.toFixed(3)} Cr</td>
+                        <td class="p-3 text-center font-black text-emerald-700">${pct}</td>
+                    </tr>`);
+                });
+
+                let totPct = totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%";
+                document.getElementById('posbTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
+                    <td class="p-3.5 text-amber-300 uppercase">POSB REVENUE TOTAL</td>
+                    <td class="p-3.5">₹${totals.col1.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-amber-300">₹${totals.col2.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-blue-300">₹${totals.col3.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-center text-emerald-300 font-black">${totPct}</td>
+                </tr>`;
+
+            } else {
+                let labelText = (currentPosbOption === 'open') ? 'Account Opening' : 'Net Addition';
+                let dataMapLY = (currentPosbOption === 'open') ? SBN_HISTORICAL_OPENED : SBN_HISTORICAL_NET;
+                let dataMapTY = (currentPosbOption === 'open') ? SBN_CURRENT_OPENED : SBN_CURRENT_NET;
+
+                theadHtml = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase">
+                    <th class="p-3.5">Division Name</th>
+                    <th class="p-3.5 bg-slate-800">Last Year (${mKey.toUpperCase()})</th>
+                    <th class="p-3.5 bg-emerald-900">Current Year (${mKey.toUpperCase()})</th>
+                    <th class="p-3.5 text-center">Growth / Difference</th>
+                </tr>`;
+
+                divList.forEach(d => {
+                    if (divFilter !== 'ALL' && !isMatchingDivision(d, divFilter)) return;
+
+                    let lyVal = (dataMapLY[mKey] && dataMapLY[mKey][d]) ? dataMapLY[mKey][d] : 0;
+                    let tyVal = (dataMapTY[mKey] && dataMapTY[mKey][d]) ? dataMapTY[mKey][d] : 0;
+                    let diff = tyVal - lyVal;
+
+                    totals.col1 += lyVal;
+                    totals.col2 += tyVal;
+
+                    let diffHtml = diff >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${diff.toLocaleString('en-IN')}</span>` : `<span class="text-rose-600 font-bold">▼ ${diff.toLocaleString('en-IN')}</span>`;
+
+                    tbodyRows.push(`<tr class="hover:bg-emerald-50/50 border-b border-slate-200">
+                        <td class="p-3 font-bold text-slate-900">${d}</td>
+                        <td class="p-3 font-semibold text-slate-600">${lyVal.toLocaleString('en-IN')}</td>
+                        <td class="p-3 font-bold text-emerald-800 bg-emerald-50/40">${tyVal.toLocaleString('en-IN')}</td>
+                        <td class="p-3 text-center">${diffHtml}</td>
+                    </tr>`);
+                });
+
+                let totDiff = totals.col2 - totals.col1;
+                let totDiffHtml = totDiff >= 0 ? `<span class="text-emerald-300 font-bold">▲ +${totDiff.toLocaleString('en-IN')}</span>` : `<span class="text-rose-300 font-bold">▼ ${totDiff.toLocaleString('en-IN')}</span>`;
+
+                document.getElementById('posbTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
+                    <td class="p-3.5 text-amber-300 uppercase">POSB ${labelText.toUpperCase()} TOTAL</td>
+                    <td class="p-3.5">${totals.col1.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-emerald-300">${totals.col2.toLocaleString('en-IN')}</td>
+                    <td class="p-3.5 text-center">${totDiffHtml}</td>
+                </tr>`;
+            }
+
+            document.getElementById('posbTableHead').innerHTML = theadHtml;
+            document.getElementById('posbTableBody').innerHTML = tbodyRows.join('');
+        }
+
+        // Functions for PLI Revenue Rendering ONLY
+        function renderPliDataView() {
+            const mKey = document.getElementById('pliMonthSelect').value;
+            const divFilter = document.getElementById('pliDivSelect').value;
+
+            let theadHtml = `<tr class="bg-teal-950 text-white font-bold text-xs uppercase">
+                <th class="p-3.5">Division Name</th>
+                <th class="p-3.5 bg-teal-900">Annual Target (Cr)</th>
+                <th class="p-3.5 bg-teal-800 text-amber-200">Monthly Target (Annual/12)</th>
+                <th class="p-3.5">Achievement (${mKey.toUpperCase()})</th>
+                <th class="p-3.5 text-center bg-teal-900">% Achievement</th>
+            </tr>`;
+
+            let tbodyRows = [];
+            let totals = { col1: 0, col2: 0, col3: 0 };
+
+            let pliRevRecords = revenueRecords.filter(r => r.vertical === 'PLI');
+            pliRevRecords.forEach(r => {
+                if (divFilter !== 'ALL' && !isMatchingDivision(r.divName, divFilter)) return;
+
+                let annT = r.target;
+                let monT = annT / 12;
+                let ach = r[mKey] || 0;
+                let pct = monT > 0 ? ((ach / monT) * 100).toFixed(1) + "%" : "0%";
+
+                totals.col1 += annT;
+                totals.col2 += monT;
+                totals.col3 += ach;
+
+                tbodyRows.push(`<tr class="hover:bg-teal-50/50 border-b border-slate-200">
+                    <td class="p-3 font-bold text-slate-900">${r.divName}</td>
+                    <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
+                    <td class="p-3 font-bold text-teal-800 bg-teal-50/50">₹${monT.toFixed(3)} Cr</td>
+                    <td class="p-3 font-extrabold text-blue-700">₹${ach.toFixed(3)} Cr</td>
+                    <td class="p-3 text-center font-black text-teal-700">${pct}</td>
+                </tr>`);
+            });
+
+            let totPct = totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%";
+            document.getElementById('pliTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
+                <td class="p-3.5 text-amber-300 uppercase">PLI REVENUE TOTAL</td>
+                <td class="p-3.5">₹${totals.col1.toFixed(3)} Cr</td>
+                <td class="p-3.5 text-amber-300">₹${totals.col2.toFixed(3)} Cr</td>
+                <td class="p-3.5 text-blue-300">₹${totals.col3.toFixed(3)} Cr</td>
+                <td class="p-3.5 text-center text-emerald-300 font-black">${totPct}</td>
+            </tr>`;
+
+            document.getElementById('pliTableHead').innerHTML = theadHtml;
+            document.getElementById('pliTableBody').innerHTML = tbodyRows.join('');
         }
 
         function populateSubDivDropdown(divSelectId, sdSelectId) {
@@ -2485,7 +2785,6 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
-        // Updated YoY Comparison Table
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
