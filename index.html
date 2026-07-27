@@ -83,6 +83,9 @@
                 <button onclick="switchView('rankings')" id="tab-type-rankings" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-emerald-600 transition flex items-center gap-1.5">
                     <span>🏆</span> Top/Bottom 20
                 </button>
+                <button onclick="switchView('historical')" id="tab-type-historical" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-sky-600 transition flex items-center gap-1.5">
+                    <span>📜</span> Historical Data
+                </button>
             </div>
 
             <!-- Standard Main Controls & Dashboard -->
@@ -197,7 +200,7 @@
                     </div>
                 </div>
 
-                <!-- Month-Wise Division Detail Table (Count Tab Only) -->
+                <!-- Month-Wise Division Detail Table -->
                 <div id="countMonthWiseContainer" class="card p-6 hidden">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -737,6 +740,59 @@
                 </div>
             </div>
 
+            <!-- HISTORICAL DATA VIEW (INTERACTIVE TABLE & FILTER) -->
+            <div id="historicalDataView" class="hidden space-y-6">
+                <div class="bg-white rounded-xl p-5 border border-sky-100 card space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-sky-900 flex items-center gap-2">
+                            <span>📜</span> Historical Performance Archive (April 2025 - March 2026)
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Data Type:</label>
+                                <select id="histDataTypeSelect" onchange="onHistDataTypeChange()" class="bg-sky-100 border border-sky-300 text-sky-900 font-bold text-xs rounded-lg p-2 focus:ring-2 focus:ring-sky-500">
+                                    <option value="revenue">💰 Revenue Historical Data</option>
+                                    <option value="count">📦 Article Count Historical Data</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
+                                <select id="histVertSelect" onchange="renderHistoricalTable()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <!-- Dynamic Options Populated via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Division:</label>
+                                <select id="histDivSelect" onchange="renderHistoricalTable()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2">
+                                    <option value="ALL">🏢 All Divisions</option>
+                                    <option value="Indore City">Indore City</option>
+                                    <option value="Indore Moffusil">Indore Moffusil</option>
+                                    <option value="Khandwa">Khandwa</option>
+                                    <option value="Mandsaur">Mandsaur</option>
+                                    <option value="Ratlam">Ratlam</option>
+                                    <option value="Sehore">Sehore</option>
+                                    <option value="Ujjain">Ujjain</option>
+                                    <option value="ID DIVISION">ID DIVISION</option>
+                                </select>
+                            </div>
+                            <button onclick="exportTableByID('histDataTable', 'Historical_Performance_Data_FY_2025_26.xlsx')" class="bg-sky-700 hover:bg-sky-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center gap-1">
+                                📊 Export Selected Historical Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div class="overflow-x-auto max-h-[550px]">
+                        <table id="histDataTable" class="w-full text-left text-xs border-collapse">
+                            <thead id="histTableHead"></thead>
+                            <tbody id="histTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                            <tfoot id="histTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -762,7 +818,14 @@
         let HISTORICAL_LY_DATA = {
             "MAIL": { "count": {}, "revenue": {} },
             "PARCEL": { "count": {}, "revenue": {} },
-            "IRGB": { "count": {}, "revenue": {} }
+            "IRGB": { "count": {}, "revenue": {} },
+            "PLI/RPLI": { "revenue": {} },
+            "POSB": { "revenue": {} }
+        };
+
+        let RAW_HISTORICAL_ROWS = {
+            count: [],
+            revenue: []
         };
 
         const Q1_COUNT_TARGETS = {
@@ -868,11 +931,12 @@
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
 
-            // Reset Historical Data before fresh parsing
             HISTORICAL_LY_DATA = {
                 "MAIL": { "count": {}, "revenue": {} },
                 "PARCEL": { "count": {}, "revenue": {} },
-                "IRGB": { "count": {}, "revenue": {} }
+                "IRGB": { "count": {}, "revenue": {} },
+                "PLI/RPLI": { "revenue": {} },
+                "POSB": { "revenue": {} }
             };
 
             const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyCountRows, lyRevRows] = await Promise.all([
@@ -888,8 +952,15 @@
 
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
             if (countRows.length > 0) countRecords = parseCountSheet(countRows);
-            if (lyCountRows.length > 0) parseLastYearSheet(lyCountRows, 'count');
-            if (lyRevRows.length > 0) parseLastYearSheet(lyRevRows, 'revenue');
+            
+            if (lyCountRows.length > 0) {
+                RAW_HISTORICAL_ROWS.count = lyCountRows;
+                parseLastYearSheet(lyCountRows, 'count');
+            }
+            if (lyRevRows.length > 0) {
+                RAW_HISTORICAL_ROWS.revenue = lyRevRows;
+                parseLastYearSheet(lyRevRows, 'revenue');
+            }
 
             buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows);
             updateJulyLiveCounts(julyRows);
@@ -905,7 +976,6 @@
             }
         }
 
-        // Strict & Dynamic Header Matching for Last Year Sheet
         function parseLastYearSheet(rows, dataType) {
             if (!rows || rows.length <= 1) return;
 
@@ -919,18 +989,8 @@
 
             let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
             let monthRegexes = [
-                /apr|april/i,
-                /may/i,
-                /jun|june/i,
-                /jul|july/i,
-                /aug|august/i,
-                /sep|september/i,
-                /oct|october/i,
-                /nov|november/i,
-                /dec|december/i,
-                /jan|january/i,
-                /feb|february/i,
-                /mar|march/i
+                /apr|april/i, /may/i, /jun|june/i, /jul|july/i, /aug|august/i, /sep|september/i,
+                /oct|october/i, /nov|november/i, /dec|december/i, /jan|january/i, /feb|february/i, /mar|march/i
             ];
 
             let monthColMap = {};
@@ -955,21 +1015,18 @@
 
                 let rawDiv = row[divColIdx].toString().trim();
                 let stdKey = getStandardDivKey(rawDiv);
-                if (!stdKey) return; // Skip if invalid/summary division
+                if (!stdKey) return;
 
                 let rawVert = row[vertColIdx] ? row[vertColIdx].toString().trim().toUpperCase() : "";
                 
-                // Strict Vertical Resolution (Prevents unassigned rows from defaulting to PARCEL)
                 let vertKey = null;
-                if (rawVert.includes("PARCEL")) {
-                    vertKey = "PARCEL";
-                } else if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) {
-                    vertKey = "MAIL";
-                } else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) {
-                    vertKey = "IRGB";
-                }
+                if (rawVert.includes("PARCEL")) vertKey = "PARCEL";
+                else if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
+                else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
+                else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI/RPLI";
+                else if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "POSB";
 
-                if (!vertKey) return; // Ignore row if vertical doesn't strictly match
+                if (!vertKey) return;
 
                 if (!HISTORICAL_LY_DATA[vertKey]) HISTORICAL_LY_DATA[vertKey] = { count: {}, revenue: {} };
                 if (!HISTORICAL_LY_DATA[vertKey][dataType]) HISTORICAL_LY_DATA[vertKey][dataType] = {};
@@ -983,6 +1040,174 @@
                     }
                 });
             });
+        }
+
+        // HISTORICAL DATA TABLE & FILTER LOGIC
+        function onHistDataTypeChange() {
+            populateHistVerticalDropdown();
+            renderHistoricalTable();
+        }
+
+        function populateHistVerticalDropdown() {
+            const dType = document.getElementById('histDataTypeSelect').value;
+            const vertSelect = document.getElementById('histVertSelect');
+            
+            if (dType === 'revenue') {
+                vertSelect.innerHTML = `
+                    <option value="ALL">🌐 All Verticals (MO/Parcel/IRGB/PLI/POSB)</option>
+                    <option value="PARCEL">📦 Parcel Vertical</option>
+                    <option value="MAIL">✉️ Mail Operations (MO)</option>
+                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                    <option value="PLI/RPLI">🛡️ PLI / RPLI</option>
+                    <option value="POSB">🏦 POSB Schemes</option>
+                `;
+            } else {
+                vertSelect.innerHTML = `
+                    <option value="ALL">🌐 All Verticals Combined (MO/Parcel/IRGB)</option>
+                    <option value="PARCEL">📦 Parcel Vertical</option>
+                    <option value="MAIL">✉️ Mail Operations (MO)</option>
+                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                `;
+            }
+        }
+
+        function renderHistoricalTable() {
+            const dataType = document.getElementById('histDataTypeSelect').value;
+            const vertFilter = document.getElementById('histVertSelect').value;
+            const divFilter = document.getElementById('histDivSelect').value;
+
+            let rawRows = RAW_HISTORICAL_ROWS[dataType];
+            if (!rawRows || rawRows.length <= 1) {
+                document.getElementById('histTableBody').innerHTML = '<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">No Historical Data Loaded!</td></tr>';
+                return;
+            }
+
+            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+            let isRevenue = (dataType === 'revenue');
+
+            // Render Header
+            let theadHtml = `<tr class="bg-sky-950 text-white font-bold text-xs uppercase">
+                <th class="p-3">Division Name</th>
+                <th class="p-3">Vertical Name</th>`;
+
+            if (isRevenue) {
+                theadHtml += `<th class="p-3 bg-sky-900">Annual Target (Cr)</th><th class="p-3 bg-sky-800 text-amber-200">Monthly Target (Cr)</th>`;
+            }
+
+            theadHtml += `<th class="p-3">Apr 25</th><th class="p-3">May 25</th><th class="p-3">Jun 25</th>
+                <th class="p-3">Jul 25</th><th class="p-3">Aug 25</th><th class="p-3">Sep 25</th>
+                <th class="p-3">Oct 25</th><th class="p-3">Nov 25</th><th class="p-3">Dec 25</th>
+                <th class="p-3">Jan 26</th><th class="p-3">Feb 26</th><th class="p-3">Mar 26</th>
+                <th class="p-3 bg-indigo-900 font-black text-emerald-300">${isRevenue ? 'Total Rev (Cr)' : 'Total Count'}</th>
+            </tr>`;
+            document.getElementById('histTableHead').innerHTML = theadHtml;
+
+            // Map Column Indexes from Sheet
+            let headerRowIdx = rawRows.findIndex(r => r.some(cell => {
+                let str = cell.toString().toUpperCase();
+                return str.includes("DIVISION") || str.includes("VERTICAL") || str.includes("APRIL") || str.includes("TARGET");
+            }));
+
+            if (headerRowIdx === -1) headerRowIdx = 0;
+            let header = rawRows[headerRowIdx].map(h => h.toString().toLowerCase().trim());
+
+            let divColIdx = header.findIndex(h => h.includes("division") || h.includes("div"));
+            if (divColIdx === -1) divColIdx = 0;
+
+            let vertColIdx = header.findIndex(h => h.includes("vertical") || h.includes("vert"));
+            if (vertColIdx === -1) vertColIdx = 1;
+
+            let targetColIdx = header.findIndex(h => h.includes("target"));
+
+            let monthRegexes = [
+                /apr|april/i, /may/i, /jun|june/i, /jul|july/i, /aug|august/i, /sep|september/i,
+                /oct|october/i, /nov|november/i, /dec|december/i, /jan|january/i, /feb|february/i, /mar|march/i
+            ];
+
+            let monthColMap = {};
+            monthKeys.forEach((mKey, idx) => {
+                let regex = monthRegexes[idx];
+                let foundCol = header.findIndex(hText => regex.test(hText));
+                monthColMap[mKey] = (foundCol !== -1) ? foundCol : (targetColIdx !== -1 ? targetColIdx + 1 + idx : 3 + idx);
+            });
+
+            let tbodyHtml = [];
+            let totals = { annT:0, monT:0, sumMonths: Array(12).fill(0), grandTotal: 0 };
+
+            rawRows.forEach((row, idx) => {
+                if (idx <= headerRowIdx || !row[divColIdx] || row[divColIdx].toString().trim() === "") return;
+
+                let rawDiv = row[divColIdx].toString().trim();
+                let stdDiv = getStandardDivKey(rawDiv);
+                if (!stdDiv) return;
+
+                // Division Filter Match
+                if (divFilter !== 'ALL' && !isMatchingDivision(stdDiv, divFilter)) return;
+
+                let rawVert = row[vertColIdx] ? row[vertColIdx].toString().trim().toUpperCase() : "";
+                let vertKey = "PARCEL";
+                if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
+                else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
+                else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI/RPLI";
+                else if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "POSB";
+
+                // Vertical Filter Match
+                if (vertFilter !== 'ALL' && vertKey !== vertFilter) return;
+
+                let yearlyTarget = (targetColIdx !== -1 && row[targetColIdx]) ? cleanNumber(row[targetColIdx]) : 0;
+                let monthlyTarget = yearlyTarget / 12;
+
+                totals.annT += yearlyTarget;
+                totals.monT += monthlyTarget;
+
+                let rowHtml = `<tr class="hover:bg-sky-50/50 border-b border-slate-200">
+                    <td class="p-2.5 font-bold text-slate-900">${stdDiv}</td>
+                    <td class="p-2.5 font-semibold text-slate-600">${row[vertColIdx] || vertKey}</td>`;
+
+                if (isRevenue) {
+                    rowHtml += `<td class="p-2.5 font-bold text-slate-800 bg-slate-50">₹${yearlyTarget.toFixed(3)} Cr</td>
+                                <td class="p-2.5 font-bold text-sky-800 bg-sky-50">₹${monthlyTarget.toFixed(3)} Cr</td>`;
+                }
+
+                let rowSum = 0;
+                monthKeys.forEach((mKey, mIdx) => {
+                    let cIdx = monthColMap[mKey];
+                    let val = (cIdx !== undefined && row[cIdx] !== undefined) ? cleanNumber(row[cIdx]) : 0;
+                    rowSum += val;
+                    totals.sumMonths[mIdx] += val;
+
+                    let formatVal = isRevenue ? `₹${val.toFixed(3)}` : val.toLocaleString('en-IN');
+                    rowHtml += `<td class="p-2 text-right font-medium">${formatVal}</td>`;
+                });
+
+                totals.grandTotal += rowSum;
+                let formatGrandVal = isRevenue ? `₹${rowSum.toFixed(3)} Cr` : rowSum.toLocaleString('en-IN');
+
+                rowHtml += `<td class="p-2.5 text-right font-black text-emerald-700 bg-emerald-50">${formatGrandVal}</td></tr>`;
+                tbodyHtml.push(rowHtml);
+            });
+
+            document.getElementById('histTableBody').innerHTML = tbodyHtml.join('');
+
+            // Foot Totals
+            let footHtml = `<tr class="bg-slate-900 text-white font-black text-xs uppercase">
+                <td class="p-3 text-amber-300">TOTAL SUMMARY</td>
+                <td class="p-3">FILTERED</td>`;
+
+            if (isRevenue) {
+                footHtml += `<td class="p-3 text-slate-200">₹${totals.annT.toFixed(3)} Cr</td>
+                             <td class="p-3 text-amber-300">₹${totals.monT.toFixed(3)} Cr</td>`;
+            }
+
+            totals.sumMonths.forEach(mVal => {
+                let fVal = isRevenue ? `₹${mVal.toFixed(3)}` : mVal.toLocaleString('en-IN');
+                footHtml += `<td class="p-2.5 text-right">${fVal}</td>`;
+            });
+
+            let fGrand = isRevenue ? `₹${totals.grandTotal.toFixed(3)} Cr` : totals.grandTotal.toLocaleString('en-IN');
+            footHtml += `<td class="p-3 text-right text-emerald-300">${fGrand}</td></tr>`;
+
+            document.getElementById('histTableFoot').innerHTML = footHtml;
         }
 
         function normalizeSubDivisionName(sdName, clsName, offName, divName) {
@@ -1204,13 +1429,13 @@
 
         function switchView(viewType) {
             currentActiveView = viewType;
-            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView'];
+            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView'];
             views.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
 
-            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings'];
+            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings', 'historical'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-type-${t}`);
                 if (btn) {
@@ -1247,6 +1472,11 @@
                 if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-emerald-600 text-emerald-600 transition flex items-center gap-1.5";
                 populateSubDivDropdown('rankDivSelect', 'rankSdSelect');
                 renderRankings();
+            } else if (viewType === 'historical') {
+                document.getElementById('historicalDataView').classList.remove('hidden');
+                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-sky-600 text-sky-600 transition flex items-center gap-1.5";
+                populateHistVerticalDropdown();
+                renderHistoricalTable();
             } else {
                 document.getElementById('standardDashboardView').classList.remove('hidden');
                 if (viewType === 'revenue') {
@@ -2089,7 +2319,6 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
-        // Precise YoY Parsing & Rendering
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
