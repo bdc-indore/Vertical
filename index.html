@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -632,6 +632,12 @@
                                 <option value="jul" selected>July</option>
                                 <option value="aug">August</option>
                                 <option value="sep">September</option>
+                                <option value="oct">October</option>
+                                <option value="nov">November</option>
+                                <option value="dec">December</option>
+                                <option value="jan">January</option>
+                                <option value="feb">February</option>
+                                <option value="mar">March</option>
                             </select>
                         </div>
                     </div>
@@ -768,35 +774,13 @@
         const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
         const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
 
-        const HISTORICAL_LY_DATA = {
-            "MAIL": {
-                "count": {
-                    "apr": { "Indore City": 123387, "Indore Moffusil": 69036, "Khandwa": 37998, "Mandsaur": 23530, "Ratlam": 22988, "Sehore": 19949, "Ujjain": 34360, "ID DIVISION": 8805 },
-                    "may": { "Indore City": 136438, "Indore Moffusil": 55602, "Khandwa": 47241, "Mandsaur": 21228, "Ratlam": 21838, "Sehore": 26268, "Ujjain": 44643, "ID DIVISION": 8785 },
-                    "jun": { "Indore City": 99138, "Indore Moffusil": 37982, "Khandwa": 34991, "Mandsaur": 20925, "Ratlam": 15746, "Sehore": 14525, "Ujjain": 41903, "ID DIVISION": 8895 },
-                    "jul": { "Indore City": 67980, "Indore Moffusil": 21651, "Khandwa": 15567, "Mandsaur": 9714, "Ratlam": 11407, "Sehore": 6787, "Ujjain": 14294, "ID DIVISION": 7087 }
-                },
-                "revenue": {
-                    "apr": { "Indore City": 0.62, "Indore Moffusil": 0.19, "Khandwa": 0.32, "Mandsaur": 0.05, "Ratlam": 0.04, "Sehore": 0.06, "Ujjain": 0.19, "ID DIVISION": 0.03 },
-                    "may": { "Indore City": 0.42, "Indore Moffusil": 0.06, "Khandwa": 0.08, "Mandsaur": 0.06, "Ratlam": 0.05, "Sehore": 0.04, "Ujjain": 0.12, "ID DIVISION": 0.03 },
-                    "jun": { "Indore City": 0.33, "Indore Moffusil": 0.06, "Khandwa": 0.08, "Mandsaur": 0.05, "Ratlam": 0.04, "Sehore": 0.03, "Ujjain": 0.10, "ID DIVISION": 0.03 },
-                    "jul": { "Indore City": 0.20, "Indore Moffusil": 0.04, "Khandwa": 0.05, "Mandsaur": 0.03, "Ratlam": 0.03, "Sehore": 0.02, "Ujjain": 0.07, "ID DIVISION": 0.02 }
-                }
-            },
-            "PARCEL": {
-                "count": {
-                    "apr": { "Indore City": 42276, "Indore Moffusil": 7304, "Khandwa": 5420, "Mandsaur": 4172, "Ratlam": 2187, "Sehore": 1909, "Ujjain": 6583, "ID DIVISION": 1347 },
-                    "may": { "Indore City": 44031, "Indore Moffusil": 5694, "Khandwa": 6887, "Mandsaur": 4843, "Ratlam": 2174, "Sehore": 2047, "Ujjain": 6929, "ID DIVISION": 1648 },
-                    "jun": { "Indore City": 38498, "Indore Moffusil": 6210, "Khandwa": 6775, "Mandsaur": 4832, "Ratlam": 2379, "Sehore": 2131, "Ujjain": 7121, "ID DIVISION": 1463 },
-                    "jul": { "Indore City": 13161, "Indore Moffusil": 1862, "Khandwa": 2220, "Mandsaur": 1851, "Ratlam": 837, "Sehore": 870, "Ujjain": 2114, "ID DIVISION": 818 }
-                },
-                "revenue": {
-                    "apr": { "Indore City": 0.28, "Indore Moffusil": 0.03, "Khandwa": 0.06, "Mandsaur": 0.05, "Ratlam": 0.03, "Sehore": 0.02, "Ujjain": 0.06, "ID DIVISION": 0.01 },
-                    "may": { "Indore City": 0.31, "Indore Moffusil": 0.03, "Khandwa": 0.07, "Mandsaur": 0.05, "Ratlam": 0.03, "Sehore": 0.02, "Ujjain": 0.06, "ID DIVISION": 0.02 },
-                    "jun": { "Indore City": 0.26, "Indore Moffusil": 0.04, "Khandwa": 0.07, "Mandsaur": 0.05, "Ratlam": 0.03, "Sehore": 0.02, "Ujjain": 0.06, "ID DIVISION": 0.02 },
-                    "jul": { "Indore City": 0.21, "Indore Moffusil": 0.02, "Khandwa": 0.05, "Mandsaur": 0.04, "Ratlam": 0.02, "Sehore": 0.01, "Ujjain": 0.03, "ID DIVISION": 0.01 }
-                }
-            }
+        // नई लाइव Google Sheet (Last Year Count Data)
+        const LAST_YEAR_COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=825431695&single=true&output=csv";
+
+        let HISTORICAL_LY_DATA = {
+            "MAIL": { "count": {}, "revenue": {} },
+            "PARCEL": { "count": {}, "revenue": {} },
+            "IRGB": { "count": {}, "revenue": {} }
         };
 
         const Q1_COUNT_TARGETS = {
@@ -901,17 +885,19 @@
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
 
-            const [revRows, countRows, aprRows, mayRows, junRows, julyRows] = await Promise.all([
+            const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyRows] = await Promise.all([
                 safeFetchCSV(REVENUE_CSV_URL),
                 safeFetchCSV(COUNT_CSV_URL),
                 safeFetchCSV(APRIL_OFFICE_CSV_URL),
                 safeFetchCSV(MAY_OFFICE_CSV_URL),
                 safeFetchCSV(JUNE_OFFICE_CSV_URL),
-                safeFetchCSV(JULY_OFFICE_CSV_URL)
+                safeFetchCSV(JULY_OFFICE_CSV_URL),
+                safeFetchCSV(LAST_YEAR_COUNT_CSV_URL) // पिछला वित्तीय वर्ष का डेटा फेच
             ]);
 
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
             if (countRows.length > 0) countRecords = parseCountSheet(countRows);
+            if (lyRows.length > 0) parseLastYearSheet(lyRows);
 
             buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows);
             updateJulyLiveCounts(julyRows);
@@ -925,6 +911,47 @@
                 badge.innerHTML = "🔴 Sync Warning";
                 badge.className = "text-xs bg-red-500/30 text-red-200 px-3 py-1.5 rounded-full border border-red-400/30 font-semibold";
             }
+        }
+
+        // पिछले साल की गूगल शीट से लाइव डेटा मैप करने का फ़ंक्शन
+        function parseLastYearSheet(rows) {
+            if (!rows || rows.length <= 1) return;
+
+            let currentVert = "PARCEL";
+            let months = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+            let header = rows[0].map(h => h.trim().toLowerCase());
+
+            let monthIndices = {};
+            months.forEach(m => {
+                let idx = header.findIndex(h => h.includes(m));
+                if (idx !== -1) monthIndices[m] = idx;
+            });
+
+            rows.forEach((row, idx) => {
+                if (idx === 0) return;
+                let rowStr = row.join(" ").toUpperCase();
+
+                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO ARTICLE")) currentVert = "MAIL";
+                else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB")) currentVert = "IRGB";
+                else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE")) currentVert = "PARCEL";
+
+                if (!row[0] || row[0].trim() === "" || rowStr.includes("TARGET") || rowStr.includes("NAME OF DIV")) return;
+
+                let divName = row[0].trim();
+                let stdKey = getStandardDivKey(divName);
+                if (!stdKey || stdKey.toUpperCase().includes("TOTAL") || stdKey.toUpperCase().includes("VERTICAL")) return;
+
+                months.forEach(m => {
+                    let colIdx = monthIndices[m];
+                    if (colIdx !== undefined && row[colIdx] !== undefined) {
+                        let val = cleanNumber(row[colIdx]);
+                        if (!HISTORICAL_LY_DATA[currentVert]) HISTORICAL_LY_DATA[currentVert] = { count: {}, revenue: {} };
+                        if (!HISTORICAL_LY_DATA[currentVert]["count"][m]) HISTORICAL_LY_DATA[currentVert]["count"][m] = {};
+                        
+                        HISTORICAL_LY_DATA[currentVert]["count"][m][stdKey] = val;
+                    }
+                });
+            });
         }
 
         function normalizeSubDivisionName(sdName, clsName, offName, divName) {
@@ -2054,10 +2081,10 @@
 
                 let lyCountVal = 0, lyRevVal = 0;
                 if (HISTORICAL_LY_DATA[vKey]) {
-                    if (HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
+                    if (HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
                         lyCountVal = HISTORICAL_LY_DATA[vKey]["count"][month][stdKey];
                     }
-                    if (HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
+                    if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
                         lyRevVal = HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey];
                     }
                 }
@@ -2118,8 +2145,7 @@
                 };
 
                 if (month === 'total') {
-                    // अब यह सिर्फ Q-1 सीमित नहीं है, उपलब्ध सभी महीनों (Apr, May, Jun, Jul, Aug, Sep...) का कुल योग निकालेगा
-                    let allMonths = ['apr', 'may', 'jun', 'jul', 'aug', 'sep'];
+                    let allMonths = ['apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar'];
                     allMonths.forEach(m => {
                         cnt += getMonthCount(m);
                     });
