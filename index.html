@@ -95,11 +95,13 @@
                         <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
                             <div class="flex items-center gap-2">
                                 <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
-                                <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                                <select id="verticalSelect" onchange="onVerticalSelectChange()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
                                     <option value="ALL">🌐 All Verticals Combined</option>
                                     <option value="PARCEL">📦 Parcel Vertical</option>
                                     <option value="MAIL">✉️ Mail Operations (MO)</option>
                                     <option value="IRGB">✈️ IR & GB Vertical</option>
+                                    <option value="SB">🏦 SB (POSB Schemes)</option>
+                                    <option value="PLI">🛡️ PLI / RPLI</option>
                                 </select>
                             </div>
 
@@ -115,6 +117,16 @@
                                     <option value="Sehore">🌾 Sehore Division</option>
                                     <option value="Ujjain">🛕 Ujjain Division</option>
                                     <option value="ID DIVISION">🚚 ID DIVISION INDORE</option>
+                                </select>
+                            </div>
+
+                            <!-- Additional Sub-metric Filter for SB -->
+                            <div id="sbSubFilterContainer" class="hidden flex items-center gap-2">
+                                <label for="sbMetricSelect" class="text-xs font-bold text-emerald-700 uppercase tracking-wider whitespace-nowrap">SB Metric:</label>
+                                <select id="sbMetricSelect" onchange="updateDashboard()" class="bg-emerald-50 border border-emerald-300 text-emerald-900 text-sm font-bold rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500">
+                                    <option value="REVENUE">💰 POSB Revenue (Target vs Ach)</option>
+                                    <option value="POSB_OPENED">🏦 POSB Account Opened</option>
+                                    <option value="POSB_NET">🏦 POSB Net Addition</option>
                                 </select>
                             </div>
                         </div>
@@ -166,7 +178,7 @@
                     <div class="card p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (3 Verticals Share)</span>
+                                <span>📊</span> <span id="chart2Title">वर्टिकल ब्रेकडाउन (Vertical Share)</span>
                             </h2>
                         </div>
                         <div class="h-72">
@@ -615,9 +627,6 @@
                                 <option value="ALL">🌐 All Verticals Combined</option>
                                 <option value="PARCEL">📦 Parcel Vertical</option>
                                 <option value="MAIL">✉️ Mail Operations</option>
-                                <option value="IRGB">✈️ IR & GB Vertical</option>
-                                <option value="POSB_OPENED">🏦 POSB Account Opened</option>
-                                <option value="POSB_NET">🏦 POSB Net Addition</option>
                             </select>
                         </div>
                         <div>
@@ -822,7 +831,7 @@
         // New URLs provided for SBN / POSB Data
         const SBN_HISTORICAL_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1171755214&single=true&output=csv";
         const SBN_CURRENT_FY_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2138885575&single=true&output=csv";
-        const POSB_REVENUE_CURRENT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1664427756&single=true&output=csv";
+        const POSB_TARGET_REVENUE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1664427756&single=true&output=csv";
 
         let HISTORICAL_LY_DATA = {
             "MAIL": { "count": {}, "revenue": {} },
@@ -836,6 +845,8 @@
         let SBN_HISTORICAL_NET = {};
         let SBN_CURRENT_OPENED = {};
         let SBN_CURRENT_NET = {};
+
+        let posbTargetRevenueRecords = [];
 
         let RAW_HISTORICAL_ROWS = {
             count: [],
@@ -953,7 +964,7 @@
                 "POSB": { "revenue": {} }
             };
 
-            const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyCountRows, lyRevRows, sbnHistRows, sbnCurrRows] = await Promise.all([
+            const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyCountRows, lyRevRows, sbnHistRows, sbnCurrRows, posbTargetRows] = await Promise.all([
                 safeFetchCSV(REVENUE_CSV_URL),
                 safeFetchCSV(COUNT_CSV_URL),
                 safeFetchCSV(APRIL_OFFICE_CSV_URL),
@@ -963,7 +974,8 @@
                 safeFetchCSV(LAST_YEAR_COUNT_CSV_URL),
                 safeFetchCSV(LAST_YEAR_REVENUE_CSV_URL),
                 safeFetchCSV(SBN_HISTORICAL_CSV_URL),
-                safeFetchCSV(SBN_CURRENT_FY_CSV_URL)
+                safeFetchCSV(SBN_CURRENT_FY_CSV_URL),
+                safeFetchCSV(POSB_TARGET_REVENUE_URL)
             ]);
 
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
@@ -980,6 +992,7 @@
 
             if (sbnHistRows.length > 0) parseSbnHistoricalSheet(sbnHistRows);
             if (sbnCurrRows.length > 0) parseSbnCurrentSheet(sbnCurrRows);
+            if (posbTargetRows.length > 0) parsePosbTargetRevenueSheet(posbTargetRows);
 
             buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows);
             updateJulyLiveCounts(julyRows);
@@ -993,6 +1006,34 @@
                 badge.innerHTML = "🔴 Sync Warning";
                 badge.className = "text-xs bg-red-500/30 text-red-200 px-3 py-1.5 rounded-full border border-red-400/30 font-semibold";
             }
+        }
+
+        // Parse POSB Target Revenue Sheet and Divide Target by 12
+        function parsePosbTargetRevenueSheet(rows) {
+            if (!rows || rows.length <= 1) return;
+            posbTargetRevenueRecords = [];
+
+            let header = rows[0].map(h => h.trim().toUpperCase());
+            let divColIdx = header.findIndex(h => h.includes("DIVISION") || h.includes("NAME"));
+            if (divColIdx === -1) divColIdx = 0;
+
+            let targetColIdx = header.findIndex(h => h.includes("TARGET") || h.includes("YEARLY"));
+            if (targetColIdx === -1) targetColIdx = 1;
+
+            rows.forEach((r, idx) => {
+                if (idx === 0 || !r[divColIdx]) return;
+                let stdDiv = getStandardDivKey(r[divColIdx]);
+                if (!stdDiv) return;
+
+                let yearlyTarget = cleanNumber(r[targetColIdx]);
+                let monthlyTarget = yearlyTarget / 12;
+
+                posbTargetRevenueRecords.push({
+                    divName: stdDiv,
+                    yearlyTarget: yearlyTarget,
+                    monthlyTarget: monthlyTarget
+                });
+            });
         }
 
         // Parse SBN Historical Sheet (Opened / Closed / Net Addition)
@@ -1026,7 +1067,7 @@
             });
         }
 
-        // FIXED: Parse SBN Current Financial Year Sheet (Reads Vertical Format)
+        // Parse SBN Current Financial Year Sheet
         function parseSbnCurrentSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1127,7 +1168,6 @@
             });
         }
 
-        // HISTORICAL DATA TABLE & FILTER LOGIC
         function onHistDataTypeChange() {
             populateHistVerticalDropdown();
             renderHistoricalTable();
@@ -1165,7 +1205,6 @@
 
             let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
-            // Render Header
             let theadHtml = `<tr class="bg-sky-950 text-white font-bold text-xs uppercase">
                 <th class="p-3">Division Name</th>
                 <th class="p-3">Category / Vertical</th>`;
@@ -1297,7 +1336,6 @@
 
             document.getElementById('histTableBody').innerHTML = tbodyHtml.join('');
 
-            // Foot Totals
             let footHtml = `<tr class="bg-slate-900 text-white font-black text-xs uppercase">
                 <td class="p-3 text-amber-300">TOTAL SUMMARY</td>
                 <td class="p-3">FILTERED</td>`;
@@ -1427,6 +1465,7 @@
                 if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST")) currentVert = "MAIL";
                 else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB")) currentVert = "IRGB";
                 else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE")) currentVert = "PARCEL";
+                else if (rowStr.includes("PLI") || rowStr.includes("RPLI")) currentVert = "PLI";
 
                 if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
 
@@ -1535,6 +1574,18 @@
             return records;
         }
 
+        function onVerticalSelectChange() {
+            let vert = document.getElementById('verticalSelect').value;
+            let sbSubContainer = document.getElementById('sbSubFilterContainer');
+            
+            if (vert === 'SB') {
+                sbSubContainer.classList.remove('hidden');
+            } else {
+                sbSubContainer.classList.add('hidden');
+            }
+            updateDashboard();
+        }
+
         function switchView(viewType) {
             currentActiveView = viewType;
             const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView'];
@@ -1593,6 +1644,7 @@
                     document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
                     document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
                     document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
+                    document.getElementById('countMonthWiseContainer').classList.add('hidden');
                 } else {
                     currentDataType = 'count';
                     if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5";
@@ -2021,6 +2073,11 @@
             const selectedDiv = document.getElementById('divisionSelect').value;
             currentVertical = document.getElementById('verticalSelect').value;
 
+            if (currentVertical === 'SB') {
+                renderSbSpecialDashboard(selectedDiv);
+                return;
+            }
+
             const dataset = (currentDataType === 'revenue') ? revenueRecords : countRecords;
             if (!dataset || dataset.length === 0) return;
 
@@ -2062,6 +2119,113 @@
             }
         }
 
+        // Dedicated SB (POSB) Performance Dashboard Calculation
+        function renderSbSpecialDashboard(selectedDiv) {
+            let sbMetric = document.getElementById('sbMetricSelect').value;
+
+            document.getElementById('kpiActiveDivText').innerText = selectedDiv === 'ALL' ? "All Divisions" : selectedDiv;
+            document.getElementById('kpiActiveVertText').innerText = `SB - ${sbMetric}`;
+
+            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
+            if (selectedDiv !== 'ALL') {
+                divList = divList.filter(d => isMatchingDivision(d, selectedDiv));
+            }
+
+            let monthKeys = ["apr", "may", "jun", "jul"];
+
+            let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-xs">
+                <th class="p-3.5 border-b">Division Name</th>
+                <th class="p-3.5 border-b">Metric Name</th>
+                <th class="p-3.5 border-b bg-slate-800">Yearly Target</th>
+                <th class="p-3.5 border-b bg-sky-900">Monthly Target (Tgt/12)</th>
+                <th class="p-3.5 border-b">April 26</th>
+                <th class="p-3.5 border-b">May 26</th>
+                <th class="p-3.5 border-b">June 26</th>
+                <th class="p-3.5 border-b">July 26</th>
+                <th class="p-3.5 border-b font-extrabold text-emerald-300 bg-indigo-900">Total Achievement (Till Date)</th>
+                <th class="p-3.5 border-b text-center bg-amber-600">% Achievement (Till Date)</th>
+            </tr>`;
+            document.getElementById('tableHead').innerHTML = theadHtml;
+
+            let rows = [];
+            let grandYearlyTgt = 0, grandMonthlyTgt = 0, grandSumApr = 0, grandSumMay = 0, grandSumJun = 0, grandSumJul = 0, grandAch = 0;
+
+            divList.forEach(d => {
+                let tgtObj = posbTargetRevenueRecords.find(x => isMatchingDivision(x.divName, d)) || { yearlyTarget: 0, monthlyTarget: 0 };
+                let yTgt = tgtObj.yearlyTarget;
+                let mTgt = tgtObj.monthlyTarget;
+                let tillDateTgt = mTgt * 4; // April to July (4 Months)
+
+                let apVal = 0, myVal = 0, jnVal = 0, jlVal = 0;
+
+                if (sbMetric === 'POSB_OPENED') {
+                    apVal = (SBN_CURRENT_OPENED['apr'] && SBN_CURRENT_OPENED['apr'][d]) ? SBN_CURRENT_OPENED['apr'][d] : 0;
+                    myVal = (SBN_CURRENT_OPENED['may'] && SBN_CURRENT_OPENED['may'][d]) ? SBN_CURRENT_OPENED['may'][d] : 0;
+                    jnVal = (SBN_CURRENT_OPENED['jun'] && SBN_CURRENT_OPENED['jun'][d]) ? SBN_CURRENT_OPENED['jun'][d] : 0;
+                    jlVal = (SBN_CURRENT_OPENED['jul'] && SBN_CURRENT_OPENED['jul'][d]) ? SBN_CURRENT_OPENED['jul'][d] : 0;
+                } else if (sbMetric === 'POSB_NET') {
+                    apVal = (SBN_CURRENT_NET['apr'] && SBN_CURRENT_NET['apr'][d]) ? SBN_CURRENT_NET['apr'][d] : 0;
+                    myVal = (SBN_CURRENT_NET['may'] && SBN_CURRENT_NET['may'][d]) ? SBN_CURRENT_NET['may'][d] : 0;
+                    jnVal = (SBN_CURRENT_NET['jun'] && SBN_CURRENT_NET['jun'][d]) ? SBN_CURRENT_NET['jun'][d] : 0;
+                    jlVal = (SBN_CURRENT_NET['jul'] && SBN_CURRENT_NET['jul'][d]) ? SBN_CURRENT_NET['jul'][d] : 0;
+                } else { // REVENUE
+                    let rAp = revenueRecords.find(x => isMatchingDivision(x.divName, d) && x.vertical === 'POSB');
+                    apVal = rAp ? rAp.apr : 0;
+                    myVal = rAp ? rAp.may : 0;
+                    jnVal = rAp ? rAp.jun : 0;
+                    jlVal = rAp ? rAp.jul : 0;
+                }
+
+                let totAch = apVal + myVal + jnVal + jlVal;
+                let pct = tillDateTgt > 0 ? ((totAch / tillDateTgt) * 100).toFixed(2) + "%" : "0%";
+
+                grandYearlyTgt += yTgt;
+                grandMonthlyTgt += tillDateTgt;
+                grandSumApr += apVal;
+                grandSumMay += myVal;
+                grandSumJun += jnVal;
+                grandSumJul += jlVal;
+                grandAch += totAch;
+
+                rows.push(`<tr class="hover:bg-slate-50 transition border-b border-slate-200">
+                    <td class="p-3 font-bold text-slate-900">${d}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">🏦 ${sbMetric}</span></td>
+                    <td class="p-3 font-semibold text-slate-700 bg-slate-50">${yTgt.toLocaleString('en-IN')}</td>
+                    <td class="p-3 font-bold text-sky-800 bg-sky-50">${mTgt.toFixed(1)}</td>
+                    <td class="p-3">${apVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3">${myVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3">${jnVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 font-bold text-blue-700">${jlVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 font-extrabold text-emerald-700 bg-emerald-50">${totAch.toLocaleString('en-IN')}</td>
+                    <td class="p-3 font-black text-center text-amber-700 bg-amber-50">${pct}</td>
+                </tr>`);
+            });
+
+            document.getElementById('tableBody').innerHTML = rows.join('');
+
+            let grandPct = grandMonthlyTgt > 0 ? ((grandAch / grandMonthlyTgt) * 100).toFixed(2) + "%" : "0%";
+
+            let tfootHtml = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
+                <td class="p-3.5 uppercase tracking-wider text-amber-300">TOTAL (SB SUMMARY)</td>
+                <td class="p-3.5">${sbMetric}</td>
+                <td class="p-3.5">${grandYearlyTgt.toLocaleString('en-IN')}</td>
+                <td class="p-3.5 text-sky-200">${grandMonthlyTgt.toFixed(1)}</td>
+                <td class="p-3.5">${grandSumApr.toLocaleString('en-IN')}</td>
+                <td class="p-3.5">${grandSumMay.toLocaleString('en-IN')}</td>
+                <td class="p-3.5">${grandSumJun.toLocaleString('en-IN')}</td>
+                <td class="p-3.5 text-blue-300 font-bold">${grandSumJul.toLocaleString('en-IN')}</td>
+                <td class="p-3.5 text-emerald-300 font-black">${grandAch.toLocaleString('en-IN')}</td>
+                <td class="p-3.5 text-amber-300 font-black text-center">${grandPct}</td>
+            </tr>`;
+
+            document.getElementById('tableFoot').innerHTML = tfootHtml;
+            document.getElementById('recordBadge').innerText = `${divList.length} Divisions Loaded`;
+
+            document.getElementById('kpiTarget').innerText = `${grandMonthlyTgt.toLocaleString('en-IN', { maximumFractionDigits: 1 })}`;
+            document.getElementById('kpiAchievement').innerText = `${grandAch.toLocaleString('en-IN')}`;
+            document.getElementById('kpiPropPct').innerText = grandPct;
+        }
+
         function renderTable(filteredData, showLakhsOnly) {
             let isCount = (currentDataType === 'count');
             let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-xs">
@@ -2083,7 +2247,8 @@
             filteredData.forEach(r => {
                 let vertBadge = r.vertical === 'PARCEL' ? '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">📦 Parcel</span>' :
                             (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
-                            '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
+                            (r.vertical === 'PLI' ? '<span class="px-2.5 py-1 bg-teal-100 text-teal-800 rounded-md font-bold text-xs">🛡️ PLI / RPLI</span>' :
+                            '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>'));
 
                 let t = showLakhsOnly ? r.rawTarget : r.target;
                 let ap = showLakhsOnly ? r.rawApr : r.apr;
@@ -2427,7 +2592,7 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
-        // Updated YoY Table with POSB Account Opened & Net Addition Comparison
+        // Updated YoY Comparison Table - Pure Mail & Parcel Focus
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
@@ -2441,17 +2606,15 @@
                 tyYearCount = 2027;
             }
 
-            let isPOSB = vert.includes("POSB");
-
             const theadHtml = `<tr class="bg-indigo-950 text-white font-bold text-xs uppercase">
                 <th class="p-3.5">Division Name</th>
                 <th class="p-3.5">Category / Vertical</th>
-                <th class="p-3.5 bg-slate-800">LY Value (${lyYearCount})</th>
-                <th class="p-3.5 bg-indigo-800">TY Value (${tyYearCount})</th>
-                <th class="p-3.5 text-center">Growth %</th>
-                ${!isPOSB ? `<th class="p-3.5 bg-slate-800">LY Revenue (${lyYearCount})</th>
+                <th class="p-3.5 bg-slate-800">LY Count (${lyYearCount})</th>
+                <th class="p-3.5 bg-indigo-800">TY Count (${tyYearCount})</th>
+                <th class="p-3.5 text-center">Count Growth %</th>
+                <th class="p-3.5 bg-slate-800">LY Revenue (${lyYearCount})</th>
                 <th class="p-3.5 bg-indigo-800">TY Revenue (${tyYearCount})</th>
-                <th class="p-3.5 text-center">Rev Growth %</th>` : ''}
+                <th class="p-3.5 text-center">Rev Growth %</th>
             </tr>`;
             
             const tableHead = document.querySelector('#yoyDataTable thead');
@@ -2460,71 +2623,43 @@
             let rows = [];
             let totalLYCount = 0, totalTYCount = 0, totalLYRev = 0, totalTYRev = 0;
 
-            if (isPOSB) {
-                let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
-                let isOpenedMode = (vert === 'POSB_OPENED');
+            let filteredRev = revenueRecords.filter(r => {
+                let isHeader = r.divName.toUpperCase().includes('VERTICAL') || r.divName.toUpperCase().includes('TOTAL');
+                return !isHeader && (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert);
+            });
 
-                let lyMap = isOpenedMode ? SBN_HISTORICAL_OPENED : SBN_HISTORICAL_NET;
-                let tyMap = isOpenedMode ? SBN_CURRENT_OPENED : SBN_CURRENT_NET;
+            filteredRev.forEach((rItem) => {
+                let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical);
+                let tyCountVal = cItem ? (cItem[month] || 0) : 0;
+                let tyRevVal = rItem ? (rItem[month] || 0) : 0;
+                let stdKey = getStandardDivKey(rItem.divName);
+                let vKey = (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') ? 'MAIL' : (rItem.vertical === 'PARCEL' ? 'PARCEL' : 'IRGB');
 
-                divList.forEach(d => {
-                    if (div !== 'ALL' && !isMatchingDivision(d, div)) return;
-
-                    let lyVal = (lyMap[month] && lyMap[month][d]) ? lyMap[month][d] : 0;
-                    let tyVal = (tyMap[month] && tyMap[month][d]) ? tyMap[month][d] : 0;
-
-                    totalLYCount += lyVal;
-                    totalTYCount += tyVal;
-
-                    let gVal = lyVal > 0 ? (((tyVal - lyVal) / lyVal) * 100) : 0;
-
-                    rows.push(`<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
-                        <td class="p-3 font-bold text-slate-900">${d}</td>
-                        <td class="p-3 text-xs font-semibold text-slate-500">${isOpenedMode ? 'POSB A/C Opened' : 'POSB Net Addition'}</td>
-                        <td class="p-3 text-slate-600 font-medium">${lyVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-indigo-700 font-bold">${tyVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-center">${gVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${gVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${gVal.toFixed(1)}%</span>`}</td>
-                    </tr>`);
-                });
-            } else {
-                let filteredRev = revenueRecords.filter(r => {
-                    let isHeader = r.divName.toUpperCase().includes('VERTICAL') || r.divName.toUpperCase().includes('TOTAL');
-                    return !isHeader && (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert);
-                });
-
-                filteredRev.forEach((rItem) => {
-                    let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical);
-                    let tyCountVal = cItem ? (cItem[month] || 0) : 0;
-                    let tyRevVal = rItem ? (rItem[month] || 0) : 0;
-                    let stdKey = getStandardDivKey(rItem.divName);
-                    let vKey = (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') ? 'MAIL' : (rItem.vertical === 'PARCEL' ? 'PARCEL' : 'IRGB');
-
-                    let lyCountVal = 0, lyRevVal = 0;
-                    if (HISTORICAL_LY_DATA[vKey]) {
-                        if (HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
-                            lyCountVal = HISTORICAL_LY_DATA[vKey]["count"][month][stdKey];
-                        }
-                        if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
-                            lyRevVal = HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey];
-                        }
+                let lyCountVal = 0, lyRevVal = 0;
+                if (HISTORICAL_LY_DATA[vKey]) {
+                    if (HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
+                        lyCountVal = HISTORICAL_LY_DATA[vKey]["count"][month][stdKey];
                     }
+                    if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
+                        lyRevVal = HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey];
+                    }
+                }
 
-                    totalLYCount += lyCountVal; totalTYCount += tyCountVal; totalLYRev += lyRevVal; totalTYRev += tyRevVal;
-                    let countGrowthVal = lyCountVal > 0 ? (((tyCountVal - lyCountVal) / lyCountVal) * 100) : 0;
-                    let revGrowthVal = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100) : 0;
+                totalLYCount += lyCountVal; totalTYCount += tyCountVal; totalLYRev += lyRevVal; totalTYRev += tyRevVal;
+                let countGrowthVal = lyCountVal > 0 ? (((tyCountVal - lyCountVal) / lyCountVal) * 100) : 0;
+                let revGrowthVal = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100) : 0;
 
-                    rows.push(`<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
-                        <td class="p-3 font-bold text-slate-900">${rItem.divName}</td>
-                        <td class="p-3 text-xs font-semibold text-slate-500">${rItem.vertical}</td>
-                        <td class="p-3 text-slate-600 font-medium">${lyCountVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-indigo-700 font-bold">${tyCountVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-center">${countGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${countGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${countGrowthVal.toFixed(1)}%</span>`}</td>
-                        <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                        <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                        <td class="p-3 text-center">${revGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${revGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${revGrowthVal.toFixed(1)}%</span>`}</td>
-                    </tr>`);
-                });
-            }
+                rows.push(`<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
+                    <td class="p-3 font-bold text-slate-900">${rItem.divName}</td>
+                    <td class="p-3 text-xs font-semibold text-slate-500">${rItem.vertical}</td>
+                    <td class="p-3 text-slate-600 font-medium">${lyCountVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-indigo-700 font-bold">${tyCountVal.toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-center">${countGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${countGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${countGrowthVal.toFixed(1)}%</span>`}</td>
+                    <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-center">${revGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${revGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${revGrowthVal.toFixed(1)}%</span>`}</td>
+                </tr>`);
+            });
 
             document.getElementById('yoyTableBody').innerHTML = rows.join('');
 
@@ -2533,15 +2668,12 @@
                     <td class="p-3.5">ALL FILTERED</td>
                     <td class="p-3.5">${totalLYCount.toLocaleString('en-IN')}</td>
                     <td class="p-3.5 text-indigo-300">${totalTYCount.toLocaleString('en-IN')}</td>
-                    <td class="p-3.5 text-center">${totalLYCount > 0 ? (((totalTYCount - totalLYCount) / totalLYCount) * 100).toFixed(1) : 0}%</td>`;
-
-            if (!isPOSB) {
-                tFootHtml += `<td class="p-3.5">₹${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3.5 text-center">${totalLYCount > 0 ? (((totalTYCount - totalLYCount) / totalLYCount) * 100).toFixed(1) : 0}%</td>
+                    <td class="p-3.5">₹${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3.5 text-emerald-300">₹${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                    <td class="p-3.5 text-center">${totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0}%</td>`;
-            }
+                    <td class="p-3.5 text-center">${totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0}%</td>
+                </tr>`;
 
-            tFootHtml += `</tr>`;
             document.getElementById('yoyTableFoot').innerHTML = tFootHtml;
         }
 
