@@ -86,12 +86,6 @@
                 <button onclick="switchView('historical')" id="tab-type-historical" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-sky-600 transition flex items-center gap-1.5">
                     <span>📜</span> Historical Data
                 </button>
-                <button onclick="switchView('posb')" id="tab-type-posb" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-emerald-600 transition flex items-center gap-1.5">
-                    <span>🏦</span> POSB Analytics
-                </button>
-                <button onclick="switchView('pli')" id="tab-type-pli" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-teal-600 transition flex items-center gap-1.5">
-                    <span>🛡️</span> PLI Analytics
-                </button>
             </div>
 
             <!-- Standard Main Controls & Dashboard -->
@@ -102,10 +96,12 @@
                             <div class="flex items-center gap-2">
                                 <label for="verticalSelect" class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Vertical Filter:</label>
                                 <select id="verticalSelect" onchange="updateDashboard()" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-                                    <option value="ALL">🌐 All Article Verticals Combined</option>
+                                    <option value="ALL">🌐 All Verticals Combined</option>
                                     <option value="PARCEL">📦 Parcel Vertical</option>
                                     <option value="MAIL">✉️ Mail Operations (MO)</option>
                                     <option value="IRGB">✈️ IR & GB Vertical</option>
+                                    <option value="SB">🏦 POSB Schemes</option>
+                                    <option value="PLI">🛡️ PLI / RPLI</option>
                                 </select>
                             </div>
 
@@ -621,7 +617,6 @@
                                 <option value="ALL">🌐 All Verticals Combined</option>
                                 <option value="PARCEL">📦 Parcel Vertical</option>
                                 <option value="MAIL">✉️ Mail Operations</option>
-                                <option value="IRGB">✈️ IR & GB Vertical</option>
                             </select>
                         </div>
                         <div>
@@ -746,7 +741,7 @@
                 </div>
             </div>
 
-            <!-- HISTORICAL DATA VIEW -->
+            <!-- HISTORICAL DATA VIEW (INTERACTIVE TABLE & FILTER) -->
             <div id="historicalDataView" class="hidden space-y-6">
                 <div class="bg-white rounded-xl p-5 border border-sky-100 card space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -766,6 +761,7 @@
                             <div>
                                 <label class="text-xs font-bold text-slate-600 uppercase">Vertical:</label>
                                 <select id="histVertSelect" onchange="renderHistoricalTable()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                    <!-- Dynamic Options -->
                                 </select>
                             </div>
                             <div>
@@ -800,112 +796,6 @@
                 </div>
             </div>
 
-            <!-- NEW TAB 1: POSB ANALYTICS VIEW -->
-            <div id="posbAnalyticsView" class="hidden space-y-6">
-                <div class="bg-white rounded-xl p-6 border border-emerald-100 card space-y-4">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <h2 class="text-base font-bold text-emerald-900 flex items-center gap-2">
-                            <span>🏦</span> POSB Schemes - Month-Wise YoY Comparison & Revenue
-                        </h2>
-                        <div class="flex flex-wrap items-center gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase block">Select POSB Metric:</label>
-                                <select id="posbMetricSelect" onchange="renderPosbView()" class="bg-emerald-100 border border-emerald-300 text-emerald-950 font-bold text-xs rounded-lg p-2.5">
-                                    <option value="OPENED">🏦 POSB Account Opening</option>
-                                    <option value="NET">🏦 POSB Net Addition</option>
-                                    <option value="REVENUE">💰 POSB Revenue (Target / 12 & Ach)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase block">Select Month:</label>
-                                <select id="posbMonthSelect" onchange="renderPosbView()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg p-2.5">
-                                    <option value="apr">April</option>
-                                    <option value="may">May</option>
-                                    <option value="jun">June</option>
-                                    <option value="jul" selected>July</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase block">Division Filter:</label>
-                                <select id="posbDivSelect" onchange="renderPosbView()" class="bg-slate-800 text-white text-xs font-bold rounded-lg p-2.5">
-                                    <option value="ALL">🏢 All Divisions</option>
-                                    <option value="Indore City">Indore City</option>
-                                    <option value="Indore Moffusil">Indore Moffusil</option>
-                                    <option value="Khandwa">Khandwa</option>
-                                    <option value="Mandsaur">Mandsaur</option>
-                                    <option value="Ratlam">Ratlam</option>
-                                    <option value="Sehore">Sehore</option>
-                                    <option value="Ujjain">Ujjain</option>
-                                    <option value="ID DIVISION">ID DIVISION</option>
-                                </select>
-                            </div>
-                            <button onclick="exportTableByID('posbDataTable', 'POSB_Performance_Report.xlsx')" class="mt-4 sm:mt-0 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-lg transition shadow">
-                                📊 Export POSB Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card p-6">
-                    <div class="overflow-x-auto">
-                        <table id="posbDataTable" class="w-full text-left text-sm border-collapse">
-                            <thead id="posbTableHead"></thead>
-                            <tbody id="posbTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-                            <tfoot id="posbTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NEW TAB 2: PLI ANALYTICS VIEW -->
-            <div id="pliAnalyticsView" class="hidden space-y-6">
-                <div class="bg-white rounded-xl p-6 border border-teal-100 card space-y-4">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <h2 class="text-base font-bold text-teal-900 flex items-center gap-2">
-                            <span>🛡️</span> PLI / RPLI Performance & YoY Comparison
-                        </h2>
-                        <div class="flex flex-wrap items-center gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase block">Select Month:</label>
-                                <select id="pliMonthSelect" onchange="renderPliView()" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-lg p-2.5">
-                                    <option value="apr">April</option>
-                                    <option value="may">May</option>
-                                    <option value="jun">June</option>
-                                    <option value="jul" selected>July</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-600 uppercase block">Division Filter:</label>
-                                <select id="pliDivSelect" onchange="renderPliView()" class="bg-slate-800 text-white text-xs font-bold rounded-lg p-2.5">
-                                    <option value="ALL">🏢 All Divisions</option>
-                                    <option value="Indore City">Indore City</option>
-                                    <option value="Indore Moffusil">Indore Moffusil</option>
-                                    <option value="Khandwa">Khandwa</option>
-                                    <option value="Mandsaur">Mandsaur</option>
-                                    <option value="Ratlam">Ratlam</option>
-                                    <option value="Sehore">Sehore</option>
-                                    <option value="Ujjain">Ujjain</option>
-                                    <option value="ID DIVISION">ID DIVISION</option>
-                                </select>
-                            </div>
-                            <button onclick="exportTableByID('pliDataTable', 'PLI_Performance_Report.xlsx')" class="mt-4 sm:mt-0 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-lg transition shadow">
-                                📊 Export PLI Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card p-6">
-                    <div class="overflow-x-auto">
-                        <table id="pliDataTable" class="w-full text-left text-sm border-collapse">
-                            <thead id="pliTableHead"></thead>
-                            <tbody id="pliTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
-                            <tfoot id="pliTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 
@@ -914,7 +804,7 @@
         Developed by Kapil Rajput, PA (RO), Indore Regional office
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- JavaScript Logic & Safe Live Sync -->
     <script>
         const REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1967286638&single=true&output=csv";
         const COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=0&single=true&output=csv";
@@ -924,9 +814,11 @@
         const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
         const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
 
+        // Last Year Live CSV URLs
         const LAST_YEAR_COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=825431695&single=true&output=csv";
         const LAST_YEAR_REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1795446290&single=true&output=csv";
 
+        // SBN / POSB / PLI Data URLs
         const SBN_HISTORICAL_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1171755214&single=true&output=csv";
         const SBN_CURRENT_FY_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2138885575&single=true&output=csv";
         const POSB_TARGET_REVENUE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1664427756&single=true&output=csv";
@@ -935,7 +827,7 @@
             "MAIL": { "count": {}, "revenue": {} },
             "PARCEL": { "count": {}, "revenue": {} },
             "IRGB": { "count": {}, "revenue": {} },
-            "PLI": { "revenue": {} },
+            "PLI/RPLI": { "revenue": {} },
             "POSB": { "revenue": {} }
         };
 
@@ -943,8 +835,6 @@
         let SBN_HISTORICAL_NET = {};
         let SBN_CURRENT_OPENED = {};
         let SBN_CURRENT_NET = {};
-
-        let posbAndPliRevenueRecords = [];
 
         let RAW_HISTORICAL_ROWS = {
             count: [],
@@ -1011,6 +901,7 @@
             return lines.map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim()));
         }
 
+        // Updated cleanNumber to handle "0.1028 Cr" properly
         function cleanNumber(val) {
             if (val === undefined || val === null) return 0;
             let str = val.toString().replace(/,/g, '').replace(/%/g, '').replace(/CR/gi, '').trim();
@@ -1050,182 +941,6 @@
             }
         }
 
-        // ====== DYNAMIC CSV & OFFICE DATABASE PARSER ======
-        function buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows) {
-            masterOfficeDatabase = [];
-            let officeMap = new Map();
-
-            let processMonthRows = (rows, monthKey) => {
-                if (!rows || rows.length <= 1) return;
-                
-                let headerRowIdx = rows.findIndex(r => r.some(cell => {
-                    let str = cell.toString().toUpperCase();
-                    return str.includes("FACILITY") || str.includes("OFFICE") || str.includes("SUB") || str.includes("DIVISION") || str.includes("PARCEL");
-                }));
-
-                if (headerRowIdx === -1) headerRowIdx = 0;
-                let header = rows[headerRowIdx].map(h => h.toString().toUpperCase().trim());
-
-                let idCol = header.findIndex(h => h.includes("FACILITY") || h.includes("ID") || h.includes("OFFICE CODE") || h.includes("KEY"));
-                let nameCol = header.findIndex(h => h.includes("NAME") || h.includes("OFFICE NAME"));
-                let clsCol = header.findIndex(h => h.includes("CLASS") || h.includes("TYPE") || h.includes("CATEGORY"));
-                let sdCol = header.findIndex(h => h.includes("SUB") || h.includes("SD"));
-                let divCol = header.findIndex(h => h.includes("DIVISION") || h.includes("DIV"));
-                
-                let pCol = header.findIndex(h => h.includes("PARCEL"));
-                let mCol = header.findIndex(h => h.includes("MO") || h.includes("MAIL") || h.includes("SPEED"));
-                let iCol = header.findIndex(h => h.includes("IRGB") || h.includes("IR"));
-
-                if (idCol === -1) idCol = 0;
-                if (nameCol === -1) nameCol = 1;
-                if (clsCol === -1) clsCol = 2;
-                if (sdCol === -1) sdCol = 3;
-                if (divCol === -1) divCol = 4;
-
-                rows.forEach((r, idx) => {
-                    if (idx <= headerRowIdx || !r[idCol] || r[idCol].trim() === "") return;
-                    let id = r[idCol].trim();
-                    if (id.toUpperCase().includes("FACILITY") || id.toUpperCase().includes("SL NO") || id.toUpperCase().includes("TOTAL")) return;
-
-                    let name = r[nameCol] ? r[nameCol].trim() : id;
-                    let cls = r[clsCol] ? r[clsCol].trim().toUpperCase() : "SO";
-                    let sd = r[sdCol] ? r[sdCol].trim() : "UNASSIGNED";
-                    let div = r[divCol] ? getStandardDivKey(r[divCol]) : "UNKNOWN";
-
-                    if (!officeMap.has(id)) {
-                        officeMap.set(id, {
-                            id: id,
-                            name: name,
-                            cls: cls,
-                            sd: sd,
-                            div: div,
-                            isIDC: cls.includes("IDC"),
-                            parcel_apr:0, mo_apr:0, irgb_apr:0,
-                            parcel_may:0, mo_may:0, irgb_may:0,
-                            parcel_jun:0, mo_jun:0, irgb_jun:0,
-                            parcel_jul:0, mo_jul:0, irgb_jul:0
-                        });
-                    }
-
-                    let o = officeMap.get(id);
-                    if (sd !== "UNASSIGNED") o.sd = sd;
-                    if (div !== "UNKNOWN") o.div = div;
-
-                    if (pCol !== -1) o[`parcel_${monthKey}`] = cleanNumber(r[pCol]);
-                    if (mCol !== -1) o[`mo_${monthKey}`] = cleanNumber(r[mCol]);
-                    if (iCol !== -1) o[`irgb_${monthKey}`] = cleanNumber(r[iCol]);
-                });
-            };
-
-            processMonthRows(aprRows, 'apr');
-            processMonthRows(mayRows, 'may');
-            processMonthRows(junRows, 'jun');
-
-            masterOfficeDatabase = Array.from(officeMap.values());
-        }
-
-        function updateJulyLiveCounts(julyRows) {
-            if (!julyRows || julyRows.length <= 1) return;
-
-            let headerRowIdx = julyRows.findIndex(r => r.some(cell => {
-                let str = cell.toString().toUpperCase();
-                return str.includes("FACILITY") || str.includes("OFFICE") || str.includes("PARCEL");
-            }));
-            if (headerRowIdx === -1) headerRowIdx = 0;
-
-            let header = julyRows[headerRowIdx].map(h => h.toString().toUpperCase().trim());
-            let idCol = header.findIndex(h => h.includes("FACILITY") || h.includes("ID") || h.includes("OFFICE CODE"));
-            if (idCol === -1) idCol = 0;
-
-            let pCol = header.findIndex(h => h.includes("PARCEL"));
-            let mCol = header.findIndex(h => h.includes("MO") || h.includes("MAIL") || h.includes("SPEED"));
-            let iCol = header.findIndex(h => h.includes("IRGB") || h.includes("IR"));
-
-            julyRows.forEach((r, idx) => {
-                if (idx <= headerRowIdx || !r[idCol] || r[idCol].trim() === "") return;
-                let id = r[idCol].trim();
-
-                let o = masterOfficeDatabase.find(x => x.id === id);
-                if (o) {
-                    if (pCol !== -1) o.parcel_jul = cleanNumber(r[pCol]);
-                    if (mCol !== -1) o.mo_jul = cleanNumber(r[mCol]);
-                    if (iCol !== -1) o.irgb_jul = cleanNumber(r[iCol]);
-                }
-            });
-        }
-
-        function populateHistVerticalDropdown() {
-            const select = document.getElementById('histVertSelect');
-            if(!select) return;
-            select.innerHTML = `
-                <option value="ALL">🌐 All Verticals Combined</option>
-                <option value="PARCEL">📦 Parcel Vertical</option>
-                <option value="MAIL">✉️ Mail Operations</option>
-                <option value="IRGB">✈️ IR & GB Vertical</option>
-            `;
-        }
-
-        function onHistDataTypeChange() {
-            renderHistoricalTable();
-        }
-
-        function renderHistoricalTable() {
-            const cat = document.getElementById('histDataTypeSelect').value;
-            const vert = document.getElementById('histVertSelect').value;
-            const div = document.getElementById('histDivSelect').value;
-
-            const tableHead = document.getElementById('histTableHead');
-            const tableBody = document.getElementById('histTableBody');
-            const tableFoot = document.getElementById('histTableFoot');
-
-            if(!tableHead || !tableBody) return;
-
-            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
-            let monthsHeader = monthKeys.map(m => `<th class="p-2 border">${m.toUpperCase()}</th>`).join('');
-
-            tableHead.innerHTML = `<tr class="bg-sky-950 text-white font-bold text-xs uppercase">
-                <th class="p-2.5 border">Division Name</th>
-                <th class="p-2.5 border">Category / Vertical</th>
-                ${monthsHeader}
-                <th class="p-2.5 border bg-sky-900">Total</th>
-            </tr>`;
-
-            let rows = [];
-            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
-            
-            divList.forEach(d => {
-                if (div !== 'ALL' && !isMatchingDivision(d, div)) return;
-
-                let rowSum = 0;
-                let cellHtml = '';
-                monthKeys.forEach(m => {
-                    let val = 0;
-                    if (cat === 'revenue' || cat === 'count') {
-                        let vK = (vert === 'ALL') ? 'PARCEL' : vert;
-                        if (HISTORICAL_LY_DATA[vK] && HISTORICAL_LY_DATA[vK][cat] && HISTORICAL_LY_DATA[vK][cat][m]) {
-                            val = HISTORICAL_LY_DATA[vK][cat][m][d] || 0;
-                        }
-                    } else if (cat === 'sbn_open') {
-                        val = (SBN_HISTORICAL_OPENED[m] && SBN_HISTORICAL_OPENED[m][d]) ? SBN_HISTORICAL_OPENED[m][d] : 0;
-                    } else if (cat === 'sbn_net') {
-                        val = (SBN_HISTORICAL_NET[m] && SBN_HISTORICAL_NET[m][d]) ? SBN_HISTORICAL_NET[m][d] : 0;
-                    }
-                    rowSum += val;
-                    cellHtml += `<td class="p-2 border text-right">${cat === 'revenue' ? '₹' + val.toFixed(2) : val.toLocaleString('en-IN')}</td>`;
-                });
-
-                rows.push(`<tr class="hover:bg-sky-50/50 border-b border-slate-200">
-                    <td class="p-2.5 font-bold text-slate-900 border">${d}</td>
-                    <td class="p-2.5 text-xs text-slate-500 border">${vert}</td>
-                    ${cellHtml}
-                    <td class="p-2.5 font-black text-sky-800 bg-sky-50 border text-right">${cat === 'revenue' ? '₹' + rowSum.toFixed(2) : rowSum.toLocaleString('en-IN')}</td>
-                </tr>`);
-            });
-
-            tableBody.innerHTML = rows.join('');
-            tableFoot.innerHTML = '';
-        }
-
         async function fetchAllLiveData() {
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
@@ -1234,7 +949,7 @@
                 "MAIL": { "count": {}, "revenue": {} },
                 "PARCEL": { "count": {}, "revenue": {} },
                 "IRGB": { "count": {}, "revenue": {} },
-                "PLI": { "revenue": {} },
+                "PLI/RPLI": { "revenue": {} },
                 "POSB": { "revenue": {} }
             };
 
@@ -1254,7 +969,7 @@
 
             revenueRecords = [];
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
-            if (sbPliRows.length > 0) parseSbPliTargetSheet(sbPliRows); 
+            if (sbPliRows.length > 0) parseSbPliSheet(sbPliRows); // Load POSB & PLI directly into revenueRecords
 
             if (countRows.length > 0) countRecords = parseCountSheet(countRows);
             
@@ -1284,9 +999,9 @@
             }
         }
 
-        function parseSbPliTargetSheet(rows) {
+        // Parse SB and PLI Data directly from SB-PLI-R Sheet (gid=1664427756)
+        function parseSbPliSheet(rows) {
             if (!rows || rows.length <= 1) return;
-            posbAndPliRevenueRecords = [];
 
             rows.forEach((row, idx) => {
                 if (idx === 0 || !row[0]) return;
@@ -1297,7 +1012,7 @@
 
                 let rawVert = row[1] ? row[1].trim().toUpperCase() : "";
                 let vertKey = "";
-                if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "POSB";
+                if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "SB";
                 else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI";
                 
                 if (!vertKey) return;
@@ -1308,19 +1023,36 @@
                 let jun = cleanNumber(row[5]);
                 let jul = cleanNumber(row[6]);
 
-                posbAndPliRevenueRecords.push({
+                let totalAch = apr + may + jun + jul;
+                let propPct = target > 0 ? ((totalAch / target) * 100).toFixed(2) + "%" : "0%";
+
+                revenueRecords.push({
                     divName: stdDiv,
                     vertical: vertKey,
-                    yearlyTarget: target,
-                    monthlyTarget: target / 12,
+                    target: target,
+                    monthly: target / 12,
+                    tillMonth: (target / 12) * 4,
                     apr: apr,
                     may: may,
                     jun: jun,
-                    jul: jul
+                    jul: jul,
+                    totalAch: totalAch,
+                    rawTarget: target,
+                    rawMonthly: target / 12,
+                    rawTillMonth: (target / 12) * 4,
+                    rawApr: apr,
+                    rawMay: may,
+                    rawJun: jun,
+                    rawJul: jul,
+                    rawTotalAch: totalAch,
+                    propPct: propPct,
+                    totalPct: propPct,
+                    isIRGB: false
                 });
             });
         }
 
+        // Parse SBN Historical Sheet
         function parseSbnHistoricalSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1351,6 +1083,7 @@
             });
         }
 
+        // Parse SBN Current Financial Year Sheet
         function parseSbnCurrentSheet(rows) {
             if (!rows || rows.length <= 1) return;
 
@@ -1432,7 +1165,7 @@
                 if (rawVert.includes("PARCEL")) vertKey = "PARCEL";
                 else if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
                 else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
-                else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI";
+                else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI/RPLI";
                 else if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "POSB";
 
                 if (!vertKey) return;
@@ -1451,47 +1184,324 @@
             });
         }
 
+        function onHistDataTypeChange() {
+            populateHistVerticalDropdown();
+            renderHistoricalTable();
+        }
+
+        function populateHistVerticalDropdown() {
+            const dType = document.getElementById('histDataTypeSelect').value;
+            const vertSelect = document.getElementById('histVertSelect');
+            
+            if (dType === 'revenue') {
+                vertSelect.innerHTML = `
+                    <option value="ALL">🌐 All Verticals (MO/Parcel/IRGB/PLI/POSB)</option>
+                    <option value="PARCEL">📦 Parcel Vertical</option>
+                    <option value="MAIL">✉️ Mail Operations (MO)</option>
+                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                    <option value="PLI/RPLI">🛡️ PLI / RPLI</option>
+                    <option value="POSB">🏦 POSB Schemes</option>
+                `;
+            } else if (dType === 'count') {
+                vertSelect.innerHTML = `
+                    <option value="ALL">🌐 All Verticals Combined (MO/Parcel/IRGB)</option>
+                    <option value="PARCEL">📦 Parcel Vertical</option>
+                    <option value="MAIL">✉️ Mail Operations (MO)</option>
+                    <option value="IRGB">✈️ IR & GB Vertical</option>
+                `;
+            } else {
+                vertSelect.innerHTML = `<option value="ALL">🏦 POSB Schemes (All Divisions)</option>`;
+            }
+        }
+
+        function renderHistoricalTable() {
+            const dataType = document.getElementById('histDataTypeSelect').value;
+            const vertFilter = document.getElementById('histVertSelect').value;
+            const divFilter = document.getElementById('histDivSelect').value;
+
+            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+
+            let theadHtml = `<tr class="bg-sky-950 text-white font-bold text-xs uppercase">
+                <th class="p-3">Division Name</th>
+                <th class="p-3">Category / Vertical</th>`;
+
+            if (dataType === 'revenue') {
+                theadHtml += `<th class="p-3 bg-sky-900">Annual Target (Cr)</th><th class="p-3 bg-sky-800 text-amber-200">Monthly Target (Cr)</th>`;
+            }
+
+            theadHtml += `<th class="p-3">Apr 25</th><th class="p-3">May 25</th><th class="p-3">Jun 25</th>
+                <th class="p-3">Jul 25</th><th class="p-3">Aug 25</th><th class="p-3">Sep 25</th>
+                <th class="p-3">Oct 25</th><th class="p-3">Nov 25</th><th class="p-3">Dec 25</th>
+                <th class="p-3">Jan 26</th><th class="p-3">Feb 26</th><th class="p-3">Mar 26</th>
+                <th class="p-3 bg-indigo-900 font-black text-emerald-300">${dataType === 'revenue' ? 'Total Rev (Cr)' : 'Total Count'}</th>
+            </tr>`;
+            document.getElementById('histTableHead').innerHTML = theadHtml;
+
+            let tbodyHtml = [];
+            let totals = { annT:0, monT:0, sumMonths: Array(12).fill(0), grandTotal: 0 };
+
+            if (dataType === 'sbn_open' || dataType === 'sbn_net') {
+                let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
+                let dataMap = (dataType === 'sbn_open') ? SBN_HISTORICAL_OPENED : SBN_HISTORICAL_NET;
+
+                divList.forEach(d => {
+                    if (divFilter !== 'ALL' && !isMatchingDivision(d, divFilter)) return;
+
+                    let rowSum = 0;
+                    let rowHtml = `<tr class="hover:bg-sky-50/50 border-b border-slate-200">
+                        <td class="p-2.5 font-bold text-slate-900">${d}</td>
+                        <td class="p-2.5 font-semibold text-slate-600">${dataType === 'sbn_open' ? 'SB A/C Opened' : 'SB Net Addition'}</td>`;
+
+                    monthKeys.forEach((mKey, mIdx) => {
+                        let val = (dataMap[mKey] && dataMap[mKey][d]) ? dataMap[mKey][d] : 0;
+                        rowSum += val;
+                        totals.sumMonths[mIdx] += val;
+                        rowHtml += `<td class="p-2 text-right font-medium">${val.toLocaleString('en-IN')}</td>`;
+                    });
+
+                    totals.grandTotal += rowSum;
+                    rowHtml += `<td class="p-2.5 text-right font-black text-emerald-700 bg-emerald-50">${rowSum.toLocaleString('en-IN')}</td></tr>`;
+                    tbodyHtml.push(rowHtml);
+                });
+            } else {
+                let rawRows = RAW_HISTORICAL_ROWS[dataType];
+                if (!rawRows || rawRows.length <= 1) {
+                    document.getElementById('histTableBody').innerHTML = '<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">No Historical Data Loaded!</td></tr>';
+                    return;
+                }
+
+                let headerRowIdx = rawRows.findIndex(r => r.some(cell => {
+                    let str = cell.toString().toUpperCase();
+                    return str.includes("DIVISION") || str.includes("VERTICAL") || str.includes("APRIL") || str.includes("TARGET");
+                }));
+
+                if (headerRowIdx === -1) headerRowIdx = 0;
+                let header = rawRows[headerRowIdx].map(h => h.toString().toLowerCase().trim());
+
+                let divColIdx = header.findIndex(h => h.includes("division") || h.includes("div"));
+                if (divColIdx === -1) divColIdx = 0;
+
+                let vertColIdx = header.findIndex(h => h.includes("vertical") || h.includes("vert"));
+                if (vertColIdx === -1) vertColIdx = 1;
+
+                let targetColIdx = header.findIndex(h => h.includes("target"));
+
+                let monthRegexes = [
+                    /apr|april/i, /may/i, /jun|june/i, /jul|july/i, /aug|august/i, /sep|september/i,
+                    /oct|october/i, /nov|november/i, /dec|december/i, /jan|january/i, /feb|february/i, /mar|march/i
+                ];
+
+                let monthColMap = {};
+                monthKeys.forEach((mKey, idx) => {
+                    let regex = monthRegexes[idx];
+                    let foundCol = header.findIndex(hText => regex.test(hText));
+                    monthColMap[mKey] = (foundCol !== -1) ? foundCol : (targetColIdx !== -1 ? targetColIdx + 1 + idx : 3 + idx);
+                });
+
+                rawRows.forEach((row, idx) => {
+                    if (idx <= headerRowIdx || !row[divColIdx] || row[divColIdx].toString().trim() === "") return;
+
+                    let rawDiv = row[divColIdx].toString().trim();
+                    let stdDiv = getStandardDivKey(rawDiv);
+                    if (!stdDiv) return;
+
+                    if (divFilter !== 'ALL' && !isMatchingDivision(stdDiv, divFilter)) return;
+
+                    let rawVert = row[vertColIdx] ? row[vertColIdx].toString().trim().toUpperCase() : "";
+                    let vertKey = "PARCEL";
+                    if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
+                    else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
+                    else if (rawVert.includes("PLI") || rawVert.includes("RPLI")) vertKey = "PLI/RPLI";
+                    else if (rawVert.includes("POSB") || rawVert.includes("SB")) vertKey = "POSB";
+
+                    if (vertFilter !== 'ALL' && vertKey !== vertFilter) return;
+
+                    let yearlyTarget = (targetColIdx !== -1 && row[targetColIdx]) ? cleanNumber(row[targetColIdx]) : 0;
+                    let monthlyTarget = yearlyTarget / 12;
+
+                    totals.annT += yearlyTarget;
+                    totals.monT += monthlyTarget;
+
+                    let rowHtml = `<tr class="hover:bg-sky-50/50 border-b border-slate-200">
+                        <td class="p-2.5 font-bold text-slate-900">${stdDiv}</td>
+                        <td class="p-2.5 font-semibold text-slate-600">${row[vertColIdx] || vertKey}</td>`;
+
+                    if (dataType === 'revenue') {
+                        rowHtml += `<td class="p-2.5 font-bold text-slate-800 bg-slate-50">₹${yearlyTarget.toFixed(3)} Cr</td>
+                                    <td class="p-2.5 font-bold text-sky-800 bg-sky-50">₹${monthlyTarget.toFixed(3)} Cr</td>`;
+                    }
+
+                    let rowSum = 0;
+                    monthKeys.forEach((mKey, mIdx) => {
+                        let cIdx = monthColMap[mKey];
+                        let val = (cIdx !== undefined && row[cIdx] !== undefined) ? cleanNumber(row[cIdx]) : 0;
+                        rowSum += val;
+                        totals.sumMonths[mIdx] += val;
+
+                        let formatVal = dataType === 'revenue' ? `₹${val.toFixed(3)}` : val.toLocaleString('en-IN');
+                        rowHtml += `<td class="p-2 text-right font-medium">${formatVal}</td>`;
+                    });
+
+                    totals.grandTotal += rowSum;
+                    let formatGrandVal = dataType === 'revenue' ? `₹${rowSum.toFixed(3)} Cr` : rowSum.toLocaleString('en-IN');
+
+                    rowHtml += `<td class="p-2.5 text-right font-black text-emerald-700 bg-emerald-50">${formatGrandVal}</td></tr>`;
+                    tbodyHtml.push(rowHtml);
+                });
+            }
+
+            document.getElementById('histTableBody').innerHTML = tbodyHtml.join('');
+
+            let footHtml = `<tr class="bg-slate-900 text-white font-black text-xs uppercase">
+                <td class="p-3 text-amber-300">TOTAL SUMMARY</td>
+                <td class="p-3">FILTERED</td>`;
+
+            if (dataType === 'revenue') {
+                footHtml += `<td class="p-3 text-slate-200">₹${totals.annT.toFixed(3)} Cr</td>
+                             <td class="p-3 text-amber-300">₹${totals.monT.toFixed(3)} Cr</td>`;
+            }
+
+            totals.sumMonths.forEach(mVal => {
+                let fVal = dataType === 'revenue' ? `₹${mVal.toFixed(3)}` : mVal.toLocaleString('en-IN');
+                footHtml += `<td class="p-2.5 text-right">${fVal}</td>`;
+            });
+
+            let fGrand = dataType === 'revenue' ? `₹${totals.grandTotal.toFixed(3)} Cr` : totals.grandTotal.toLocaleString('en-IN');
+            footHtml += `<td class="p-3 text-right text-emerald-300">${fGrand}</td></tr>`;
+
+            document.getElementById('histTableFoot').innerHTML = footHtml;
+        }
+
+        function normalizeSubDivisionName(sdName, clsName, offName, divName) {
+            let sd = (sdName || '').trim();
+            let cls = (clsName || '').trim().toUpperCase();
+            let name = (offName || '').trim().toUpperCase();
+            let div = (divName || '').trim().toUpperCase();
+
+            if (div.includes('CITY') || div.includes('INDORE CITY')) {
+                if (sd.toUpperCase().includes('EAST') || cls === 'BNPL' || cls === 'BPC' || cls === 'IDC' || name.includes('BNPL') || name.includes('BPC') || name.includes('IDC')) {
+                    return "Indore East"; 
+                }
+            }
+            return sd || 'UNASSIGNED';
+        }
+
+        function buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows) {
+            let officeMap = new Map();
+
+            function processMonthSheet(rows, monthKey) {
+                if (!rows || rows.length <= 1) return;
+
+                let header = rows[0].map(h => h.trim().toUpperCase());
+                let idIdx = header.findIndex(h => h.includes('OFFICE-ID') || h.includes('OFFICE ID') || h.includes('ID'));
+                let nameIdx = header.findIndex(h => h.includes('OFFICE NAME') || h.includes('NAME'));
+                let clsIdx = header.findIndex(h => h === 'CLASS' || h.includes('CLASS'));
+                let sdIdx = header.findIndex(h => h === 'SD' || h.includes('SUB'));
+                let divIdx = header.findIndex(h => h === 'DIVISION' || h.includes('DIV'));
+                let catIdx = header.findIndex(h => h === 'CATEGORY' || h.includes('CAT'));
+                let cntIdx = header.findIndex(h => h.includes('BOOKING_COUNT') || h.includes('COUNT') || h.includes('BOOKING'));
+
+                if (idIdx === -1) idIdx = 0;
+                if (nameIdx === -1) nameIdx = 1;
+                if (clsIdx === -1) clsIdx = 2;
+                if (sdIdx === -1) sdIdx = 3;
+                if (divIdx === -1) divIdx = 4;
+                if (catIdx === -1) catIdx = 5;
+                if (cntIdx === -1) cntIdx = 6;
+
+                rows.forEach((r, idx) => {
+                    if (idx === 0 || !r[idIdx]) return;
+                    let offId = r[idIdx].trim();
+                    let offName = r[nameIdx] ? r[nameIdx].trim() : "";
+                    let offCls = r[clsIdx] ? r[clsIdx].trim().toUpperCase() : "";
+                    let rawDiv = r[divIdx] ? r[divIdx].trim() : "";
+
+                    let normSd = normalizeSubDivisionName(r[sdIdx], offCls, offName, rawDiv);
+                    let isKhudelBO = (offName.toUpperCase().includes('KHUDEL') && offCls === 'BO');
+
+                    if (!officeMap.has(offId)) {
+                        officeMap.set(offId, {
+                            id: offId,
+                            name: offName,
+                            cls: offCls,
+                            sd: normSd,
+                            div: rawDiv,
+                            closedMonth: isKhudelBO ? 'jul' : null,
+                            isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
+                            parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0, parcel_aug: 0, parcel_sep: 0,
+                            mo_apr: 0, mo_may: 0, mo_jun: 0, mo_jul: 0, mo_aug: 0, mo_sep: 0,
+                            irgb_apr: 0, irgb_may: 0, irgb_jun: 0, irgb_jul: 0, irgb_aug: 0, irgb_sep: 0
+                        });
+                    }
+
+                    let offObj = officeMap.get(offId);
+                    let cat = r[catIdx] ? r[catIdx].trim().toUpperCase() : "";
+                    let cnt = cleanNumber(r[cntIdx]);
+
+                    if (cat.includes("PARCEL")) offObj[`parcel_${monthKey}`] += cnt;
+                    else if (cat.includes("IRGB")) offObj[`irgb_${monthKey}`] += cnt;
+                    else offObj[`mo_${monthKey}`] += cnt;
+                });
+            }
+
+            processMonthSheet(aprRows, 'apr');
+            processMonthSheet(mayRows, 'may');
+            processMonthSheet(junRows, 'jun');
+
+            masterOfficeDatabase = Array.from(officeMap.values());
+        }
+
+        function updateJulyLiveCounts(rows) {
+            if (!rows || rows.length <= 1) return;
+
+            rows.forEach((r, idx) => {
+                if (idx === 0) return;
+                let offId = r[0] ? r[0].trim() : "";
+                if (!offId) return;
+
+                let cat = r[5] ? r[5].trim().toUpperCase() : "";
+                let cnt = cleanNumber(r[6]);
+
+                let offObj = masterOfficeDatabase.find(x => x.id === offId);
+                if (offObj) {
+                    if (cat.includes("PARCEL")) offObj.parcel_jul = cnt;
+                    else if (cat.includes("IRGB")) offObj.irgb_jul = cnt;
+                    else offObj.mo_jul += cnt;
+                }
+            });
+        }
+
         function parseRevenueSheet(rows) {
-            if (!rows || rows.length === 0) return [];
             let currentVert = "PARCEL";
             let records = [];
 
             rows.forEach((row) => {
-                if (!row || row.length === 0) return;
                 let rowStr = row.join(" ").toUpperCase();
 
                 if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST")) currentVert = "MAIL";
                 else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB")) currentVert = "IRGB";
                 else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE")) currentVert = "PARCEL";
+                else if (rowStr.includes("PLI") || rowStr.includes("RPLI")) currentVert = "PLI";
 
-                let divCandidate = "";
-                let colOffset = 0;
+                if (rowStr.includes("TARGET & ACHIEVEMENT") || rowStr.includes("NAME OF DIVISION") || !row[0] || row[0].trim() === "") return;
 
-                if (row[0] && !isNaN(parseInt(row[0].trim())) && row[1]) {
-                    divCandidate = row[1].trim();
-                    colOffset = 1;
-                } else if (row[0]) {
-                    divCandidate = row[0].trim();
-                    colOffset = 0;
-                }
-
-                let stdDiv = getStandardDivKey(divCandidate);
-                if (!stdDiv) return;
+                let divName = row[0].trim();
+                if (divName.toUpperCase() === 'TOTAL' || divName.toUpperCase().includes('GRAND TOTAL') || divName.toUpperCase().includes('VERTICAL')) return;
 
                 let isIRGB = (currentVert === "IRGB");
                 let crDivisor = isIRGB ? 100 : 1; 
 
-                let rawT = cleanNumber(row[1 + colOffset]);
-                let rawM = cleanNumber(row[2 + colOffset]);
-                let rawTM = cleanNumber(row[3 + colOffset]);
-                let rawAp = cleanNumber(row[4 + colOffset]);
-                let rawMy = cleanNumber(row[5 + colOffset]);
-                let rawJn = cleanNumber(row[6 + colOffset]);
-                let rawJl = cleanNumber(row[7 + colOffset]);
-                let rawAch = cleanNumber(row[8 + colOffset]);
+                let rawT = cleanNumber(row[1]);
+                let rawM = cleanNumber(row[2]);
+                let rawTM = cleanNumber(row[3]);
+                let rawAp = cleanNumber(row[4]);
+                let rawMy = cleanNumber(row[5]);
+                let rawJn = cleanNumber(row[6]);
+                let rawJl = cleanNumber(row[7]);
+                let rawAch = cleanNumber(row[8]);
 
                 records.push({
-                    divName: stdDiv,
+                    divName: divName,
                     vertical: currentVert,
                     target: rawT / crDivisor,
                     monthly: rawM / crDivisor,
@@ -1509,8 +1519,8 @@
                     rawJun: rawJn,
                     rawJul: rawJl,
                     rawTotalAch: rawAch,
-                    propPct: row[9 + colOffset] || "0%",
-                    totalPct: row[10 + colOffset] || "0%",
+                    propPct: row[9] || "0%",
+                    totalPct: row[10] || "0%",
                     isIRGB: isIRGB
                 });
             });
@@ -1519,12 +1529,11 @@
         }
 
         function parseCountSheet(rows) {
-            if (!rows || rows.length === 0) return [];
             let currentVert = "PARCEL";
             let records = [];
 
             rows.forEach((row) => {
-                if (!row || row.length === 0) return;
+                let firstCol = row[0] ? row[0].trim().toUpperCase() : "";
                 let rowStr = row.join(" ").toUpperCase();
 
                 if (rowStr.includes("MO ARTICLE COUNT") || rowStr.includes("MAIL OPERATION")) {
@@ -1538,31 +1547,23 @@
                     return;
                 }
 
-                let divCandidate = "";
-                let colOffset = 0;
-
-                if (row[0] && !isNaN(parseInt(row[0].trim())) && row[1]) {
-                    divCandidate = row[1].trim();
-                    colOffset = 1;
-                } else if (row[0]) {
-                    divCandidate = row[0].trim();
-                    colOffset = 0;
+                if (!row[0] || firstCol === "" || firstCol.includes("NAME OF DIV") || firstCol === 'TOTAL' || firstCol.includes('GRAND TOTAL') || firstCol.includes('SL NO') || firstCol.includes('VERTICAL')) {
+                    return;
                 }
 
-                let stdDiv = getStandardDivKey(divCandidate);
-                if (!stdDiv) return;
+                let divName = row[0].trim();
 
-                let rawAp = cleanNumber(row[1 + colOffset]);
-                let rawMy = cleanNumber(row[2 + colOffset]);
-                let rawJn = cleanNumber(row[3 + colOffset]);
-                let rawJulyTarget = cleanNumber(row[4 + colOffset]);
-                let rawJulyCount = cleanNumber(row[5 + colOffset]);
-                let pctAch = row[6 + colOffset] ? row[6 + colOffset].toString().trim() : "0%";
+                let rawAp = cleanNumber(row[1]);
+                let rawMy = cleanNumber(row[2]);
+                let rawJn = cleanNumber(row[3]);
+                let rawJulyTarget = cleanNumber(row[4]);
+                let rawJulyCount = cleanNumber(row[5]);
+                let pctAch = row[6] ? row[6].toString().trim() : "0%";
 
                 let sumTotalAch = rawAp + rawMy + rawJn + rawJulyCount;
 
                 records.push({
-                    divName: stdDiv,
+                    divName: divName,
                     vertical: currentVert,
                     target: rawJulyTarget,
                     monthly: rawJulyTarget,
@@ -1591,13 +1592,13 @@
 
         function switchView(viewType) {
             currentActiveView = viewType;
-            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView', 'posbAnalyticsView', 'pliAnalyticsView'];
+            const views = ['standardDashboardView', 'sdMonthView', 'officeAnalyticsView', 'q1DataView', 'momAnalysisView', 'yoyComparisonView', 'rankingsView', 'historicalDataView'];
             views.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
 
-            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings', 'historical', 'posb', 'pli'];
+            const tabs = ['revenue', 'count', 'sdMonth', 'office', 'q1', 'mom', 'yoy', 'rankings', 'historical'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-type-${t}`);
                 if (btn) {
@@ -1639,14 +1640,6 @@
                 if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-sky-600 text-sky-600 transition flex items-center gap-1.5";
                 populateHistVerticalDropdown();
                 renderHistoricalTable();
-            } else if (viewType === 'posb') {
-                document.getElementById('posbAnalyticsView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-emerald-600 text-emerald-600 transition flex items-center gap-1.5";
-                renderPosbView();
-            } else if (viewType === 'pli') {
-                document.getElementById('pliAnalyticsView').classList.remove('hidden');
-                if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-teal-600 text-teal-600 transition flex items-center gap-1.5";
-                renderPliView();
             } else {
                 document.getElementById('standardDashboardView').classList.remove('hidden');
                 if (viewType === 'revenue') {
@@ -1666,185 +1659,6 @@
                 }
                 updateDashboard();
             }
-        }
-
-        function renderPosbView() {
-            const metric = document.getElementById('posbMetricSelect').value;
-            const month = document.getElementById('posbMonthSelect').value;
-            const divFilter = document.getElementById('posbDivSelect').value;
-
-            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
-            
-            let theadHtml = "";
-            let isRevenue = (metric === 'REVENUE');
-
-            if (isRevenue) {
-                theadHtml = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase">
-                    <th class="p-3.5">Division Name</th>
-                    <th class="p-3.5 bg-emerald-900">Yearly Target (Cr)</th>
-                    <th class="p-3.5 bg-emerald-800 text-amber-200">Monthly Target (Target/12)</th>
-                    <th class="p-3.5 bg-slate-800">LY Revenue (${month.toUpperCase()}-25)</th>
-                    <th class="p-3.5 bg-indigo-900 font-black text-emerald-200">TY Revenue (${month.toUpperCase()}-26)</th>
-                    <th class="p-3.5 text-center bg-teal-800">% Ach (vs Monthly Tgt)</th>
-                    <th class="p-3.5 text-center">YoY Growth %</th>
-                </tr>`;
-            } else {
-                let labelText = (metric === 'OPENED') ? 'Account Opened' : 'Net Addition';
-                theadHtml = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase">
-                    <th class="p-3.5">Division Name</th>
-                    <th class="p-3.5">Category</th>
-                    <th class="p-3.5 bg-slate-800">LY ${labelText} (${month.toUpperCase()}-25)</th>
-                    <th class="p-3.5 bg-indigo-900 font-black text-emerald-200">TY ${labelText} (${month.toUpperCase()}-26)</th>
-                    <th class="p-3.5 text-center">YoY Growth %</th>
-                </tr>`;
-            }
-            document.getElementById('posbTableHead').innerHTML = theadHtml;
-
-            let rows = [];
-            let sumLY = 0, sumTY = 0, sumYTgt = 0, sumMTgt = 0;
-
-            divList.forEach(d => {
-                if (divFilter !== 'ALL' && !isMatchingDivision(d, divFilter)) return;
-
-                if (isRevenue) {
-                    let rec = posbAndPliRevenueRecords.find(x => isMatchingDivision(x.divName, d) && x.vertical === 'POSB') || { yearlyTarget:0, monthlyTarget:0, apr:0, may:0, jun:0, jul:0 };
-                    let yTgt = rec.yearlyTarget;
-                    let mTgt = rec.monthlyTarget;
-                    let tyVal = rec[month] || 0;
-
-                    let lyVal = 0;
-                    if (HISTORICAL_LY_DATA["POSB"] && HISTORICAL_LY_DATA["POSB"]["revenue"] && HISTORICAL_LY_DATA["POSB"]["revenue"][month]) {
-                        lyVal = HISTORICAL_LY_DATA["POSB"]["revenue"][month][d] || 0;
-                    }
-
-                    sumYTgt += yTgt; sumMTgt += mTgt; sumLY += lyVal; sumTY += tyVal;
-
-                    let pctAch = mTgt > 0 ? ((tyVal / mTgt) * 100).toFixed(1) + "%" : "0%";
-                    let gVal = lyVal > 0 ? (((tyVal - lyVal) / lyVal) * 100) : 0;
-
-                    rows.push(`<tr class="hover:bg-emerald-50/40 border-b border-slate-200">
-                        <td class="p-3 font-bold text-slate-900">${d}</td>
-                        <td class="p-3 text-slate-700 font-semibold bg-slate-50">₹${yTgt.toFixed(3)} Cr</td>
-                        <td class="p-3 text-emerald-800 font-bold bg-emerald-50">₹${mTgt.toFixed(3)} Cr</td>
-                        <td class="p-3 text-slate-600 font-medium">₹${lyVal.toFixed(3)} Cr</td>
-                        <td class="p-3 text-indigo-700 font-black">₹${tyVal.toFixed(3)} Cr</td>
-                        <td class="p-3 text-center font-bold text-amber-700 bg-amber-50">${pctAch}</td>
-                        <td class="p-3 text-center">${gVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${gVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${gVal.toFixed(1)}%</span>`}</td>
-                    </tr>`);
-                } else {
-                    let lyMap = (metric === 'OPENED') ? SBN_HISTORICAL_OPENED : SBN_HISTORICAL_NET;
-                    let tyMap = (metric === 'OPENED') ? SBN_CURRENT_OPENED : SBN_CURRENT_NET;
-
-                    let lyVal = (lyMap[month] && lyMap[month][d]) ? lyMap[month][d] : 0;
-                    let tyVal = (tyMap[month] && tyMap[month][d]) ? tyMap[month][d] : 0;
-
-                    sumLY += lyVal; sumTY += tyVal;
-                    let gVal = lyVal > 0 ? (((tyVal - lyVal) / lyVal) * 100) : 0;
-
-                    rows.push(`<tr class="hover:bg-emerald-50/40 border-b border-slate-200">
-                        <td class="p-3 font-bold text-slate-900">${d}</td>
-                        <td class="p-3 text-xs font-semibold text-slate-500">${metric === 'OPENED' ? 'POSB Account Opening' : 'POSB Net Addition'}</td>
-                        <td class="p-3 text-slate-600 font-medium">${lyVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-indigo-700 font-bold">${tyVal.toLocaleString('en-IN')}</td>
-                        <td class="p-3 text-center">${gVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${gVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${gVal.toFixed(1)}%</span>`}</td>
-                    </tr>`);
-                }
-            });
-
-            document.getElementById('posbTableBody').innerHTML = rows.join('');
-
-            let tFootHtml = "";
-            if (isRevenue) {
-                let grandPct = sumMTgt > 0 ? ((sumTY / sumMTgt) * 100).toFixed(1) + "%" : "0%";
-                let grandG = sumLY > 0 ? (((sumTY - sumLY) / sumLY) * 100).toFixed(1) + "%" : "0%";
-
-                tFootHtml = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
-                    <td class="p-3.5 text-amber-300">TOTAL SUMMARY</td>
-                    <td class="p-3.5 text-slate-200">₹${sumYTgt.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-emerald-300">₹${sumMTgt.toFixed(3)} Cr</td>
-                    <td class="p-3.5">₹${sumLY.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-indigo-200">₹${sumTY.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-center text-amber-300">${grandPct}</td>
-                    <td class="p-3.5 text-center text-emerald-300">${grandG}</td>
-                </tr>`;
-            } else {
-                let grandG = sumLY > 0 ? (((sumTY - sumLY) / sumLY) * 100).toFixed(1) + "%" : "0%";
-                tFootHtml = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
-                    <td class="p-3.5 text-amber-300">TOTAL SUMMARY</td>
-                    <td class="p-3.5">ALL FILTERED</td>
-                    <td class="p-3.5">${sumLY.toLocaleString('en-IN')}</td>
-                    <td class="p-3.5 text-emerald-300">${sumTY.toLocaleString('en-IN')}</td>
-                    <td class="p-3.5 text-center text-amber-300">${grandG}</td>
-                </tr>`;
-            }
-            document.getElementById('posbTableFoot').innerHTML = tFootHtml;
-        }
-
-        function renderPliView() {
-            const month = document.getElementById('pliMonthSelect').value;
-            const divFilter = document.getElementById('pliDivSelect').value;
-
-            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
-
-            let theadHtml = `<tr class="bg-teal-950 text-white font-bold text-xs uppercase">
-                <th class="p-3.5">Division Name</th>
-                <th class="p-3.5 bg-teal-900">Yearly Target (Cr)</th>
-                <th class="p-3.5 bg-teal-800 text-amber-200">Monthly Target (Target/12)</th>
-                <th class="p-3.5 bg-slate-800">LY Premium (${month.toUpperCase()}-25)</th>
-                <th class="p-3.5 bg-indigo-900 font-black text-emerald-200">TY Premium (${month.toUpperCase()}-26)</th>
-                <th class="p-3.5 text-center bg-teal-800">% Ach (vs Monthly Tgt)</th>
-                <th class="p-3.5 text-center">YoY Growth %</th>
-            </tr>`;
-            document.getElementById('pliTableHead').innerHTML = theadHtml;
-
-            let rows = [];
-            let sumLY = 0, sumTY = 0, sumYTgt = 0, sumMTgt = 0;
-
-            divList.forEach(d => {
-                if (divFilter !== 'ALL' && !isMatchingDivision(d, divFilter)) return;
-
-                let rec = posbAndPliRevenueRecords.find(x => isMatchingDivision(x.divName, d) && x.vertical === 'PLI') || { yearlyTarget:0, monthlyTarget:0, apr:0, may:0, jun:0, jul:0 };
-                let yTgt = rec.yearlyTarget;
-                let mTgt = rec.monthlyTarget;
-                let tyVal = rec[month] || 0;
-
-                let lyVal = 0;
-                if (HISTORICAL_LY_DATA["PLI"] && HISTORICAL_LY_DATA["PLI"]["revenue"] && HISTORICAL_LY_DATA["PLI"]["revenue"][month]) {
-                    lyVal = HISTORICAL_LY_DATA["PLI"]["revenue"][month][d] || 0;
-                }
-
-                sumYTgt += yTgt; sumMTgt += mTgt; sumLY += lyVal; sumTY += tyVal;
-
-                let pctAch = mTgt > 0 ? ((tyVal / mTgt) * 100).toFixed(1) + "%" : "0%";
-                let gVal = lyVal > 0 ? (((tyVal - lyVal) / lyVal) * 100) : 0;
-
-                rows.push(`<tr class="hover:bg-teal-50/40 border-b border-slate-200">
-                    <td class="p-3 font-bold text-slate-900">${d}</td>
-                    <td class="p-3 text-slate-700 font-semibold bg-slate-50">₹${yTgt.toFixed(3)} Cr</td>
-                    <td class="p-3 text-teal-800 font-bold bg-teal-50">₹${mTgt.toFixed(3)} Cr</td>
-                    <td class="p-3 text-slate-600 font-medium">₹${lyVal.toFixed(3)} Cr</td>
-                    <td class="p-3 text-indigo-700 font-black">₹${tyVal.toFixed(3)} Cr</td>
-                    <td class="p-3 text-center font-bold text-amber-700 bg-amber-50">${pctAch}</td>
-                    <td class="p-3 text-center">${gVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${gVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${gVal.toFixed(1)}%</span>`}</td>
-                </tr>`);
-            });
-
-            document.getElementById('pliTableBody').innerHTML = rows.join('');
-
-            let grandPct = sumMTgt > 0 ? ((sumTY / sumMTgt) * 100).toFixed(1) + "%" : "0%";
-            let grandG = sumLY > 0 ? (((sumTY - sumLY) / sumLY) * 100).toFixed(1) + "%" : "0%";
-
-            let tFootHtml = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
-                <td class="p-3.5 text-amber-300">TOTAL PLI SUMMARY</td>
-                <td class="p-3.5 text-slate-200">₹${sumYTgt.toFixed(3)} Cr</td>
-                <td class="p-3.5 text-teal-300">₹${sumMTgt.toFixed(3)} Cr</td>
-                <td class="p-3.5">₹${sumLY.toFixed(3)} Cr</td>
-                <td class="p-3.5 text-indigo-200">₹${sumTY.toFixed(3)} Cr</td>
-                <td class="p-3.5 text-center text-amber-300">${grandPct}</td>
-                <td class="p-3.5 text-center text-emerald-300">${grandG}</td>
-            </tr>`;
-
-            document.getElementById('pliTableFoot').innerHTML = tFootHtml;
         }
 
         function populateSubDivDropdown(divSelectId, sdSelectId) {
@@ -2325,7 +2139,9 @@
             filteredData.forEach(r => {
                 let vertBadge = r.vertical === 'PARCEL' ? '<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">📦 Parcel</span>' :
                             (r.vertical === 'MAIL' ? '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-md font-bold text-xs">✉️ Mail Operations</span>' :
-                            '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>');
+                            (r.vertical === 'SB' ? '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">🏦 POSB Schemes</span>' :
+                            (r.vertical === 'PLI' ? '<span class="px-2.5 py-1 bg-teal-100 text-teal-800 rounded-md font-bold text-xs">🛡️ PLI / RPLI</span>' :
+                            '<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-md font-bold text-xs">✈️ IR & GB</span>')));
 
                 let t = showLakhsOnly ? r.rawTarget : r.target;
                 let ap = showLakhsOnly ? r.rawApr : r.apr;
@@ -2669,6 +2485,7 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
+        // Updated YoY Comparison Table
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
