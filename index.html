@@ -37,7 +37,7 @@
 <body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
     <div>
-        <!-- Header Banner -->
+        <!-- Clean Header Banner -->
         <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white py-6 px-8 shadow-md">
             <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
@@ -835,6 +835,7 @@
         function getStandardDivKey(divName) {
             if (!divName) return "";
             let d = divName.toString().toUpperCase().trim();
+            if (d.includes("TOTAL") || d.includes("GRAND") || d.includes("SL NO") || d.includes("VERTICAL")) return "";
             if (d.includes("CITY")) return "Indore City";
             if (d.includes("MOFFUSIL") || d.includes("MF") || d.includes("MFL")) return "Indore Moffusil";
             if (d.includes("KHANDWA") || d.includes("KHA DWA")) return "Khandwa";
@@ -904,11 +905,10 @@
             }
         }
 
-        // Header Text Matching logic for 100% accurate column parsing
+        // Strict & Dynamic Header Matching for Last Year Sheet
         function parseLastYearSheet(rows, dataType) {
             if (!rows || rows.length <= 1) return;
 
-            // Header row identify karein
             let headerRowIdx = rows.findIndex(r => r.some(cell => {
                 let str = cell.toString().toUpperCase();
                 return str.includes("DIVISION") || str.includes("VERTICAL") || str.includes("APRIL") || str.includes("TARGET");
@@ -918,25 +918,25 @@
             let header = rows[headerRowIdx].map(h => h.toString().toLowerCase().trim());
 
             let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
-            let monthSearchTerms = [
-                ["april", "apr"],
-                ["may"],
-                ["june", "jun"],
-                ["july", "jul"],
-                ["august", "aug"],
-                ["september", "sep"],
-                ["october", "oct"],
-                ["november", "nov"],
-                ["december", "dec"],
-                ["january", "jan"],
-                ["february", "feb"],
-                ["march", "mar"]
+            let monthRegexes = [
+                /apr|april/i,
+                /may/i,
+                /jun|june/i,
+                /jul|july/i,
+                /aug|august/i,
+                /sep|september/i,
+                /oct|october/i,
+                /nov|november/i,
+                /dec|december/i,
+                /jan|january/i,
+                /feb|february/i,
+                /mar|march/i
             ];
 
             let monthColMap = {};
             monthKeys.forEach((mKey, idx) => {
-                let terms = monthSearchTerms[idx];
-                let foundCol = header.findIndex(hText => terms.some(term => hText.includes(term)));
+                let regex = monthRegexes[idx];
+                let foundCol = header.findIndex(hText => regex.test(hText));
                 if (foundCol !== -1) {
                     monthColMap[mKey] = foundCol;
                 } else {
@@ -955,13 +955,21 @@
 
                 let rawDiv = row[divColIdx].toString().trim();
                 let stdKey = getStandardDivKey(rawDiv);
-                if (!stdKey || stdKey.toUpperCase().includes("TOTAL") || stdKey.toUpperCase().includes("VERTICAL") || stdKey.toUpperCase().includes("SL")) return;
+                if (!stdKey) return; // Skip if invalid/summary division
 
                 let rawVert = row[vertColIdx] ? row[vertColIdx].toString().trim().toUpperCase() : "";
-                let vertKey = "PARCEL";
-                if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
-                else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
-                else vertKey = "PARCEL";
+                
+                // Strict Vertical Resolution (Prevents unassigned rows from defaulting to PARCEL)
+                let vertKey = null;
+                if (rawVert.includes("PARCEL")) {
+                    vertKey = "PARCEL";
+                } else if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) {
+                    vertKey = "MAIL";
+                } else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) {
+                    vertKey = "IRGB";
+                }
+
+                if (!vertKey) return; // Ignore row if vertical doesn't strictly match
 
                 if (!HISTORICAL_LY_DATA[vertKey]) HISTORICAL_LY_DATA[vertKey] = { count: {}, revenue: {} };
                 if (!HISTORICAL_LY_DATA[vertKey][dataType]) HISTORICAL_LY_DATA[vertKey][dataType] = {};
@@ -2081,13 +2089,12 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
-        // Exact Revenue Parsing & Dynamic YoY Headings
+        // Precise YoY Parsing & Rendering
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
             const month = document.getElementById('yoyMonthSelect').value;
 
-            // Financial Year Dynamics
             let lyYearCount = 2025;
             let tyYearCount = 2026;
 
