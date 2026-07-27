@@ -774,8 +774,9 @@
         const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
         const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
 
-        // नई लाइव Google Sheet (Last Year Count Data)
+        // Last Year Live CSV URLs (Count & Revenue)
         const LAST_YEAR_COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=825431695&single=true&output=csv";
+        const LAST_YEAR_REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1795446290&single=true&output=csv";
 
         let HISTORICAL_LY_DATA = {
             "MAIL": { "count": {}, "revenue": {} },
@@ -885,19 +886,21 @@
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
 
-            const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyRows] = await Promise.all([
+            const [revRows, countRows, aprRows, mayRows, junRows, julyRows, lyCountRows, lyRevRows] = await Promise.all([
                 safeFetchCSV(REVENUE_CSV_URL),
                 safeFetchCSV(COUNT_CSV_URL),
                 safeFetchCSV(APRIL_OFFICE_CSV_URL),
                 safeFetchCSV(MAY_OFFICE_CSV_URL),
                 safeFetchCSV(JUNE_OFFICE_CSV_URL),
                 safeFetchCSV(JULY_OFFICE_CSV_URL),
-                safeFetchCSV(LAST_YEAR_COUNT_CSV_URL) // पिछला वित्तीय वर्ष का डेटा फेच
+                safeFetchCSV(LAST_YEAR_COUNT_CSV_URL),
+                safeFetchCSV(LAST_YEAR_REVENUE_CSV_URL)
             ]);
 
             if (revRows.length > 0) revenueRecords = parseRevenueSheet(revRows);
             if (countRows.length > 0) countRecords = parseCountSheet(countRows);
-            if (lyRows.length > 0) parseLastYearSheet(lyRows);
+            if (lyCountRows.length > 0) parseLastYearSheet(lyCountRows, 'count');
+            if (lyRevRows.length > 0) parseLastYearSheet(lyRevRows, 'revenue');
 
             buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows);
             updateJulyLiveCounts(julyRows);
@@ -913,42 +916,35 @@
             }
         }
 
-        // पिछले साल की गूगल शीट से लाइव डेटा मैप करने का फ़ंक्शन
-        function parseLastYearSheet(rows) {
+        // पिछले साल (Count एवं Revenue) दोनों शीट्स की सटीक कॉलम मैपिंग
+        function parseLastYearSheet(rows, dataType) {
             if (!rows || rows.length <= 1) return;
 
-            let currentVert = "PARCEL";
-            let months = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
-            let header = rows[0].map(h => h.trim().toLowerCase());
-
-            let monthIndices = {};
-            months.forEach(m => {
-                let idx = header.findIndex(h => h.includes(m));
-                if (idx !== -1) monthIndices[m] = idx;
-            });
+            // अप्रैल से मार्च तक के कॉलम इंडेक्स (कॉलम 3 से शुरू)
+            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
             rows.forEach((row, idx) => {
-                if (idx === 0) return;
-                let rowStr = row.join(" ").toUpperCase();
+                if (idx === 0 || !row[0] || row[0].trim() === "") return;
 
-                if (rowStr.includes("MAIL OPERATION") || rowStr.includes("SPEED POST") || rowStr.includes("MO ARTICLE")) currentVert = "MAIL";
-                else if (rowStr.includes("IRGB") || rowStr.includes("IR & GB")) currentVert = "IRGB";
-                else if (rowStr.includes("PARCEL VERTICAL") || rowStr.includes("PARCEL ARTICLE")) currentVert = "PARCEL";
+                let rawDiv = row[0].trim();
+                let stdKey = getStandardDivKey(rawDiv);
+                if (!stdKey || stdKey.toUpperCase().includes("TOTAL") || stdKey.toUpperCase().includes("VERTICAL") || stdKey.toUpperCase().includes("SL")) return;
 
-                if (!row[0] || row[0].trim() === "" || rowStr.includes("TARGET") || rowStr.includes("NAME OF DIV")) return;
+                let rawVert = row[1] ? row[1].trim().toUpperCase() : "";
+                let vertKey = "PARCEL";
+                if (rawVert.includes("MO") || rawVert.includes("MAIL") || rawVert.includes("SPEED")) vertKey = "MAIL";
+                else if (rawVert.includes("IRGB") || rawVert.includes("IR & GB")) vertKey = "IRGB";
+                else vertKey = "PARCEL";
 
-                let divName = row[0].trim();
-                let stdKey = getStandardDivKey(divName);
-                if (!stdKey || stdKey.toUpperCase().includes("TOTAL") || stdKey.toUpperCase().includes("VERTICAL")) return;
+                if (!HISTORICAL_LY_DATA[vertKey]) HISTORICAL_LY_DATA[vertKey] = { count: {}, revenue: {} };
+                if (!HISTORICAL_LY_DATA[vertKey][dataType]) HISTORICAL_LY_DATA[vertKey][dataType] = {};
 
-                months.forEach(m => {
-                    let colIdx = monthIndices[m];
-                    if (colIdx !== undefined && row[colIdx] !== undefined) {
+                monthKeys.forEach((m, colOffset) => {
+                    let colIdx = 3 + colOffset; // 3 = April, 4 = May, 5 = June, 6 = July...
+                    if (row[colIdx] !== undefined) {
                         let val = cleanNumber(row[colIdx]);
-                        if (!HISTORICAL_LY_DATA[currentVert]) HISTORICAL_LY_DATA[currentVert] = { count: {}, revenue: {} };
-                        if (!HISTORICAL_LY_DATA[currentVert]["count"][m]) HISTORICAL_LY_DATA[currentVert]["count"][m] = {};
-                        
-                        HISTORICAL_LY_DATA[currentVert]["count"][m][stdKey] = val;
+                        if (!HISTORICAL_LY_DATA[vertKey][dataType][m]) HISTORICAL_LY_DATA[vertKey][dataType][m] = {};
+                        HISTORICAL_LY_DATA[vertKey][dataType][m][stdKey] = val;
                     }
                 });
             });
@@ -2077,7 +2073,7 @@
                 let tyCountVal = cItem ? (cItem[month] || 0) : 0;
                 let tyRevVal = rItem ? (rItem[month] || 0) : 0;
                 let stdKey = getStandardDivKey(rItem.divName);
-                let vKey = (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') ? 'MAIL' : 'PARCEL';
+                let vKey = (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') ? 'MAIL' : (rItem.vertical === 'PARCEL' ? 'PARCEL' : 'IRGB');
 
                 let lyCountVal = 0, lyRevVal = 0;
                 if (HISTORICAL_LY_DATA[vKey]) {
