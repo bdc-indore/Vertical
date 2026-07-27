@@ -1050,6 +1050,168 @@
             }
         }
 
+        // ====== FIXED ADDED MISSING FUNCTIONS ======
+        function buildMasterOfficeDatabaseLive(aprRows, mayRows, junRows) {
+            masterOfficeDatabase = [];
+            let officeMap = new Map();
+
+            let processMonthRows = (rows, monthKey) => {
+                if (!rows || rows.length <= 1) return;
+                let header = rows[0].map(h => h.toString().toUpperCase().trim());
+                
+                let idCol = header.findIndex(h => h.includes("FACILITY") || h.includes("ID") || h.includes("OFFICE CODE"));
+                let nameCol = header.findIndex(h => h.includes("NAME") || h.includes("OFFICE"));
+                let clsCol = header.findIndex(h => h.includes("CLASS") || h.includes("TYPE") || h.includes("CATEGORY"));
+                let sdCol = header.findIndex(h => h.includes("SUB") || h.includes("SD"));
+                let divCol = header.findIndex(h => h.includes("DIVISION") || h.includes("DIV"));
+                
+                let pCol = header.findIndex(h => h.includes("PARCEL"));
+                let mCol = header.findIndex(h => h.includes("MO") || h.includes("MAIL") || h.includes("SPEED"));
+                let iCol = header.findIndex(h => h.includes("IRGB") || h.includes("IR"));
+
+                if (idCol === -1) idCol = 0;
+                if (nameCol === -1) nameCol = 1;
+                if (clsCol === -1) clsCol = 2;
+                if (sdCol === -1) sdCol = 3;
+                if (divCol === -1) divCol = 4;
+
+                rows.forEach((r, idx) => {
+                    if (idx === 0 || !r[idCol]) return;
+                    let id = r[idCol].trim();
+                    let name = r[nameCol] ? r[nameCol].trim() : id;
+                    let cls = r[clsCol] ? r[clsCol].trim().toUpperCase() : "SO";
+                    let sd = r[sdCol] ? r[sdCol].trim() : "UNASSIGNED";
+                    let div = r[divCol] ? getStandardDivKey(r[divCol]) : "UNKNOWN";
+
+                    if (!officeMap.has(id)) {
+                        officeMap.set(id, {
+                            id: id,
+                            name: name,
+                            cls: cls,
+                            sd: sd,
+                            div: div,
+                            isIDC: cls.includes("IDC"),
+                            parcel_apr:0, mo_apr:0, irgb_apr:0,
+                            parcel_may:0, mo_may:0, irgb_may:0,
+                            parcel_jun:0, mo_jun:0, irgb_jun:0,
+                            parcel_jul:0, mo_jul:0, irgb_jul:0
+                        });
+                    }
+
+                    let o = officeMap.get(id);
+                    if (pCol !== -1) o[`parcel_${monthKey}`] = cleanNumber(r[pCol]);
+                    if (mCol !== -1) o[`mo_${monthKey}`] = cleanNumber(r[mCol]);
+                    if (iCol !== -1) o[`irgb_${monthKey}`] = cleanNumber(r[iCol]);
+                });
+            };
+
+            processMonthRows(aprRows, 'apr');
+            processMonthRows(mayRows, 'may');
+            processMonthRows(junRows, 'jun');
+
+            masterOfficeDatabase = Array.from(officeMap.values());
+        }
+
+        function updateJulyLiveCounts(julyRows) {
+            if (!julyRows || julyRows.length <= 1) return;
+            let header = julyRows[0].map(h => h.toString().toUpperCase().trim());
+            let idCol = header.findIndex(h => h.includes("FACILITY") || h.includes("ID") || h.includes("OFFICE CODE"));
+            if (idCol === -1) idCol = 0;
+
+            let pCol = header.findIndex(h => h.includes("PARCEL"));
+            let mCol = header.findIndex(h => h.includes("MO") || h.includes("MAIL") || h.includes("SPEED"));
+            let iCol = header.findIndex(h => h.includes("IRGB") || h.includes("IR"));
+
+            let activeIds = new Set();
+
+            julyRows.forEach((r, idx) => {
+                if (idx === 0 || !r[idCol]) return;
+                let id = r[idCol].trim();
+                activeIds.add(id);
+
+                let o = masterOfficeDatabase.find(x => x.id === id);
+                if (o) {
+                    if (pCol !== -1) o.parcel_jul = cleanNumber(r[pCol]);
+                    if (mCol !== -1) o.mo_jul = cleanNumber(r[mCol]);
+                    if (iCol !== -1) o.irgb_jul = cleanNumber(r[iCol]);
+                }
+            });
+        }
+
+        function populateHistVerticalDropdown() {
+            const select = document.getElementById('histVertSelect');
+            if(!select) return;
+            select.innerHTML = `
+                <option value="ALL">🌐 All Verticals Combined</option>
+                <option value="PARCEL">📦 Parcel Vertical</option>
+                <option value="MAIL">✉️ Mail Operations</option>
+                <option value="IRGB">✈️ IR & GB Vertical</option>
+            `;
+        }
+
+        function onHistDataTypeChange() {
+            renderHistoricalTable();
+        }
+
+        function renderHistoricalTable() {
+            const cat = document.getElementById('histDataTypeSelect').value;
+            const vert = document.getElementById('histVertSelect').value;
+            const div = document.getElementById('histDivSelect').value;
+
+            const tableHead = document.getElementById('histTableHead');
+            const tableBody = document.getElementById('histTableBody');
+            const tableFoot = document.getElementById('histTableFoot');
+
+            if(!tableHead || !tableBody) return;
+
+            let monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+            let monthsHeader = monthKeys.map(m => `<th class="p-2 border">${m.toUpperCase()}</th>`).join('');
+
+            tableHead.innerHTML = `<tr class="bg-sky-950 text-white font-bold text-xs uppercase">
+                <th class="p-2.5 border">Division Name</th>
+                <th class="p-2.5 border">Category / Vertical</th>
+                ${monthsHeader}
+                <th class="p-2.5 border bg-sky-900">Total</th>
+            </tr>`;
+
+            let rows = [];
+            let divList = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
+            
+            divList.forEach(d => {
+                if (div !== 'ALL' && !isMatchingDivision(d, div)) return;
+
+                let rowSum = 0;
+                let cellHtml = '';
+                monthKeys.forEach(m => {
+                    let val = 0;
+                    if (cat === 'revenue' || cat === 'count') {
+                        let vK = (vert === 'ALL') ? 'PARCEL' : vert;
+                        if (HISTORICAL_LY_DATA[vK] && HISTORICAL_LY_DATA[vK][cat] && HISTORICAL_LY_DATA[vK][cat][m]) {
+                            val = HISTORICAL_LY_DATA[vK][cat][m][d] || 0;
+                        }
+                    } else if (cat === 'sbn_open') {
+                        val = (SBN_HISTORICAL_OPENED[m] && SBN_HISTORICAL_OPENED[m][d]) ? SBN_HISTORICAL_OPENED[m][d] : 0;
+                    } else if (cat === 'sbn_net') {
+                        val = (SBN_HISTORICAL_NET[m] && SBN_HISTORICAL_NET[m][d]) ? SBN_HISTORICAL_NET[m][d] : 0;
+                    }
+                    rowSum += val;
+                    cellHtml += `<td class="p-2 border text-right">${cat === 'revenue' ? '₹' + val.toFixed(2) : val.toLocaleString('en-IN')}</td>`;
+                });
+
+                rows.push(`<tr class="hover:bg-sky-50/50 border-b border-slate-200">
+                    <td class="p-2.5 font-bold text-slate-900 border">${d}</td>
+                    <td class="p-2.5 text-xs text-slate-500 border">${vert}</td>
+                    ${cellHtml}
+                    <td class="p-2.5 font-black text-sky-800 bg-sky-50 border text-right">${cat === 'revenue' ? '₹' + rowSum.toFixed(2) : rowSum.toLocaleString('en-IN')}</td>
+                </tr>`);
+            });
+
+            tableBody.innerHTML = rows.join('');
+            tableFoot.innerHTML = '';
+        }
+
+        // ====== EXISTING DASHBOARD FUNCTIONS ======
+
         async function fetchAllLiveData() {
             const badge = document.getElementById('syncBadge');
             badge.innerHTML = "⏳ Fetching Live Data...";
@@ -1108,7 +1270,6 @@
             }
         }
 
-        // Parse POSB & PLI Target and Revenue from Sheet
         function parseSbPliTargetSheet(rows) {
             if (!rows || rows.length <= 1) return;
             posbAndPliRevenueRecords = [];
@@ -1473,7 +1634,6 @@
             }
         }
 
-        // RENDER POSB VIEW LOGIC
         function renderPosbView() {
             const metric = document.getElementById('posbMetricSelect').value;
             const month = document.getElementById('posbMonthSelect').value;
@@ -1586,7 +1746,6 @@
             document.getElementById('posbTableFoot').innerHTML = tFootHtml;
         }
 
-        // RENDER PLI VIEW LOGIC
         function renderPliView() {
             const month = document.getElementById('pliMonthSelect').value;
             const divFilter = document.getElementById('pliDivSelect').value;
