@@ -820,23 +820,69 @@
             document.getElementById('digitalModal').classList.add('hidden');
         }
 
-        document.getElementById('digitalFileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        // Helper for Cross-Platform Mobile Compatible File Upload
+        function parseExcelFile(file, callback) {
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                
+                try {
+                    let data = e.target.result;
+                    let workbook;
+                    if (data instanceof ArrayBuffer) {
+                        const arr = new Uint8Array(data);
+                        workbook = XLSX.read(arr, {type: 'array'});
+                    } else {
+                        workbook = XLSX.read(data, {type: 'binary'});
+                    }
+                    const sheetName = workbook.SheetNames[0];
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                    callback(json);
+                } catch (err) {
+                    console.error("Excel Read Error:", err);
+                    alert("Error reading file. Please re-select a valid Excel (.xlsx, .xls) or .csv file.");
+                }
+            };
+            reader.onerror = function() {
+                alert("File reading failed on this device. Please try again.");
+            };
+            
+            if (reader.readAsArrayBuffer) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsBinaryString(file);
+            }
+        }
+
+        document.getElementById('digitalFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            parseExcelFile(file, function(json) {
                 digitalRawData = json.map(row => {
                     const oId = String(row["Office ID"] || row["office-id"] || row["FACILITY_ID"] || Object.values(row)[0] || "").trim();
+                    const firstCol = String(Object.values(row)[0] || "").trim().toUpperCase();
+                    const divNameVal = String(row["Division Name"] || row["Division"] || row["DIVISION"] || "").trim().toUpperCase();
+                    const offNameVal = String(row["Office Name"] || row["OFFICE_NAME"] || "").trim().toUpperCase();
+
+                    // Strict exclusion of Total / Summary rows to prevent UNKNOWN DIVISION double totals
+                    const isTotalRow = firstCol.includes("TOTAL") || firstCol.includes("SUMMARY") ||
+                                       divNameVal.includes("TOTAL") || divNameVal.includes("SUMMARY") ||
+                                       offNameVal.includes("TOTAL") || offNameVal.includes("SUMMARY") ||
+                                       oId.includes("TOTAL") || oId.includes("SUMMARY");
+
+                    if (isTotalRow) return null;
+
                     const master = masterOfficesMap[oId] || { 
                         name: String(row["Office Name"] || row["Division Name"] || row["Division"] || "Unknown"), 
                         class: String(row["Office Class"] || "BO").toUpperCase(), 
                         sd: String(row["Sub Division Name"] || row["Sub Division"] || "Unknown SD"), 
                         division: String(row["Division Name"] || row["Division"] || "").toUpperCase() 
                     };
+
+                    const matchedDiv = master.division || divNameVal;
+                    if (!matchedDiv || matchedDiv === "UNKNOWN" || matchedDiv === "UNKNOWN DIVISION" || matchedDiv.includes("TOTAL")) {
+                        if (!oId && !row["Office Name"]) return null; // Skip non-office summary rows
+                    }
                     
                     // Extract Booking Digital columns
                     const bCash = getRowNumVal(row, ["Cash (Cnt)", "Cash Count", "Cash Cnt", "Cash", "CASH_COUNT"]);
@@ -847,7 +893,6 @@
                     const cCash = getRowNumVal(row, ["COD Cash Count", "COD Cash Cnt", "Cash Delivery", "CASH COUNT", "COD Cash"]);
                     const cDigital = getRowNumVal(row, ["COD Digital Count", "COD Digital Cnt", "Digital Delivery", "DIGITAL COUNT", "COD Digital"]);
 
-                    // Generic fallbacks
                     const genCash = getRowNumVal(row, ["Cash"]);
                     const genDigital = getRowNumVal(row, ["Digital"]);
 
@@ -857,18 +902,17 @@
                         officeName: master.name,
                         officeClass: master.class,
                         subDivision: master.sd,
-                        division: master.division || String(row["Division Name"] || row["Division"] || "UNKNOWN").toUpperCase(),
+                        division: matchedDiv || "UNKNOWN",
                         bookingCash: bCash || (bDqr || bSbi ? genCash : 0),
                         bookingDqr: bDqr,
                         bookingSbiPos: bSbi,
                         codCash: cCash || (cDigital ? genCash : 0),
                         codDigital: cDigital || genDigital
                     };
-                }).filter(i => i.officeId || i.division);
+                }).filter(i => i !== null && i.division && !i.division.includes("TOTAL") && i.division !== "UNKNOWN DIVISION");
 
                 processDigitalData();
-            };
-            reader.readAsArrayBuffer(file);
+            });
         });
 
         function processDigitalData() {
@@ -1362,21 +1406,24 @@
         }
 
         document.getElementById('rawFileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                rawData = json.map(row => ({
-                    officeId: String(row["office-id"] || row["Office ID"] || Object.values(row)[0] || "").trim(),
-                    service: String(row["product-name"] || row["Service Name"] || Object.values(row)[2] || "").trim(),
-                    articles: Number(row["article-count"] || row["Articles Booked"] || Object.values(row)[3] || 0),
-                    postage: Number(row["postage"] || row["Postage Collected"] || Object.values(row)[4] || 0)
-                })).filter(i => i.officeId && i.service);
+            const file = e.target.files[0]; 
+            if (!file) return;
+            
+            parseExcelFile(file, function(json) {
+                rawData = json.map(row => {
+                    const firstCol = String(Object.values(row)[0] || "").trim().toUpperCase();
+                    if (firstCol.includes("TOTAL") || firstCol.includes("SUMMARY")) return null;
+
+                    return {
+                        officeId: String(row["office-id"] || row["Office ID"] || Object.values(row)[0] || "").trim(),
+                        service: String(row["product-name"] || row["Service Name"] || Object.values(row)[2] || "").trim(),
+                        articles: Number(row["article-count"] || row["Articles Booked"] || Object.values(row)[3] || 0),
+                        postage: Number(row["postage"] || row["Postage Collected"] || Object.values(row)[4] || 0)
+                    };
+                }).filter(i => i !== null && i.officeId && i.service && !i.officeId.toUpperCase().includes("TOTAL"));
+                
                 updateDashboard();
-            };
-            reader.readAsArrayBuffer(file);
+            });
         });
 
         document.getElementById('filterDivision').addEventListener('change', updateDashboard);
