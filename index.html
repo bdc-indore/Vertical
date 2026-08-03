@@ -633,6 +633,8 @@
                                 <option value="ALL">🌐 All Verticals Combined</option>
                                 <option value="PARCEL">📦 Parcel Vertical</option>
                                 <option value="MAIL">✉️ Mail Operations</option>
+                                <option value="SB">🏦 POSB Schemes</option>
+                                <option value="PLI">🛡️ PLI / RPLI</option>
                             </select>
                         </div>
                         <div>
@@ -954,7 +956,8 @@
         const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
         const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
         const JULY_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
-        const AUGUST_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
+        // Updated August Sheet URL provided by user
+        const AUGUST_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=950228767&single=true&output=csv";
 
         const LAST_YEAR_COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=825431695&single=true&output=csv";
         const LAST_YEAR_REVENUE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1795446290&single=true&output=csv";
@@ -2479,6 +2482,7 @@
                 </tr>`;
         }
 
+        // Updated MoM Sequential Comparative Analysis Logic
         function renderMomAnalysis() {
             const level = document.getElementById('momLevelSelect').value;
             const vert = document.getElementById('momVertSelect').value;
@@ -2495,16 +2499,15 @@
             let theadHtml = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase">
                 <th class="p-3">Division Name</th>
                 <th class="p-3">Vertical</th>
+                <th class="p-3 bg-amber-900">Apr Rev</th>
                 <th class="p-3 bg-amber-900">May Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">May/Apr %</th>
                 <th class="p-3 bg-amber-900">Jun Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jun/May %</th>
                 <th class="p-3 bg-amber-900">Jul Rev</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jul/Jun %</th>
                 <th class="p-3 bg-amber-900">Aug Rev</th>
-                <th class="p-3 bg-amber-800 text-amber-200">Aug/Jul Growth</th>
-                <th class="p-3 bg-slate-800">May Count</th>
-                <th class="p-3 bg-slate-800">Jun Count</th>
-                <th class="p-3 bg-slate-800">Jul Count</th>
-                <th class="p-3 bg-slate-800">Aug Count</th>
-                <th class="p-3 bg-slate-700 text-amber-200">Aug/Jul Growth</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Aug/Jul %</th>
             </tr>`;
             document.getElementById('momTableHead').innerHTML = theadHtml;
 
@@ -2512,29 +2515,27 @@
             let rows = [];
 
             filteredRev.forEach(r => {
-                let c = countRecords.find(x => isMatchingDivision(x.divName, r.divName) && x.vertical === r.vertical) || {};
+                let apR = r.apr, myR = r.may, jnR = r.jun, jlR = r.jul, agR = r.aug;
 
-                let myR = r.may, jnR = r.jun, jlR = r.jul, agR = r.aug;
-                let myC = c.may||0, jnC = c.jun||0, jlC = c.jul||0, agC = c.aug||0;
-
-                let gRevAug = jlR > 0 ? (((agR - jlR)/jlR)*100).toFixed(1) : 0;
-                let gCntAug = jlC > 0 ? (((agC - jlC)/jlC)*100).toFixed(1) : 0;
+                let gMay = apR > 0 ? (((myR - apR)/apR)*100).toFixed(1) : 0;
+                let gJun = myR > 0 ? (((jnR - myR)/myR)*100).toFixed(1) : 0;
+                let gJul = jnR > 0 ? (((jlR - jnR)/jnR)*100).toFixed(1) : 0;
+                let gAug = jlR > 0 ? (((agR - jlR)/jlR)*100).toFixed(1) : 0;
 
                 let formatG = (v) => v >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${v}%</span>` : `<span class="text-rose-600 font-bold">▼ ${v}%</span>`;
 
                 rows.push(`<tr class="hover:bg-amber-50/40 border-b border-slate-200">
                     <td class="p-2.5 font-bold text-slate-900">${r.divName}</td>
                     <td class="p-2.5 text-xs text-slate-500 font-semibold">${r.vertical}</td>
+                    <td class="p-2.5">₹${apR.toFixed(3)}</td>
                     <td class="p-2.5">₹${myR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gMay)}</td>
                     <td class="p-2.5">₹${jnR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gJun)}</td>
                     <td class="p-2.5">₹${jlR.toFixed(3)}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gJul)}</td>
                     <td class="p-2.5 font-bold text-emerald-700">₹${agR.toFixed(3)}</td>
-                    <td class="p-2.5 text-center bg-amber-100">${formatG(gRevAug)}</td>
-                    <td class="p-2.5 border-l">${myC.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5">${jnC.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5">${jlC.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5 font-bold text-blue-700">${agC.toLocaleString('en-IN')}</td>
-                    <td class="p-2.5 text-center bg-slate-200">${formatG(gCntAug)}</td>
+                    <td class="p-2.5 text-center bg-amber-100">${formatG(gAug)}</td>
                 </tr>`);
             });
 
@@ -2546,10 +2547,13 @@
             let theadHtml = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase">
                 <th class="p-3">Division Name</th>
                 <th class="p-3">Sub-Division Name</th>
+                <th class="p-3 bg-slate-800">May Booking Count</th>
                 <th class="p-3 bg-slate-800">June Booking Count</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jun/May Growth</th>
                 <th class="p-3 bg-slate-800">July Booking Count</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Jul/Jun Growth</th>
                 <th class="p-3 bg-slate-800">August Booking Count</th>
-                <th class="p-3 bg-amber-800 text-amber-200">Aug/Jul Count Growth</th>
+                <th class="p-3 bg-amber-800 text-amber-200">Aug/Jul Growth</th>
             </tr>`;
             document.getElementById('momTableHead').innerHTML = theadHtml;
 
@@ -2563,18 +2567,20 @@
                 let key = `${divName}___${sdName}`;
 
                 if (!sdMap.has(key)) {
-                    sdMap.set(key, { div: divName, sd: sdName, jun:0, jul:0, aug:0 });
+                    sdMap.set(key, { div: divName, sd: sdName, may:0, jun:0, jul:0, aug:0 });
                 }
 
                 let obj = sdMap.get(key);
+                let pM = o.parcel_may||0, mM = o.mo_may||0, iM = o.irgb_may||0;
                 let pJ = o.parcel_jun||0, mJ = o.mo_jun||0, iJ = o.irgb_jun||0;
                 let pJl = o.parcel_jul||0, mJl = o.mo_jul||0, iJl = o.irgb_jul||0;
                 let pAg = o.parcel_aug||0, mAg = o.mo_aug||0, iAg = o.irgb_aug||0;
 
-                if (vert === 'PARCEL') { obj.jun += pJ; obj.jul += pJl; obj.aug += pAg; }
-                else if (vert === 'MAIL') { obj.jun += mJ; obj.jul += mJl; obj.aug += mAg; }
-                else if (vert === 'IRGB') { obj.jun += iJ; obj.jul += iJl; obj.aug += iAg; }
+                if (vert === 'PARCEL') { obj.may += pM; obj.jun += pJ; obj.jul += pJl; obj.aug += pAg; }
+                else if (vert === 'MAIL') { obj.may += mM; obj.jun += mJ; obj.jul += mJl; obj.aug += mAg; }
+                else if (vert === 'IRGB') { obj.may += iM; obj.jun += iJ; obj.jul += iJl; obj.aug += iAg; }
                 else {
+                    obj.may += (pM + mM + iM);
                     obj.jun += (pJ + mJ + iJ);
                     obj.jul += (pJl + mJl + iJl);
                     obj.aug += (pAg + mAg + iAg);
@@ -2585,13 +2591,18 @@
             let formatG = (v) => v >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${v}%</span>` : `<span class="text-rose-600 font-bold">▼ ${v}%</span>`;
 
             sdMap.forEach(item => {
+                let gJun = item.may > 0 ? (((item.jun - item.may)/item.may)*100).toFixed(1) : 0;
+                let gJul = item.jun > 0 ? (((item.jul - item.jun)/item.jun)*100).toFixed(1) : 0;
                 let gAug = item.jul > 0 ? (((item.aug - item.jul)/item.jul)*100).toFixed(1) : 0;
 
                 rows.push(`<tr class="hover:bg-amber-50/40 border-b border-slate-200">
                     <td class="p-2.5 font-bold text-slate-900">${item.div}</td>
                     <td class="p-2.5 font-bold text-purple-700">${item.sd}</td>
+                    <td class="p-2.5">${item.may.toLocaleString('en-IN')}</td>
                     <td class="p-2.5">${item.jun.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gJun)}</td>
                     <td class="p-2.5">${item.jul.toLocaleString('en-IN')}</td>
+                    <td class="p-2.5 text-center bg-amber-50">${formatG(gJul)}</td>
                     <td class="p-2.5 font-extrabold text-blue-700">${item.aug.toLocaleString('en-IN')}</td>
                     <td class="p-2.5 text-center bg-amber-100">${formatG(gAug)}</td>
                 </tr>`);
@@ -2601,6 +2612,7 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
+        // Fixed YoY Comparison Logic for SB and PLI
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
@@ -2638,14 +2650,21 @@
 
             filteredRev.forEach((rItem) => {
                 let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical);
-                let tyCountVal = cItem ? (cItem[month] || 0) : 0;
+                let isSbOrPli = (rItem.vertical === 'SB' || rItem.vertical === 'PLI');
+
+                let tyCountVal = isSbOrPli ? 0 : (cItem ? (cItem[month] || 0) : 0);
                 let tyRevVal = rItem ? (rItem[month] || 0) : 0;
                 let stdKey = getStandardDivKey(rItem.divName);
-                let vKey = (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') ? 'MAIL' : (rItem.vertical === 'PARCEL' ? 'PARCEL' : 'IRGB');
+                
+                let vKey = "PARCEL";
+                if (rItem.vertical === 'MAIL' || rItem.vertical === 'MO') vKey = 'MAIL';
+                else if (rItem.vertical === 'IRGB') vKey = 'IRGB';
+                else if (rItem.vertical === 'PLI') vKey = 'PLI/RPLI';
+                else if (rItem.vertical === 'SB') vKey = 'POSB';
 
                 let lyCountVal = 0, lyRevVal = 0;
                 if (HISTORICAL_LY_DATA[vKey]) {
-                    if (HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
+                    if (!isSbOrPli && HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) {
                         lyCountVal = HISTORICAL_LY_DATA[vKey]["count"][month][stdKey];
                     }
                     if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
@@ -2657,12 +2676,16 @@
                 let countGrowthVal = lyCountVal > 0 ? (((tyCountVal - lyCountVal) / lyCountVal) * 100) : 0;
                 let revGrowthVal = lyRevVal > 0 ? (((tyRevVal - lyRevVal) / lyRevVal) * 100) : 0;
 
+                let countDisplayLY = isSbOrPli ? "0" : lyCountVal.toLocaleString('en-IN');
+                let countDisplayTY = isSbOrPli ? "0" : tyCountVal.toLocaleString('en-IN');
+                let countGrowthDisplay = isSbOrPli ? '<span class="text-slate-400 font-bold">N/A</span>' : (countGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${countGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${countGrowthVal.toFixed(1)}%</span>`);
+
                 rows.push(`<tr class="hover:bg-indigo-50/50 border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${rItem.divName}</td>
                     <td class="p-3 text-xs font-semibold text-slate-500">${rItem.vertical}</td>
-                    <td class="p-3 text-slate-600 font-medium">${lyCountVal.toLocaleString('en-IN')}</td>
-                    <td class="p-3 text-indigo-700 font-bold">${tyCountVal.toLocaleString('en-IN')}</td>
-                    <td class="p-3 text-center">${countGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${countGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${countGrowthVal.toFixed(1)}%</span>`}</td>
+                    <td class="p-3 text-slate-600 font-medium">${countDisplayLY}</td>
+                    <td class="p-3 text-indigo-700 font-bold">${countDisplayTY}</td>
+                    <td class="p-3 text-center">${countGrowthDisplay}</td>
                     <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3 text-center">${revGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${revGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${revGrowthVal.toFixed(1)}%</span>`}</td>
