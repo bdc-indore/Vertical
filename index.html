@@ -170,7 +170,7 @@
                             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
                                 <span>📈</span> <span id="chart1Title">मासिक तुलनात्मक ट्रेंड (Monthly Trend April - August)</span>
                             </h2>
-                            <span id="chart1UnitBadge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-bold">₹ in Crores</span>
+                            <span id="chart1UnitBadge" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-bold">in Crores</span>
                         </div>
                         <div class="h-72">
                             <canvas id="monthlyTrendChart"></canvas>
@@ -508,7 +508,7 @@
                 </div>
 
                 <div class="card p-6 space-y-3">
-                    <h3 class="text-base font-bold text-teal-900 flex items-center gap-2">💰 Q-1 Revenue Performance Table</h3>
+                    <h3 class="text-base font-bold text-teal-900 flex items-center gap-2">Q-1 Revenue Performance Table</h3>
                     <div class="overflow-x-auto">
                         <table id="q1RevTable" class="w-full text-left text-sm border-collapse">
                             <thead>
@@ -829,7 +829,7 @@
                                 📖 POSB Account Opening
                             </button>
                             <button onclick="setPosbOption('revenue')" id="btn-posb-revenue" class="px-3.5 py-2 font-bold text-xs rounded-lg transition bg-slate-100 text-slate-700 hover:bg-slate-200">
-                                💰 Revenue Target & Achievement
+                                Target & Achievement
                             </button>
                         </div>
                     </div>
@@ -956,7 +956,6 @@
         const MAY_OFFICE_CSV_URL   = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=2017146919&single=true&output=csv";
         const JUNE_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=190719224&single=true&output=csv";
         const JULY_OFFICE_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1043810503&single=true&output=csv";
-        // Updated August Sheet URL provided by user
         const AUGUST_OFFICE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=950228767&single=true&output=csv";
 
         const LAST_YEAR_COUNT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=825431695&single=true&output=csv";
@@ -1018,6 +1017,8 @@
 
         function isOfficeActiveInMonth(office, monthKey) {
             if (!office) return false;
+            // Khudel BO is completely ignored in all calculations/counts
+            if (office.isKhudel) return false;
             if (office.closedMonth === monthKey) return false;
             return true;
         }
@@ -1043,7 +1044,7 @@
 
         function cleanNumber(val) {
             if (val === undefined || val === null) return 0;
-            let str = val.toString().replace(/,/g, '').replace(/%/g, '').replace(/CR/gi, '').trim();
+            let str = val.toString().replace(/,/g, '').replace(/%/g, '').replace(/CR/gi, '').replace(/₹/g, '').trim();
             let num = parseFloat(str);
             return isNaN(num) ? 0 : num;
         }
@@ -1132,7 +1133,7 @@
             updateDashboard();
 
             if (masterOfficeDatabase.length > 0) {
-                badge.innerHTML = `🟢 Live Synced (${masterOfficeDatabase.length} Offices)`;
+                badge.innerHTML = `🟢 Live Synced (${masterOfficeDatabase.filter(o => !o.isKhudel).length} Offices)`;
                 badge.className = "text-xs bg-emerald-500/30 text-emerald-200 px-3 py-1.5 rounded-full border border-emerald-400/30 font-semibold";
             } else {
                 badge.innerHTML = "🔴 Sync Warning";
@@ -1379,6 +1380,7 @@
                             cls: offCls,
                             sd: normSd,
                             div: rawDiv,
+                            isKhudel: isKhudelBO,
                             closedMonth: isKhudelBO ? 'jul' : null,
                             isIDC: (offCls === 'IDC' || offName.toUpperCase().includes('IDC')),
                             parcel_apr: 0, parcel_may: 0, parcel_jun: 0, parcel_jul: 0, parcel_aug: 0, parcel_sep: 0,
@@ -1388,6 +1390,8 @@
                     }
 
                     let offObj = officeMap.get(offId);
+                    if (offObj.isKhudel) return; // Ignore Khudel completely
+
                     let cat = r[catIdx] ? r[catIdx].trim().toUpperCase() : "";
                     let cnt = cleanNumber(r[cntIdx]);
 
@@ -1401,7 +1405,7 @@
             processMonthSheet(mayRows, 'may');
             processMonthSheet(junRows, 'jun');
 
-            masterOfficeDatabase = Array.from(officeMap.values());
+            masterOfficeDatabase = Array.from(officeMap.values()).filter(o => !o.isKhudel);
         }
 
         function updateMonthLiveCounts(rows, monthKey) {
@@ -1416,7 +1420,7 @@
                 let cnt = cleanNumber(r[6]);
 
                 let offObj = masterOfficeDatabase.find(x => x.id === offId);
-                if (offObj) {
+                if (offObj && !offObj.isKhudel) {
                     if (cat.includes("PARCEL")) offObj[`parcel_${monthKey}`] = cnt;
                     else if (cat.includes("IRGB")) offObj[`irgb_${monthKey}`] = cnt;
                     else offObj[`mo_${monthKey}`] += cnt;
@@ -1612,7 +1616,7 @@
                 if (viewType === 'revenue') {
                     currentDataType = 'revenue';
                     if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5";
-                    document.getElementById('chart1UnitBadge').innerText = "₹ in Crores";
+                    document.getElementById('chart1UnitBadge').innerText = "in Crores";
                     document.getElementById('kpiTargetLabel').innerText = "वार्षिक लक्ष्य (ANNUAL TARGET)";
                     document.getElementById('kpiAchLabel').innerText = "कुल उपलब्धि (TOTAL ACHIEVEMENT)";
                     document.getElementById('countMonthWiseContainer').classList.add('hidden');
@@ -1654,7 +1658,7 @@
             });
 
             let achPct = sumTarget > 0 ? ((sumAch / sumTarget) * 100).toFixed(2) + "%" : "0%";
-            let unitPrefix = (currentDataType === 'revenue') ? '₹' : '';
+            let unitPrefix = '';
             let unitSuffix = (currentDataType === 'revenue') ? (showLakhsOnly ? ' Lakhs' : ' Cr') : ' Articles';
             let decimals = (currentDataType === 'revenue') ? (showLakhsOnly ? 2 : 3) : 0;
 
@@ -1858,9 +1862,9 @@
 
                     tbodyRows.push(`<tr class="hover:bg-emerald-50/50 border-b border-slate-200">
                         <td class="p-3 font-bold text-slate-900">${r.divName}</td>
-                        <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
-                        <td class="p-3 font-bold text-emerald-800 bg-emerald-50/50">₹${monT.toFixed(3)} Cr</td>
-                        <td class="p-3 font-extrabold text-blue-700">₹${ach.toFixed(3)} Cr</td>
+                        <td class="p-3 font-semibold text-slate-700">${annT.toFixed(3)} Cr</td>
+                        <td class="p-3 font-bold text-emerald-800 bg-emerald-50/50">${monT.toFixed(3)} Cr</td>
+                        <td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td>
                         <td class="p-3 text-center font-black text-emerald-700">${pct}</td>
                     </tr>`);
                 });
@@ -1868,9 +1872,9 @@
                 let totPct = totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%";
                 document.getElementById('posbTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
                     <td class="p-3.5 text-amber-300 uppercase">POSB REVENUE TOTAL</td>
-                    <td class="p-3.5">₹${totals.col1.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-amber-300">₹${totals.col2.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-blue-300">₹${totals.col3.toFixed(3)} Cr</td>
+                    <td class="p-3.5">${totals.col1.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-amber-300">${totals.col2.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-blue-300">${totals.col3.toFixed(3)} Cr</td>
                     <td class="p-3.5 text-center text-emerald-300 font-black">${totPct}</td>
                 </tr>`;
 
@@ -1951,9 +1955,9 @@
 
                 tbodyRows.push(`<tr class="hover:bg-teal-50/50 border-b border-slate-200">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
-                    <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
-                    <td class="p-3 font-bold text-teal-800 bg-teal-50/50">₹${monT.toFixed(3)} Cr</td>
-                    <td class="p-3 font-extrabold text-blue-700">₹${ach.toFixed(3)} Cr</td>
+                    <td class="p-3 font-semibold text-slate-700">${annT.toFixed(3)} Cr</td>
+                    <td class="p-3 font-bold text-teal-800 bg-teal-50/50">${monT.toFixed(3)} Cr</td>
+                    <td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td>
                     <td class="p-3 text-center font-black text-teal-700">${pct}</td>
                 </tr>`);
             });
@@ -1961,9 +1965,9 @@
             let totPct = totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%";
             document.getElementById('pliTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs">
                 <td class="p-3.5 text-amber-300 uppercase">PLI REVENUE TOTAL</td>
-                <td class="p-3.5">₹${totals.col1.toFixed(3)} Cr</td>
-                <td class="p-3.5 text-amber-300">₹${totals.col2.toFixed(3)} Cr</td>
-                <td class="p-3.5 text-blue-300">₹${totals.col3.toFixed(3)} Cr</td>
+                <td class="p-3.5">${totals.col1.toFixed(3)} Cr</td>
+                <td class="p-3.5 text-amber-300">${totals.col2.toFixed(3)} Cr</td>
+                <td class="p-3.5 text-blue-300">${totals.col3.toFixed(3)} Cr</td>
                 <td class="p-3.5 text-center text-emerald-300 font-black">${totPct}</td>
             </tr>`;
 
@@ -1978,7 +1982,7 @@
 
             let sdSet = new Set();
             masterOfficeDatabase.forEach(o => {
-                if (divVal === 'ALL' || isMatchingDivision(o.div, divVal)) {
+                if (!o.isKhudel && (divVal === 'ALL' || isMatchingDivision(o.div, divVal))) {
                     if (o.sd) sdSet.add(o.sd);
                 }
             });
@@ -2042,6 +2046,8 @@
             let sdNameSet = new Set();
 
             masterOfficeDatabase.forEach(o => {
+                if (o.isKhudel) return;
+
                 let oCls = (o.cls || '').trim().toUpperCase();
 
                 if (cls !== 'ALL' && oCls !== cls.trim().toUpperCase()) return;
@@ -2164,6 +2170,7 @@
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
+                if (o.isKhudel) return false;
                 if (!isOfficeActiveInMonth(o, 'aug')) return false; 
                 let oCls = (o.cls || '').trim().toUpperCase();
                 let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
@@ -2283,6 +2290,7 @@
             currentFilteredGoodOffices = [];
 
             masterOfficeDatabase.forEach(o => {
+                if (o.isKhudel) return; 
                 if (!isOfficeActiveInMonth(o, mKey)) return; 
 
                 let oCls = (o.cls || '').trim().toUpperCase();
@@ -2420,12 +2428,12 @@
                 rowsRev.push(`<tr class="border-b border-slate-200 hover:bg-teal-50/50">
                     <td class="p-3 font-bold text-slate-900">${r.divName}</td>
                     <td class="p-3 text-xs font-semibold text-slate-500">${r.vertical}</td>
-                    <td class="p-3 font-semibold text-slate-700">₹${annT.toFixed(3)} Cr</td>
-                    <td class="p-3 font-bold text-teal-800">₹${q1T.toFixed(3)} Cr</td>
+                    <td class="p-3 font-semibold text-slate-700">${annT.toFixed(3)} Cr</td>
+                    <td class="p-3 font-bold text-teal-800">${q1T.toFixed(3)} Cr</td>
                     <td class="p-3">${ap.toFixed(3)}</td>
                     <td class="p-3">${my.toFixed(3)}</td>
                     <td class="p-3">${jn.toFixed(3)}</td>
-                    <td class="p-3 font-extrabold text-emerald-700">₹${q1Ach.toFixed(3)} Cr</td>
+                    <td class="p-3 font-extrabold text-emerald-700">${q1Ach.toFixed(3)} Cr</td>
                     <td class="p-3 text-center font-black text-teal-700">${q1Pct}</td>
                 </tr>`);
             });
@@ -2434,12 +2442,12 @@
             document.getElementById('q1RevTableFoot').innerHTML = `<tr class="bg-teal-950 text-white font-extrabold text-xs">
                     <td class="p-3.5 text-amber-300">TOTAL Q-1 REVENUE</td>
                     <td class="p-3.5">${vKey}</td>
-                    <td class="p-3.5">₹${sumAnnT.toFixed(3)} Cr</td>
-                    <td class="p-3.5 text-teal-200">₹${sumQ1T.toFixed(3)} Cr</td>
+                    <td class="p-3.5">${sumAnnT.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-teal-200">${sumQ1T.toFixed(3)} Cr</td>
                     <td class="p-3.5">${sumAprR.toFixed(3)}</td>
                     <td class="p-3.5">${sumMayR.toFixed(3)}</td>
                     <td class="p-3.5">${sumJunR.toFixed(3)}</td>
-                    <td class="p-3.5 text-emerald-300">₹${sumQ1AchR.toFixed(3)} Cr</td>
+                    <td class="p-3.5 text-emerald-300">${sumQ1AchR.toFixed(3)} Cr</td>
                     <td class="p-3.5 text-center text-amber-300">${sumQ1T > 0 ? ((sumQ1AchR/sumQ1T)*100).toFixed(1) : 0}%</td>
                 </tr>`;
 
@@ -2482,7 +2490,6 @@
                 </tr>`;
         }
 
-        // Updated MoM Sequential Comparative Analysis Logic
         function renderMomAnalysis() {
             const level = document.getElementById('momLevelSelect').value;
             const vert = document.getElementById('momVertSelect').value;
@@ -2527,14 +2534,14 @@
                 rows.push(`<tr class="hover:bg-amber-50/40 border-b border-slate-200">
                     <td class="p-2.5 font-bold text-slate-900">${r.divName}</td>
                     <td class="p-2.5 text-xs text-slate-500 font-semibold">${r.vertical}</td>
-                    <td class="p-2.5">₹${apR.toFixed(3)}</td>
-                    <td class="p-2.5">₹${myR.toFixed(3)}</td>
+                    <td class="p-2.5">${apR.toFixed(3)}</td>
+                    <td class="p-2.5">${myR.toFixed(3)}</td>
                     <td class="p-2.5 text-center bg-amber-50">${formatG(gMay)}</td>
-                    <td class="p-2.5">₹${jnR.toFixed(3)}</td>
+                    <td class="p-2.5">${jnR.toFixed(3)}</td>
                     <td class="p-2.5 text-center bg-amber-50">${formatG(gJun)}</td>
-                    <td class="p-2.5">₹${jlR.toFixed(3)}</td>
+                    <td class="p-2.5">${jlR.toFixed(3)}</td>
                     <td class="p-2.5 text-center bg-amber-50">${formatG(gJul)}</td>
-                    <td class="p-2.5 font-bold text-emerald-700">₹${agR.toFixed(3)}</td>
+                    <td class="p-2.5 font-bold text-emerald-700">${agR.toFixed(3)}</td>
                     <td class="p-2.5 text-center bg-amber-100">${formatG(gAug)}</td>
                 </tr>`);
             });
@@ -2560,6 +2567,7 @@
             let sdMap = new Map();
 
             masterOfficeDatabase.forEach(o => {
+                if (o.isKhudel) return;
                 if (div !== 'ALL' && !isMatchingDivision(o.div, div)) return;
 
                 let divName = o.div || 'UNKNOWN';
@@ -2612,7 +2620,6 @@
             document.getElementById('momTableFoot').innerHTML = '';
         }
 
-        // Fixed YoY Comparison Logic for SB and PLI
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value;
             const vert = document.getElementById('yoyVertSelect').value;
@@ -2686,8 +2693,8 @@
                     <td class="p-3 text-slate-600 font-medium">${countDisplayLY}</td>
                     <td class="p-3 text-indigo-700 font-bold">${countDisplayTY}</td>
                     <td class="p-3 text-center">${countGrowthDisplay}</td>
-                    <td class="p-3 text-slate-600 font-medium">₹${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                    <td class="p-3 text-emerald-700 font-bold">₹${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-slate-600 font-medium">${lyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3 text-emerald-700 font-bold">${tyRevVal.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3 text-center">${revGrowthVal >= 0 ? `<span class="text-emerald-600 font-bold">▲ +${revGrowthVal.toFixed(1)}%</span>` : `<span class="text-rose-600 font-bold">▼ ${revGrowthVal.toFixed(1)}%</span>`}</td>
                 </tr>`);
             });
@@ -2700,8 +2707,8 @@
                     <td class="p-3.5">${totalLYCount.toLocaleString('en-IN')}</td>
                     <td class="p-3.5 text-indigo-300">${totalTYCount.toLocaleString('en-IN')}</td>
                     <td class="p-3.5 text-center">${totalLYCount > 0 ? (((totalTYCount - totalLYCount) / totalLYCount) * 100).toFixed(1) : 0}%</td>
-                    <td class="p-3.5">₹${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
-                    <td class="p-3.5 text-emerald-300">₹${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3.5">${totalLYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
+                    <td class="p-3.5 text-emerald-300">${totalTYRev.toLocaleString('en-IN', {maximumFractionDigits: 3})} Cr</td>
                     <td class="p-3.5 text-center">${totalLYRev > 0 ? (((totalTYRev - totalLYRev) / totalLYRev) * 100).toFixed(1) : 0}%</td>
                 </tr>`;
 
@@ -2717,6 +2724,7 @@
             const month = document.getElementById('rankMonthSelect').value;
 
             let filtered = masterOfficeDatabase.filter(o => {
+                if (o.isKhudel) return false;
                 if (!isOfficeActiveInMonth(o, month)) return false; 
                 let matchDiv = (div === 'ALL') || isMatchingDivision(o.div, div);
                 let matchSd = (sd === 'ALL') || (o.sd === sd);
@@ -2915,8 +2923,8 @@
                         <td class="p-2.5 font-semibold text-slate-600">${row[vertColIdx] || vertKey}</td>`;
 
                     if (dataType === 'revenue') {
-                        rowHtml += `<td class="p-2.5 font-bold text-slate-800 bg-slate-50">₹${yearlyTarget.toFixed(3)} Cr</td>
-                                    <td class="p-2.5 font-bold text-sky-800 bg-sky-50">₹${monthlyTarget.toFixed(3)} Cr</td>`;
+                        rowHtml += `<td class="p-2.5 font-bold text-slate-800 bg-slate-50">${yearlyTarget.toFixed(3)} Cr</td>
+                                    <td class="p-2.5 font-bold text-sky-800 bg-sky-50">${monthlyTarget.toFixed(3)} Cr</td>`;
                     }
 
                     let rowSum = 0;
@@ -2926,12 +2934,12 @@
                         rowSum += val;
                         totals.sumMonths[mIdx] += val;
 
-                        let formatVal = dataType === 'revenue' ? `₹${val.toFixed(3)}` : val.toLocaleString('en-IN');
+                        let formatVal = dataType === 'revenue' ? val.toFixed(3) : val.toLocaleString('en-IN');
                         rowHtml += `<td class="p-2 text-right font-medium">${formatVal}</td>`;
                     });
 
                     totals.grandTotal += rowSum;
-                    let formatGrandVal = dataType === 'revenue' ? `₹${rowSum.toFixed(3)} Cr` : rowSum.toLocaleString('en-IN');
+                    let formatGrandVal = dataType === 'revenue' ? `${rowSum.toFixed(3)} Cr` : rowSum.toLocaleString('en-IN');
 
                     rowHtml += `<td class="p-2.5 text-right font-black text-emerald-700 bg-emerald-50">${formatGrandVal}</td></tr>`;
                     tbodyHtml.push(rowHtml);
@@ -2945,16 +2953,16 @@
                 <td class="p-3">FILTERED</td>`;
 
             if (dataType === 'revenue') {
-                footHtml += `<td class="p-3 text-slate-200">₹${totals.annT.toFixed(3)} Cr</td>
-                             <td class="p-3 text-amber-300">₹${totals.monT.toFixed(3)} Cr</td>`;
+                footHtml += `<td class="p-3 text-slate-200">${totals.annT.toFixed(3)} Cr</td>
+                             <td class="p-3 text-amber-300">${totals.monT.toFixed(3)} Cr</td>`;
             }
 
             totals.sumMonths.forEach(mVal => {
-                let fVal = dataType === 'revenue' ? `₹${mVal.toFixed(3)}` : mVal.toLocaleString('en-IN');
+                let fVal = dataType === 'revenue' ? mVal.toFixed(3) : mVal.toLocaleString('en-IN');
                 footHtml += `<td class="p-2.5 text-right">${fVal}</td>`;
             });
 
-            let fGrand = dataType === 'revenue' ? `₹${totals.grandTotal.toFixed(3)} Cr` : totals.grandTotal.toLocaleString('en-IN');
+            let fGrand = dataType === 'revenue' ? `${totals.grandTotal.toFixed(3)} Cr` : totals.grandTotal.toLocaleString('en-IN');
             footHtml += `<td class="p-3 text-right text-emerald-300">${fGrand}</td></tr>`;
 
             document.getElementById('histTableFoot').innerHTML = footHtml;
