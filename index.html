@@ -7,7 +7,6 @@
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Updated Excel Library for Full Color & Style Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -35,6 +34,10 @@
         
         .row-div-total { background-color: #fce4d6; font-weight: bold; color: #000; }
         .row-grand-total { background-color: #bdd7ee; font-weight: bold; color: #000; font-size: 12px; }
+
+        .sdm-col1 { position: sticky; left: 0; z-index: 15; min-width: 90px; background-color: #fff; }
+        .sdm-col2 { position: sticky; left: 90px; z-index: 15; min-width: 150px; background-color: #fff; }
+        .nil-table th.sdm-col1, .nil-table th.sdm-col2 { z-index: 25; background-color: #b8cce4; }
 
         @media print {
             body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -213,29 +216,51 @@
                 </div>
             </div>
 
-            <!-- Sub-Division Analysis Section -->
+            <!-- Sub-Division Analysis Section (Chart Removed, Rich Multi-Column Filtered Table) -->
             <div id="sdMonthView" class="hidden space-y-6">
-                <div class="bg-white rounded-xl p-5 border border-purple-100 card flex flex-wrap items-center justify-between gap-4">
-                    <h2 class="text-base font-bold text-purple-900 flex items-center gap-2">🏢 Month-Wise Analysis (April to August)</h2>
-                    <div class="flex flex-wrap items-center gap-3">
+                <div class="bg-white rounded-xl p-5 border border-purple-100 card flex flex-col md:flex-row flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-base font-bold text-purple-900 flex items-center gap-2">🏢 Sub-Division & Post Office Analysis</h2>
+                        <p class="text-xs text-slate-500 mt-1">Select Cumulative for monthly categories or filter by specific month/vertical.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
                         <select id="sdMViewTypeSelect" onchange="renderSdMonthAnalysis()" class="bg-purple-100 border border-purple-300 text-purple-900 font-bold text-xs rounded-lg p-2"><option value="SD">🏢 Sub-Division Level</option><option value="PO">📮 Post Office Level</option></select>
                         <select id="sdMVertSelect" onchange="renderSdMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">🌐 All Verticals</option><option value="PARCEL">📦 Parcel</option><option value="MAIL">✉️ Mail</option><option value="IRGB">✈️ IR & GB</option></select>
                         <select id="sdMDivSelect" onchange="onSdMDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2 div-select-options"></select>
                         <select id="sdMSdSelect" onchange="renderSdMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Sub-Divisions</option></select>
                         <select id="sdMClassSelect" onchange="renderSdMonthAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Classes</option><option value="BO">BO</option><option value="SO">SO</option><option value="HO">HO</option><option value="RMS">RMS</option><option value="IDC">IDC</option><option value="BNPL">BNPL</option><option value="BPC">BPC</option></select>
-                        <button onclick="downloadTablePDF('sdMTable', 'MonthWise_Report')" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📄 PDF</button>
-                        <button onclick="downloadTableJPEG('sdMTable', 'MonthWise_Report')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📸 JPEG</button>
-                        <button onclick="exportTableByID('sdMTable', 'MonthWise_Report.xlsx')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📊 Excel</button>
+                        <select id="sdMMonthSelect" onchange="renderSdMonthAnalysis()" class="bg-purple-50 border border-purple-400 font-bold text-purple-900 text-xs rounded-lg p-2">
+                            <option value="total" selected>📅 Cumulative (Apr-Aug)</option>
+                            <option value="apr">April</option>
+                            <option value="may">May</option>
+                            <option value="jun">June</option>
+                            <option value="jul">July</option>
+                            <option value="aug">August</option>
+                        </select>
+                        <button onclick="downloadTablePDF('sdMTable', 'Sub_Division_Analysis_Report')" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📄 PDF</button>
+                        <button onclick="downloadTableJPEG('sdMTable', 'Sub_Division_Analysis_Report')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📸 JPEG</button>
+                        <button onclick="exportTableByID('sdMTable', 'Sub_Division_Analysis_Report.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📊 Excel</button>
                     </div>
                 </div>
+
+                <!-- KPI Metric Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="card p-4 border-l-4 border-purple-600"><div class="text-slate-500 text-[11px] font-bold uppercase">TOTAL SUB-DIVISIONS</div><div id="sdMKpiTotalSD" class="text-xl font-black text-slate-900 mt-1">0</div></div>
                     <div class="card p-4 border-l-4 border-blue-600"><div class="text-slate-500 text-[11px] font-bold uppercase">TOTAL OFFICES</div><div id="sdMKpiTotalOffices" class="text-xl font-black text-blue-700 mt-1">0</div></div>
                     <div class="card p-4 border-l-4 border-emerald-500"><div class="text-slate-500 text-[11px] font-bold uppercase">TOTAL BOOKINGS</div><div id="sdMKpiTotalBookings" class="text-xl font-black text-emerald-600 mt-1">0</div></div>
                     <div class="card p-4 border-l-4 border-amber-500"><div class="text-slate-500 text-[11px] font-bold uppercase">AVERAGE BOOKING / OFFICE</div><div id="sdMKpiAvgBooking" class="text-xl font-black text-amber-700 mt-1">0</div></div>
                 </div>
-                <div class="card p-6"><h3 id="sdMChartTitle" class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">📊 Sub-Division Chart</h3><div class="h-72"><canvas id="sdMChart"></canvas></div></div>
-                <div class="card p-6"><div class="overflow-x-auto max-h-[500px]"><table id="sdMTable" class="w-full text-left text-xs border-collapse"><thead id="sdMTableHead"></thead><tbody id="sdMTableBody" class="divide-y divide-slate-100 font-medium"></tbody><tfoot id="sdMTableFoot" class="bg-slate-900 text-white font-black text-xs uppercase"></tfoot></table></div></div>
+
+                <!-- Data Table Container -->
+                <div class="card p-6">
+                    <div class="overflow-x-auto max-h-[600px]">
+                        <table id="sdMTable" class="nil-table">
+                            <thead id="sdMTableHead"></thead>
+                            <tbody id="sdMTableBody"></tbody>
+                            <tfoot id="sdMTableFoot"></tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- Nil Booking Report Section -->
@@ -348,7 +373,6 @@
                     </div>
                 </div>
 
-                <!-- MoM Revenue Table Container -->
                 <div class="card p-6 space-y-3">
                     <h3 class="text-base font-bold text-amber-900 flex items-center gap-2">💰 Revenue MoM Growth Analysis</h3>
                     <div class="overflow-x-auto">
@@ -361,7 +385,6 @@
                     <p id="momRevRemark" class="text-xs text-amber-700 mt-2 font-semibold">* Note: IRGB data is displayed in Lakhs, while other verticals are in Crores.</p>
                 </div>
 
-                <!-- MoM Article Count Table Container -->
                 <div id="momCountContainer" class="card p-6 space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="text-base font-bold text-indigo-900 flex items-center gap-2">📦 Article Count & POSB Net MoM Analysis</h3>
@@ -411,13 +434,27 @@
                         <select id="rankDivSelect" onchange="onRankDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2 div-select-options"></select>
                         <select id="rankSdSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Sub-Divisions</option></select>
                         <select id="rankClassSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Classes</option><option value="BO">BO</option><option value="SO">SO</option><option value="HO">HO</option><option value="RMS">RMS</option></select>
-                        <select id="rankMonthSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="apr">April 2026</option><option value="may">May 2026</option><option value="jun">June 2026</option><option value="jul">July 2026</option><option value="aug" selected>August 2026</option><option value="total">Cumulative Total</option></select>
+                        <select id="rankMonthSelect" onchange="renderRankings()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                            <option value="total" selected>📅 Cumulative (Apr-Aug)</option>
+                            <option value="apr">April 2026</option>
+                            <option value="may">May 2026</option>
+                            <option value="jun">June 2026</option>
+                            <option value="jul">July 2026</option>
+                            <option value="aug">August 2026</option>
+                        </select>
                         <button onclick="downloadTablePDF('rankingsTable', 'Office_Performance_Rankings')" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📄 PDF</button>
                         <button onclick="downloadTableJPEG('rankingsTable', 'Office_Performance_Rankings')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📸 JPEG</button>
                         <button onclick="exportTableByID('rankingsTable', 'Office_Performance_Rankings.xlsx')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📊 Excel</button>
                     </div>
                 </div>
-                <div class="card p-6"><div class="overflow-x-auto"><table id="rankingsTable" class="w-full text-left text-xs border-collapse"><thead><tr class="bg-slate-900 text-white font-bold uppercase"><th class="p-3 border text-center">Rank</th><th class="p-3 border">Office ID</th><th class="p-3 border">Office Name</th><th class="p-3 border">Class</th><th class="p-3 border">Sub Division</th><th class="p-3 border">Division</th><th class="p-3 border text-right bg-emerald-900 text-emerald-100">Booking Count</th></tr></thead><tbody id="rankingsTableBody" class="divide-y divide-slate-100 font-medium"></tbody></table></div></div>
+                <div class="card p-6">
+                    <div class="overflow-x-auto">
+                        <table id="rankingsTable" class="nil-table">
+                            <thead id="rankingsTableHead"></thead>
+                            <tbody id="rankingsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- Historical Section -->
@@ -499,7 +536,7 @@
                 <div class="card p-6"><div class="overflow-x-auto"><table id="ccsDataTable" class="w-full text-left text-sm border-collapse"><thead id="ccsTableHead"></thead><tbody id="ccsTableBody" class="divide-y divide-slate-100 font-medium"></tbody><tfoot id="ccsTableFoot" class="bg-slate-900 text-white font-bold uppercase text-xs"></tfoot></table></div></div>
             </div>
 
-            <!-- Division Performance Review Section (NEW) -->
+            <!-- Division Performance Review Section -->
             <div id="divReviewDataView" class="hidden space-y-6">
                 <!-- Division Selection -->
                 <div class="bg-white rounded-xl p-5 border border-blue-100 card flex flex-wrap items-center justify-between gap-4">
@@ -536,21 +573,32 @@
                     </div>
                 </div>
 
-                <!-- Sub Division Analysis -->
+                <!-- Post Office Analysis -->
                 <div class="bg-white rounded-xl p-5 border border-purple-100 card flex flex-wrap items-center justify-between gap-4 mt-6">
-                    <h2 class="text-base font-bold text-purple-900 flex items-center gap-2">🏢 Sub-Division Analysis</h2>
+                    <h2 class="text-base font-bold text-purple-900 flex items-center gap-2">📮 Post Office Analysis</h2>
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center gap-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">View Type:</label>
-                            <select id="sdViewTypeSelect" onchange="onSdViewTypeChange()" class="bg-purple-50 border border-purple-300 text-purple-900 text-xs font-bold rounded-lg p-2">
-                                <option value="overall">📊 Overall View</option>
-                                <option value="monthwise">📈 Month-wise Compare</option>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Division:</label>
+                            <select id="divPoDivSelect" onchange="onDivPoDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2 div-select-options"></select>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Sub-Division:</label>
+                            <select id="divPoSdSelect" onchange="renderDivPoAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Sub-Divisions</option></select>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Class:</label>
+                            <select id="divPoClassSelect" onchange="renderDivPoAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                <option value="ALL">All Classes</option>
+                                <option value="BO">BO</option>
+                                <option value="SO">SO</option>
+                                <option value="HO">HO</option>
+                                <option value="RMS">RMS</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-1.5" id="sdMonthSelectWrap">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Period:</label>
-                            <select id="divRevMonthSelect" onchange="renderDivReviewSD()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                <option value="total">Cumulative (Total)</option>
+                        <div class="flex items-center gap-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Month:</label>
+                            <select id="divPoMonthSelect" onchange="renderDivPoAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                <option value="total" selected>📅 Cumulative (Apr-Aug)</option>
                                 <option value="apr">April</option>
                                 <option value="may">May</option>
                                 <option value="jun">June</option>
@@ -559,45 +607,24 @@
                             </select>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Class:</label>
-                            <select id="sdClassSelect" onchange="renderDivReviewSD()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                <option value="ALL">All (BO+SO+HO)</option>
-                                <option value="BO">BO</option>
-                                <option value="SO">SO</option>
-                                <option value="HO">HO</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">Vertical:</label>
-                            <select id="sdVerticalSelect" onchange="renderDivReviewSD()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
-                                <option value="ALL">All Verticals</option>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Category:</label>
+                            <select id="divPoVertSelect" onchange="renderDivPoAnalysis()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2">
+                                <option value="ALL">Total Booking</option>
                                 <option value="PARCEL">Parcel</option>
                                 <option value="MO">MO</option>
                                 <option value="IRGB">IRGB</option>
                             </select>
                         </div>
-                        <button onclick="exportTableByID('divRevSDTable', 'Sub_Division_Analysis.xlsx')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📊 Export SD Excel</button>
+                        <button onclick="exportTableByID('divPoTable', 'Post_Office_Analysis.xlsx')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow">📊 Export Excel</button>
                     </div>
                 </div>
 
-                <!-- Sub Division Analysis Table - Overall View -->
-                <div class="card p-6" id="sdOverallContainer">
-                    <p class="text-[11px] text-slate-400 font-semibold mb-2">Sorted by Highest → Lowest Average Booking</p>
-                    <div class="overflow-x-auto">
-                        <table id="divRevSDTable" class="w-full text-center text-[10px] border-collapse">
-                            <thead id="divRevSDTableHead" class="bg-slate-900 text-white font-bold uppercase"></thead>
-                            <tbody id="divRevSDTableBody" class="divide-y divide-slate-200 font-medium text-slate-800 text-right"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Sub Division Analysis - Month-wise Compare View -->
-                <div class="card p-6 hidden" id="sdMonthCompareContainer">
-                    <p class="text-[11px] text-slate-400 font-semibold mb-2">Month-wise Average Booking per Office (April → August) — Sorted Highest → Lowest by Total (Apr-Aug) Average</p>
-                    <div class="overflow-x-auto">
-                        <table id="divRevSDMonthTable" class="w-full text-center text-[10px] border-collapse">
-                            <thead id="divRevSDMonthTableHead" class="bg-slate-900 text-white font-bold uppercase"></thead>
-                            <tbody id="divRevSDMonthTableBody" class="divide-y divide-slate-200 font-medium"></tbody>
+                <div class="card p-6">
+                    <p class="text-[11px] text-slate-400 font-semibold mb-2">Sorted: Bottom Performer → Top Performer (selected Month &amp; Category ke aadhar par)</p>
+                    <div class="overflow-x-auto max-h-[550px]">
+                        <table id="divPoTable" class="nil-table">
+                            <thead id="divPoTableHead"></thead>
+                            <tbody id="divPoTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -606,7 +633,7 @@
         </main>
     </div>
 
-    <!-- Cleaned Footer -->
+    <!-- Footer -->
     <footer class="bg-slate-900 text-slate-400 py-4 px-6 text-center text-sm font-semibold border-t border-slate-800 mt-8">
         Developed by Kapil Rajput, PA (RO), Indore Regional Office
     </footer>
@@ -627,7 +654,13 @@
         const POSB_TARGET_REVENUE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStevNQAAnFwO7ynsa5TWutYsYyKp_tFF2dYymclrvRT2j4trLTGIaPczIeGJWdVahJAbwQOJyrObDI/pub?gid=1664427756&single=true&output=csv";
 
         const DIVISIONS = ["Indore City", "Indore Moffusil", "Khandwa", "Mandsaur", "Ratlam", "Sehore", "Ujjain", "ID DIVISION"];
-        const MONTHS = [{k:'apr', n:'April'}, {k:'may', n:'May'}, {k:'jun', n:'June'}, {k:'jul', n:'July'}, {k:'aug', n:'August'}, {k:'sep', n:'September'}, {k:'oct', n:'October'}, {k:'nov', n:'November'}, {k:'dec', n:'December'}, {k:'jan', n:'January'}, {k:'feb', n:'February'}, {k:'mar', n:'March'}];
+        const ALL_MONTHS = [
+            { k: 'apr', n: 'April' }, { k: 'may', n: 'May' }, { k: 'jun', n: 'June' },
+            { k: 'jul', n: 'July' }, { k: 'aug', n: 'August' }, { k: 'sep', n: 'September' },
+            { k: 'oct', n: 'October' }, { k: 'nov', n: 'November' }, { k: 'dec', n: 'December' },
+            { k: 'jan', n: 'January' }, { k: 'feb', n: 'February' }, { k: 'mar', n: 'March' }
+        ];
+        const ACTIVE_MONTHS = ['apr', 'may', 'jun', 'jul', 'aug'];
         
         let HISTORICAL_LY_DATA = { "MAIL": { count:{}, revenue:{} }, "PARCEL": { count:{}, revenue:{} }, "IRGB": { count:{}, revenue:{} }, "PLI/RPLI": { revenue:{} }, "POSB": { revenue:{} }, "CCS": { revenue:{} } };
         let SBN_HISTORICAL_OPENED = {}, SBN_HISTORICAL_NET = {}, SBN_CURRENT_OPENED = {}, SBN_CURRENT_NET = {};
@@ -635,7 +668,7 @@
         
         let currentPosbOption = 'net', masterOfficeDatabase = [];
         let currentActiveView = 'revenue', currentDataType = 'revenue', currentVertical = 'ALL';
-        let trendChart = null, secondChart = null, sdMChart = null, revenueRecords = [], countRecords = [];
+        let trendChart = null, secondChart = null, revenueRecords = [], countRecords = [];
 
         function initDynamicDropdowns() {
             document.querySelectorAll('.div-select-options').forEach(select => {
@@ -644,8 +677,12 @@
                 select.innerHTML = html;
             });
             document.querySelectorAll('.month-select-options').forEach(select => {
-                let html = '';
-                MONTHS.forEach(m => html += `<option value="${m.k}" ${m.k==='aug'?'selected':''}>${m.n}</option>`);
+                let html = '<option value="total" selected>📅 Cumulative (Apr-Aug)</option>';
+                ALL_MONTHS.forEach(m => {
+                    if (ACTIVE_MONTHS.includes(m.k)) {
+                        html += `<option value="${m.k}">${m.n}</option>`;
+                    }
+                });
                 select.innerHTML = html;
             });
 
@@ -1006,6 +1043,7 @@
                 document.getElementById('divReviewDataView').classList.remove('hidden');
                 if (activeBtn) activeBtn.className = "px-4 py-3 font-extrabold text-sm border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-1.5";
                 renderDivReviewData();
+                populateSubDivDropdown('divPoDivSelect', 'divPoSdSelect'); renderDivPoAnalysis();
             } else {
                 document.getElementById('standardDashboardView').classList.remove('hidden');
                 currentDataType = (viewType === 'revenue') ? 'revenue' : 'count';
@@ -1277,23 +1315,36 @@
         function renderPosbDataView() {
             const mKey = document.getElementById('posbMonthSelect').value, divFilter = document.getElementById('posbDivSelect').value;
             let tbodyRows = [], totals = { col1: 0, col2: 0, col3: 0 };
+            const monthsToSum = (mKey === 'total') ? ACTIVE_MONTHS : [mKey];
 
             if (currentPosbOption === 'revenue') {
-                document.getElementById('posbTableHead').innerHTML = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-emerald-900">Annual Target (Cr)</th><th class="p-3.5 bg-emerald-800 text-amber-200">Monthly Target</th><th class="p-3.5">Achievement (${mKey.toUpperCase()})</th><th class="p-3.5 text-center bg-emerald-900">% Achievement</th></tr>`;
+                let colAchHeader = (mKey === 'total') ? 'Achievement Till Aug' : `Achievement (${mKey.toUpperCase()})`;
+                document.getElementById('posbTableHead').innerHTML = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-emerald-900">Annual Target (Cr)</th><th class="p-3.5 bg-emerald-800 text-amber-200">Target (${mKey==='total'?'Till Aug':'Monthly'})</th><th class="p-3.5">${colAchHeader}</th><th class="p-3.5 text-center bg-emerald-900">% Achievement</th></tr>`;
                 revenueRecords.filter(r => r.vertical === 'SB').forEach(r => {
                     if (divFilter !== 'ALL' && !isMatchingDivision(r.divName, divFilter)) return;
-                    let annT = r.target, monT = annT / 12, ach = r[mKey] || 0;
-                    totals.col1 += annT; totals.col2 += monT; totals.col3 += ach;
-                    tbodyRows.push(`<tr class="hover:bg-emerald-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-emerald-800">${monT.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-emerald-700">${monT > 0 ? ((ach / monT) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
+                    let annT = r.target;
+                    let targetVal = (mKey === 'total') ? (annT / 12) * 5 : (annT / 12);
+                    let achVal = 0;
+                    monthsToSum.forEach(mk => { achVal += (r[mk] || 0); });
+                    
+                    totals.col1 += annT; totals.col2 += targetVal; totals.col3 += achVal;
+                    tbodyRows.push(`<tr class="hover:bg-emerald-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-emerald-800">${targetVal.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${achVal.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-emerald-700">${targetVal > 0 ? ((achVal / targetVal) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
                 });
                 document.getElementById('posbTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs"><td class="p-3.5 text-amber-300">TOTAL</td><td class="p-3.5">${totals.col1.toFixed(3)} Cr</td><td class="p-3.5 text-amber-300">${totals.col2.toFixed(3)} Cr</td><td class="p-3.5 text-blue-300">${totals.col3.toFixed(3)} Cr</td><td class="p-3.5 text-center text-emerald-300">${totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%"}</td></tr>`;
             } else {
                 let dataMapLY = (currentPosbOption === 'open') ? SBN_HISTORICAL_OPENED : SBN_HISTORICAL_NET, dataMapTY = (currentPosbOption === 'open') ? SBN_CURRENT_OPENED : SBN_CURRENT_NET;
-                document.getElementById('posbTableHead').innerHTML = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-slate-800">Last Year (${mKey.toUpperCase()})</th><th class="p-3.5 bg-emerald-900">Current Year (${mKey.toUpperCase()})</th><th class="p-3.5 text-center">Difference</th><th class="p-3.5 text-center bg-emerald-800 text-amber-200">% Growth</th></tr>`;
+                let colLYHeader = (mKey === 'total') ? 'Last Year (Apr-Aug)' : `Last Year (${mKey.toUpperCase()})`;
+                let colTYHeader = (mKey === 'total') ? 'Current Year (Apr-Aug)' : `Current Year (${mKey.toUpperCase()})`;
+                document.getElementById('posbTableHead').innerHTML = `<tr class="bg-emerald-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-slate-800">${colLYHeader}</th><th class="p-3.5 bg-emerald-900">${colTYHeader}</th><th class="p-3.5 text-center">Difference</th><th class="p-3.5 text-center bg-emerald-800 text-amber-200">% Growth</th></tr>`;
                 
                 DIVISIONS.forEach(d => {
                     if (divFilter !== 'ALL' && !isMatchingDivision(d, divFilter)) return;
-                    let lyVal = (dataMapLY[mKey] && dataMapLY[mKey][d]) ? dataMapLY[mKey][d] : 0, tyVal = (dataMapTY[mKey] && dataMapTY[mKey][d]) ? dataMapTY[mKey][d] : 0, diff = tyVal - lyVal;
+                    let lyVal = 0, tyVal = 0;
+                    monthsToSum.forEach(mk => {
+                        lyVal += (dataMapLY[mk] && dataMapLY[mk][d]) ? dataMapLY[mk][d] : 0;
+                        tyVal += (dataMapTY[mk] && dataMapTY[mk][d]) ? dataMapTY[mk][d] : 0;
+                    });
+                    let diff = tyVal - lyVal;
                     let growthPct = lyVal > 0 ? (((tyVal - lyVal) / lyVal) * 100).toFixed(1) : (tyVal > 0 ? 100 : 0);
                     totals.col1 += lyVal; totals.col2 += tyVal;
                     
@@ -1313,13 +1364,18 @@
 
         function renderPliDataView() {
             const mKey = document.getElementById('pliMonthSelect').value, divFilter = document.getElementById('pliDivSelect').value;
-            document.getElementById('pliTableHead').innerHTML = `<tr class="bg-teal-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-teal-900">Annual Target (Cr)</th><th class="p-3.5 bg-teal-800 text-amber-200">Monthly Target</th><th class="p-3.5">Achievement (${mKey.toUpperCase()})</th><th class="p-3.5 text-center bg-teal-900">% Achievement</th></tr>`;
+            const monthsToSum = (mKey === 'total') ? ACTIVE_MONTHS : [mKey];
+            let colAchHeader = (mKey === 'total') ? 'Achievement Till Aug' : `Achievement (${mKey.toUpperCase()})`;
+            document.getElementById('pliTableHead').innerHTML = `<tr class="bg-teal-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-teal-900">Annual Target (Cr)</th><th class="p-3.5 bg-teal-800 text-amber-200">Target (${mKey==='total'?'Till Aug':'Monthly'})</th><th class="p-3.5">${colAchHeader}</th><th class="p-3.5 text-center bg-teal-900">% Achievement</th></tr>`;
             let tbodyRows = [], totals = { col1: 0, col2: 0, col3: 0 };
             revenueRecords.filter(r => r.vertical === 'PLI').forEach(r => {
                 if (divFilter !== 'ALL' && !isMatchingDivision(r.divName, divFilter)) return;
-                let annT = r.target, monT = annT / 12, ach = r[mKey] || 0;
-                totals.col1 += annT; totals.col2 += monT; totals.col3 += ach;
-                tbodyRows.push(`<tr class="hover:bg-teal-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-teal-800">${monT.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-teal-700">${monT > 0 ? ((ach / monT) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
+                let annT = r.target;
+                let targetVal = (mKey === 'total') ? (annT / 12) * 5 : (annT / 12);
+                let ach = 0;
+                monthsToSum.forEach(mk => { ach += (r[mk] || 0); });
+                totals.col1 += annT; totals.col2 += targetVal; totals.col3 += ach;
+                tbodyRows.push(`<tr class="hover:bg-teal-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-teal-800">${targetVal.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-teal-700">${targetVal > 0 ? ((ach / targetVal) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
             });
             document.getElementById('pliTableBody').innerHTML = tbodyRows.join('');
             document.getElementById('pliTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs"><td class="p-3.5 text-amber-300">TOTAL</td><td class="p-3.5">${totals.col1.toFixed(3)} Cr</td><td class="p-3.5 text-amber-300">${totals.col2.toFixed(3)} Cr</td><td class="p-3.5 text-blue-300">${totals.col3.toFixed(3)} Cr</td><td class="p-3.5 text-center text-emerald-300">${totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%"}</td></tr>`;
@@ -1327,13 +1383,18 @@
 
         function renderCcsDataView() {
             const mKey = document.getElementById('ccsMonthSelect').value, divFilter = document.getElementById('ccsDivSelect').value;
-            document.getElementById('ccsTableHead').innerHTML = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-amber-900">Annual Target (Cr)</th><th class="p-3.5 bg-amber-800 text-amber-200">Monthly Target</th><th class="p-3.5">Achievement (${mKey.toUpperCase()})</th><th class="p-3.5 text-center bg-amber-900">% Achievement</th></tr>`;
+            const monthsToSum = (mKey === 'total') ? ACTIVE_MONTHS : [mKey];
+            let colAchHeader = (mKey === 'total') ? 'Achievement Till Aug' : `Achievement (${mKey.toUpperCase()})`;
+            document.getElementById('ccsTableHead').innerHTML = `<tr class="bg-amber-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5 bg-amber-900">Annual Target (Cr)</th><th class="p-3.5 bg-amber-800 text-amber-200">Target (${mKey==='total'?'Till Aug':'Monthly'})</th><th class="p-3.5">${colAchHeader}</th><th class="p-3.5 text-center bg-amber-900">% Achievement</th></tr>`;
             let tbodyRows = [], totals = { col1: 0, col2: 0, col3: 0 };
             revenueRecords.filter(r => r.vertical === 'CCS').forEach(r => {
                 if (divFilter !== 'ALL' && !isMatchingDivision(r.divName, divFilter)) return;
-                let annT = r.target, monT = annT / 12, ach = r[mKey] || 0;
-                totals.col1 += annT; totals.col2 += monT; totals.col3 += ach;
-                tbodyRows.push(`<tr class="hover:bg-amber-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-amber-800">${monT.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-amber-700">${monT > 0 ? ((ach / monT) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
+                let annT = r.target;
+                let targetVal = (mKey === 'total') ? (annT / 12) * 5 : (annT / 12);
+                let ach = 0;
+                monthsToSum.forEach(mk => { ach += (r[mk] || 0); });
+                totals.col1 += annT; totals.col2 += targetVal; totals.col3 += ach;
+                tbodyRows.push(`<tr class="hover:bg-amber-50/50 border-b border-slate-200"><td class="p-3 font-bold text-slate-900">${r.divName}</td><td class="p-3">${annT.toFixed(3)} Cr</td><td class="p-3 font-bold text-amber-800">${targetVal.toFixed(3)} Cr</td><td class="p-3 font-extrabold text-blue-700">${ach.toFixed(3)} Cr</td><td class="p-3 text-center font-black text-amber-700">${targetVal > 0 ? ((ach / targetVal) * 100).toFixed(1) + "%" : "0%"}</td></tr>`);
             });
             document.getElementById('ccsTableBody').innerHTML = tbodyRows.join('');
             document.getElementById('ccsTableFoot').innerHTML = `<tr class="bg-slate-900 text-white font-extrabold text-xs"><td class="p-3.5 text-amber-300">TOTAL</td><td class="p-3.5">${totals.col1.toFixed(3)} Cr</td><td class="p-3.5 text-amber-300">${totals.col2.toFixed(3)} Cr</td><td class="p-3.5 text-blue-300">${totals.col3.toFixed(3)} Cr</td><td class="p-3.5 text-center text-emerald-300">${totals.col2 > 0 ? ((totals.col3 / totals.col2) * 100).toFixed(1) + "%" : "0%"}</td></tr>`;
@@ -1352,23 +1413,61 @@
         function onRankDivChange() { populateSubDivDropdown('rankDivSelect', 'rankSdSelect'); renderRankings(); }
         function selectSubDivisionAndSwitchToPO(sdName) { document.getElementById('sdMSdSelect').value = sdName; document.getElementById('sdMViewTypeSelect').value = 'PO'; renderSdMonthAnalysis(); }
 
+        const SDM_MONTH_LABELS = { apr:'April', may:'May', jun:'June', jul:'July', aug:'August' };
+
         function renderSdMonthAnalysis() {
-            const viewType = document.getElementById('sdMViewTypeSelect').value, vert = document.getElementById('sdMVertSelect').value, divKey = document.getElementById('sdMDivSelect').value, sdKey = document.getElementById('sdMSdSelect').value, cls = document.getElementById('sdMClassSelect').value;
-            if (viewType === 'SD') renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls);
-            else renderPostOfficeLevelAnalysis(vert, divKey, sdKey, cls);
+            const viewType = document.getElementById('sdMViewTypeSelect').value;
+            const vert = document.getElementById('sdMVertSelect').value;
+            const divKey = document.getElementById('sdMDivSelect').value;
+            const sdKey = document.getElementById('sdMSdSelect').value;
+            const cls = document.getElementById('sdMClassSelect').value;
+            const monthKey = document.getElementById('sdMMonthSelect').value;
+
+            if (viewType === 'SD') {
+                renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls, monthKey);
+            } else {
+                renderPostOfficeLevelAnalysis(vert, divKey, sdKey, cls, monthKey);
+            }
         }
 
-        function renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls) {
-            document.getElementById('sdMChartTitle').innerText = "📊 Sub-Division Month-Wise Total Booking Chart";
-            let months = ['April', 'May', 'June', 'July', 'August'];
-            let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-[11px]"><th class="p-2.5 border" rowspan="2">Division Name</th><th class="p-2.5 border" rowspan="2">Sub Division Name</th><th class="p-2.5 border text-center" rowspan="2">Offices</th>`;
-            months.forEach(m => theadHtml += `<th class="p-2.5 border text-center" ${vert==='ALL'?'colspan="4"':''}>${m} Booking</th>`);
-            theadHtml += `<th class="p-2.5 border text-center bg-indigo-900" ${vert==='ALL'?'colspan="4"':''}>Total Booking</th></tr><tr class="bg-slate-800 text-white font-bold uppercase text-[10px]">`;
-            months.concat(['Total']).forEach(() => theadHtml += vert === 'ALL' ? `<th class="p-2 border">Parcel</th><th class="p-2 border">MO</th><th class="p-2 border">IRGB</th><th class="p-2 border bg-blue-900">Total</th>` : `<th class="p-2 border">${vert}</th>`);
-            theadHtml += `</tr>`;
+        function renderSubDivisionLevelAnalysis(vert, divKey, sdKey, cls, monthKey) {
+            const isCumulative = (monthKey === 'total');
+            const months = isCumulative ? ACTIVE_MONTHS : [monthKey];
+
+            // Build Header
+            let theadHtml = '';
+            if (isCumulative && vert === 'ALL') {
+                theadHtml += `<tr>
+                    <th rowspan="2" class="sdm-col1">Division Name</th>
+                    <th rowspan="2" class="sdm-col2">Sub Division Name</th>
+                    <th rowspan="2">Offices</th>`;
+                ACTIVE_MONTHS.forEach(m => {
+                    theadHtml += `<th colspan="3" class="bg-indigo-900 border-x text-white">${SDM_MONTH_LABELS[m]}</th>`;
+                });
+                theadHtml += `<th rowspan="2" class="bg-amber-600 text-white font-extrabold">Cumulative Total</th></tr><tr>`;
+                ACTIVE_MONTHS.forEach(() => {
+                    theadHtml += `<th class="bg-slate-800 text-white text-[10px]">Parcel</th><th class="bg-slate-800 text-white text-[10px]">MO</th><th class="bg-slate-800 text-white text-[10px]">IRGB</th>`;
+                });
+                theadHtml += `</tr>`;
+            } else if (isCumulative && vert !== 'ALL') {
+                theadHtml = `<tr><th class="sdm-col1">Division Name</th><th class="sdm-col2">Sub Division Name</th><th>Offices</th>`;
+                ACTIVE_MONTHS.forEach(m => { theadHtml += `<th>${SDM_MONTH_LABELS[m]} (${vert})</th>`; });
+                theadHtml += `<th class="bg-amber-600 text-white font-extrabold">Cumulative Total</th></tr>`;
+            } else {
+                // Single Month Selected
+                let mLabel = SDM_MONTH_LABELS[monthKey];
+                theadHtml = `<tr><th class="sdm-col1">Division Name</th><th class="sdm-col2">Sub Division Name</th><th>Offices</th>`;
+                if (vert === 'ALL') {
+                    theadHtml += `<th>Parcel (${mLabel})</th><th>MO (${mLabel})</th><th>IRGB (${mLabel})</th><th class="bg-emerald-800 text-white">Month Total</th>`;
+                } else {
+                    theadHtml += `<th>${vert} (${mLabel})</th>`;
+                }
+                theadHtml += `</tr>`;
+            }
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
-            let divGroup = new Map(), totalOffCount = 0, totalBookingCount = 0, sdNameSet = new Set();
+            // Aggregate Data
+            let divGroup = new Map(), totalOffCount = 0, totalGrandBooking = 0, sdNameSet = new Set();
             masterOfficeDatabase.forEach(o => {
                 if (cls !== 'ALL' && o.cls !== cls.toUpperCase()) return;
                 if (divKey !== 'ALL' && !isMatchingDivision(o.div, divKey)) return;
@@ -1378,48 +1477,103 @@
                 sdNameSet.add(sd);
                 if (!divGroup.has(div)) divGroup.set(div, new Map());
                 let sdMap = divGroup.get(div);
-                if (!sdMap.has(sd)) sdMap.set(sd, { count: 0, apr:{p:0,m:0,i:0}, may:{p:0,m:0,i:0}, jun:{p:0,m:0,i:0}, jul:{p:0,m:0,i:0}, aug:{p:0,m:0,i:0} });
+                if (!sdMap.has(sd)) {
+                    sdMap.set(sd, { count: 0, apr:{p:0,m:0,i:0}, may:{p:0,m:0,i:0}, jun:{p:0,m:0,i:0}, jul:{p:0,m:0,i:0}, aug:{p:0,m:0,i:0} });
+                }
 
-                let item = sdMap.get(sd); item.count++; totalOffCount++;
-                ['apr','may','jun','jul','aug'].forEach(m => {
-                    let p = o[`parcel_${m}`]||0, mC = o[`mo_${m}`]||0, i = o[`irgb_${m}`]||0;
-                    item[m].p += p; item[m].m += mC; item[m].i += i;
-                    totalBookingCount += (vert==='PARCEL'?p:(vert==='MAIL'?mC:(vert==='IRGB'?i:(p+mC+i))));
+                let item = sdMap.get(sd);
+                item.count++;
+                totalOffCount++;
+
+                ACTIVE_MONTHS.forEach(mk => {
+                    let p = o[`parcel_${mk}`] || 0, mC = o[`mo_${mk}`] || 0, i = o[`irgb_${mk}`] || 0;
+                    item[mk].p += p; item[mk].m += mC; item[mk].i += i;
+                    if (months.includes(mk)) {
+                        totalGrandBooking += (vert==='PARCEL'?p:(vert==='MAIL'?mC:(vert==='IRGB'?i:(p+mC+i))));
+                    }
                 });
             });
 
             document.getElementById('sdMKpiTotalSD').innerText = sdNameSet.size;
             document.getElementById('sdMKpiTotalOffices').innerText = totalOffCount.toLocaleString();
-            document.getElementById('sdMKpiTotalBookings').innerText = totalBookingCount.toLocaleString();
-            document.getElementById('sdMKpiAvgBooking').innerText = totalOffCount > 0 ? (totalBookingCount / totalOffCount).toFixed(1) : 0;
+            document.getElementById('sdMKpiTotalBookings').innerText = totalGrandBooking.toLocaleString();
+            document.getElementById('sdMKpiAvgBooking').innerText = totalOffCount > 0 ? (totalGrandBooking / totalOffCount).toFixed(1) : 0;
 
-            let rows = [], chartLabels = [], chartData = [];
+            let rowsData = [];
             divGroup.forEach((sdMap, divName) => {
                 sdMap.forEach((vals, sdName) => {
-                    let rowHtml = `<tr class="hover:bg-purple-50/50 border-b border-slate-200"><td class="p-2.5 font-bold">${divName}</td><td onclick="selectSubDivisionAndSwitchToPO('${sdName}')" class="p-2.5 font-bold text-purple-700 hover:underline cursor-pointer">${sdName}</td><td class="p-2.5 text-center">${vals.count}</td>`;
-                    let totP=0, totM=0, totI=0;
-                    [vals.apr, vals.may, vals.jun, vals.jul, vals.aug].forEach(m => {
-                        totP += m.p; totM += m.m; totI += m.i;
-                        rowHtml += vert === 'PARCEL' ? `<td class="p-2 text-right">${m.p.toLocaleString()}</td>` : (vert === 'MAIL' ? `<td class="p-2 text-right">${m.m.toLocaleString()}</td>` : (vert === 'IRGB' ? `<td class="p-2 text-right">${m.i.toLocaleString()}</td>` : `<td class="p-2 text-right">${m.p.toLocaleString()}</td><td class="p-2 text-right">${m.m.toLocaleString()}</td><td class="p-2 text-right">${m.i.toLocaleString()}</td><td class="p-2 text-right font-bold text-blue-700">${(m.p+m.m+m.i).toLocaleString()}</td>`));
-                    });
-                    let grandTot = totP + totM + totI;
-                    chartLabels.push(sdName); chartData.push(vert === 'PARCEL' ? totP : (vert === 'MAIL' ? totM : (vert === 'IRGB' ? totI : grandTot)));
-                    rowHtml += vert === 'ALL' ? `<td class="p-2 text-right font-bold">${totP.toLocaleString()}</td><td class="p-2 text-right font-bold">${totM.toLocaleString()}</td><td class="p-2 text-right font-bold">${totI.toLocaleString()}</td><td class="p-2 text-right font-black text-emerald-700 bg-emerald-100">${grandTot.toLocaleString()}</td>` : `<td class="p-2 text-right font-black text-emerald-700 bg-emerald-50">${(vert==='PARCEL'?totP:(vert==='MAIL'?totM:totI)).toLocaleString()}</td>`;
-                    rows.push(rowHtml + `</tr>`);
+                    let rowTot = 0;
+                    let rowHtml = `<td class="sdm-col1">${divName}</td><td onclick="selectSubDivisionAndSwitchToPO('${sdName}')" class="sdm-col2" style="cursor:pointer;color:#1d4ed8;font-weight:bold;">${sdName}</td><td>${vals.count}</td>`;
+                    
+                    if (isCumulative && vert === 'ALL') {
+                        ACTIVE_MONTHS.forEach(mk => {
+                            let p = vals[mk].p, m = vals[mk].m, i = vals[mk].i;
+                            rowTot += (p + m + i);
+                            rowHtml += `<td>${p.toLocaleString()}</td><td>${m.toLocaleString()}</td><td>${i.toLocaleString()}</td>`;
+                        });
+                        rowHtml += `<td class="font-black bg-amber-50 text-amber-900">${rowTot.toLocaleString()}</td>`;
+                    } else if (isCumulative && vert !== 'ALL') {
+                        ACTIVE_MONTHS.forEach(mk => {
+                            let vCnt = (vert==='PARCEL'?vals[mk].p:(vert==='MAIL'?vals[mk].m:vals[mk].i));
+                            rowTot += vCnt;
+                            rowHtml += `<td>${vCnt.toLocaleString()}</td>`;
+                        });
+                        rowHtml += `<td class="font-black bg-amber-50 text-amber-900">${rowTot.toLocaleString()}</td>`;
+                    } else {
+                        let mk = monthKey;
+                        let p = vals[mk].p, m = vals[mk].m, i = vals[mk].i;
+                        if (vert === 'ALL') {
+                            rowTot = (p + m + i);
+                            rowHtml += `<td>${p.toLocaleString()}</td><td>${m.toLocaleString()}</td><td>${i.toLocaleString()}</td><td class="font-black bg-emerald-50 text-emerald-900">${rowTot.toLocaleString()}</td>`;
+                        } else {
+                            rowTot = (vert==='PARCEL'?p:(vert==='MAIL'?m:i));
+                            rowHtml += `<td class="font-black">${rowTot.toLocaleString()}</td>`;
+                        }
+                    }
+
+                    rowsData.push({ html: rowHtml, rowTot });
                 });
             });
-            document.getElementById('sdMTableBody').innerHTML = rows.join('');
-            renderSdMChart(chartLabels, chartData, "Sub-Division Total Bookings", "#8b5cf6");
+
+            rowsData.sort((a, b) => b.rowTot - a.rowTot);
+            document.getElementById('sdMTableBody').innerHTML = rowsData.map(r => `<tr>${r.html}</tr>`).join('');
+            document.getElementById('sdMTableFoot').innerHTML = '';
         }
 
-        function renderPostOfficeLevelAnalysis(vert, divKey, sdKey, clsKey) {
-            document.getElementById('sdMChartTitle').innerText = `📮 Post Office Level Booking Chart (${sdKey !== 'ALL' ? sdKey : 'All Sub-Divisions'})`;
-            let months = ['April', 'May', 'June', 'July', 'August'];
-            let theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase text-[11px]"><th class="p-2.5 border" rowspan="2">Office ID</th><th class="p-2.5 border" rowspan="2">Office Name</th><th class="p-2.5 border" rowspan="2">Class</th><th class="p-2.5 border" rowspan="2">Sub Division</th><th class="p-2.5 border" rowspan="2">Division</th>`;
-            months.forEach(m => theadHtml += `<th class="p-2.5 border text-center" ${vert==='ALL'?'colspan="4"':''}>${m}</th>`);
-            theadHtml += `<th class="p-2.5 border text-center bg-indigo-900" ${vert==='ALL'?'colspan="4"':''}>Total Booking</th></tr><tr class="bg-slate-800 text-white font-bold uppercase text-[10px]">`;
-            months.concat(['Total']).forEach(() => theadHtml += vert === 'ALL' ? `<th class="p-2 border">Parcel</th><th class="p-2 border">MO</th><th class="p-2 border">IRGB</th><th class="p-2 border bg-blue-900">Total</th>` : `<th class="p-2 border">${vert}</th>`);
-            theadHtml += `</tr>`;
+        function renderPostOfficeLevelAnalysis(vert, divKey, sdKey, clsKey, monthKey) {
+            const isCumulative = (monthKey === 'total');
+            const months = isCumulative ? ACTIVE_MONTHS : [monthKey];
+
+            let theadHtml = '';
+            if (isCumulative && vert === 'ALL') {
+                theadHtml += `<tr>
+                    <th rowspan="2" class="sdm-col1">Office ID</th>
+                    <th rowspan="2" class="sdm-col2">Office Name</th>
+                    <th rowspan="2">Class</th>
+                    <th rowspan="2">Sub Division</th>
+                    <th rowspan="2">Division</th>`;
+                ACTIVE_MONTHS.forEach(m => {
+                    theadHtml += `<th colspan="3" class="bg-indigo-900 border-x text-white">${SDM_MONTH_LABELS[m]}</th>`;
+                });
+                theadHtml += `<th rowspan="2" class="bg-amber-600 text-white font-extrabold">Cumulative Total</th></tr><tr>`;
+                ACTIVE_MONTHS.forEach(() => {
+                    theadHtml += `<th class="bg-slate-800 text-white text-[10px]">Parcel</th><th class="bg-slate-800 text-white text-[10px]">MO</th><th class="bg-slate-800 text-white text-[10px]">IRGB</th>`;
+                });
+                theadHtml += `</tr>`;
+            } else if (isCumulative && vert !== 'ALL') {
+                theadHtml = `<tr><th class="sdm-col1">Office ID</th><th class="sdm-col2">Office Name</th><th>Class</th><th>Sub Division</th><th>Division</th>`;
+                ACTIVE_MONTHS.forEach(m => { theadHtml += `<th>${SDM_MONTH_LABELS[m]} (${vert})</th>`; });
+                theadHtml += `<th class="bg-amber-600 text-white font-extrabold">Cumulative Total</th></tr>`;
+            } else {
+                let mLabel = SDM_MONTH_LABELS[monthKey];
+                theadHtml = `<tr><th class="sdm-col1">Office ID</th><th class="sdm-col2">Office Name</th><th>Class</th><th>Sub Division</th><th>Division</th>`;
+                if (vert === 'ALL') {
+                    theadHtml += `<th>Parcel (${mLabel})</th><th>MO (${mLabel})</th><th>IRGB (${mLabel})</th><th class="bg-emerald-800 text-white">Month Total</th>`;
+                } else {
+                    theadHtml += `<th>${vert} (${mLabel})</th>`;
+                }
+                theadHtml += `</tr>`;
+            }
             document.getElementById('sdMTableHead').innerHTML = theadHtml;
 
             let filtered = masterOfficeDatabase.filter(o => {
@@ -1429,34 +1583,48 @@
                 return matchDiv && matchSd && matchCls;
             });
 
-            let totalPoBookings = 0, rows = [], chartLabels = [], chartData = [];
+            let totalPoBookings = 0, rowsData = [];
             filtered.forEach(o => {
-                let pApr = o.parcel_apr||0, mApr = o.mo_apr||0, iApr = o.irgb_apr||0, pMay = o.parcel_may||0, mMay = o.mo_may||0, iMay = o.irgb_may||0, pJun = o.parcel_jun||0, mJun = o.mo_jun||0, iJun = o.irgb_jun||0, pJul = o.parcel_jul||0, mJul = o.mo_jul||0, iJul = o.irgb_jul||0, pAug = o.parcel_aug||0, mAug = o.mo_aug||0, iAug = o.irgb_aug||0;
-                let rowTot = vert === 'PARCEL' ? (pApr+pMay+pJun+pJul+pAug) : (vert === 'MAIL' ? (mApr+mMay+mJun+mJul+mAug) : (vert === 'IRGB' ? (iApr+iMay+iJun+iJul+iAug) : (pApr+mApr+iApr+pMay+mMay+iMay+pJun+mJun+iJun+pJul+mJul+iJul+pAug+mAug+iAug)));
-                totalPoBookings += rowTot;
-                chartLabels.push(o.name); chartData.push(rowTot);
+                let rowTot = 0;
+                let rowHtml = `<td class="sdm-col1">${o.id}</td><td class="sdm-col2 font-semibold text-slate-900">${o.name}</td><td>${o.cls}</td><td>${o.sd}</td><td>${o.div}</td>`;
 
-                let rowHtml = `<tr class="hover:bg-slate-50 border-b border-slate-200"><td class="p-2.5 font-mono">${o.id}</td><td class="p-2.5 font-bold">${o.name}</td><td class="p-2.5">${o.cls}</td><td class="p-2.5">${o.sd}</td><td class="p-2.5">${o.div}</td>`;
-                [{p:pApr,m:mApr,i:iApr},{p:pMay,m:mMay,i:iMay},{p:pJun,m:mJun,i:iJun},{p:pJul,m:mJul,i:iJul},{p:pAug,m:mAug,i:iAug}].forEach(m => {
-                    rowHtml += vert === 'PARCEL' ? `<td class="p-2 text-right">${m.p.toLocaleString()}</td>` : (vert === 'MAIL' ? `<td class="p-2 text-right">${m.m.toLocaleString()}</td>` : (vert === 'IRGB' ? `<td class="p-2 text-right">${m.i.toLocaleString()}</td>` : `<td class="p-2 text-right">${m.p.toLocaleString()}</td><td class="p-2 text-right">${m.m.toLocaleString()}</td><td class="p-2 text-right">${m.i.toLocaleString()}</td><td class="p-2 text-right font-bold text-blue-700">${(m.p+m.m+m.i).toLocaleString()}</td>`));
-                });
-                let totP = pApr+pMay+pJun+pJul+pAug, totM = mApr+mMay+mJun+mJul+mAug, totI = iApr+iMay+iJun+iJul+iAug;
-                rowHtml += vert === 'ALL' ? `<td class="p-2 text-right font-bold">${totP.toLocaleString()}</td><td class="p-2 text-right font-bold">${totM.toLocaleString()}</td><td class="p-2 text-right font-bold">${totI.toLocaleString()}</td><td class="p-2 text-right font-black text-emerald-700 bg-emerald-100">${(totP+totM+totI).toLocaleString()}</td>` : `<td class="p-2 text-right font-black text-emerald-700 bg-emerald-50">${rowTot.toLocaleString()}</td>`;
-                rows.push(rowHtml + `</tr>`);
+                if (isCumulative && vert === 'ALL') {
+                    ACTIVE_MONTHS.forEach(mk => {
+                        let p = o[`parcel_${mk}`]||0, m = o[`mo_${mk}`]||0, i = o[`irgb_${mk}`]||0;
+                        rowTot += (p + m + i);
+                        rowHtml += `<td>${p.toLocaleString()}</td><td>${m.toLocaleString()}</td><td>${i.toLocaleString()}</td>`;
+                    });
+                    rowHtml += `<td class="font-black bg-amber-50 text-amber-900">${rowTot.toLocaleString()}</td>`;
+                } else if (isCumulative && vert !== 'ALL') {
+                    ACTIVE_MONTHS.forEach(mk => {
+                        let vCnt = (vert==='PARCEL'?(o[`parcel_${mk}`]||0):(vert==='MAIL'?(o[`mo_${mk}`]||0):(o[`irgb_${mk}`]||0)));
+                        rowTot += vCnt;
+                        rowHtml += `<td>${vCnt.toLocaleString()}</td>`;
+                    });
+                    rowHtml += `<td class="font-black bg-amber-50 text-amber-900">${rowTot.toLocaleString()}</td>`;
+                } else {
+                    let mk = monthKey;
+                    let p = o[`parcel_${mk}`]||0, m = o[`mo_${mk}`]||0, i = o[`irgb_${mk}`]||0;
+                    if (vert === 'ALL') {
+                        rowTot = (p + m + i);
+                        rowHtml += `<td>${p.toLocaleString()}</td><td>${m.toLocaleString()}</td><td>${i.toLocaleString()}</td><td class="font-black bg-emerald-50 text-emerald-900">${rowTot.toLocaleString()}</td>`;
+                    } else {
+                        rowTot = (vert==='PARCEL'?p:(vert==='MAIL'?m:i));
+                        rowHtml += `<td class="font-black">${rowTot.toLocaleString()}</td>`;
+                    }
+                }
+
+                totalPoBookings += rowTot;
+                rowsData.push({ html: rowHtml, rowTot });
             });
 
+            rowsData.sort((a, b) => b.rowTot - a.rowTot);
             document.getElementById('sdMKpiTotalSD').innerText = (sdKey !== 'ALL') ? 1 : "-";
             document.getElementById('sdMKpiTotalOffices').innerText = filtered.length.toLocaleString();
             document.getElementById('sdMKpiTotalBookings').innerText = totalPoBookings.toLocaleString();
             document.getElementById('sdMKpiAvgBooking').innerText = filtered.length > 0 ? (totalPoBookings / filtered.length).toFixed(1) : 0;
-            document.getElementById('sdMTableBody').innerHTML = rows.join('');
-            renderSdMChart(chartLabels.slice(0, 20), chartData.slice(0, 20), "Post Office Bookings (Top 20)", "#10b981");
-        }
-
-        function renderSdMChart(labels, dataValues, datasetLabel, colorHex) {
-            const ctx = document.getElementById('sdMChart').getContext('2d');
-            if (sdMChart) sdMChart.destroy();
-            sdMChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: datasetLabel, data: dataValues, backgroundColor: colorHex, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true } } } });
+            document.getElementById('sdMTableBody').innerHTML = rowsData.map(r => `<tr>${r.html}</tr>`).join('');
+            document.getElementById('sdMTableFoot').innerHTML = '';
         }
 
         // Dynamic Low/Good booking threshold: SO class gets higher thresholds based on vertical filter
@@ -1473,7 +1641,6 @@
 
             const lowMax = getLowBookingThreshold(clsKey, vertKey);
 
-            // Update dynamic labels for headers & KPI cards
             document.getElementById('offLowKpiLabel').innerText = `LOW BOOKING (1-${lowMax})*`;
             document.getElementById('offGoodKpiLabel').innerText = `GOOD BOOKING (>${lowMax})`;
             document.getElementById('offGoodPctLabel').innerText = `GOOD (>${lowMax})`;
@@ -1764,27 +1931,39 @@
 
         function updateYoYTable() {
             const div = document.getElementById('yoyDivSelect').value, vert = document.getElementById('yoyVertSelect').value, month = document.getElementById('yoyMonthSelect').value;
-            let lyYearCount = ['jan', 'feb', 'mar'].includes(month) ? 2026 : 2025, tyYearCount = ['jan', 'feb', 'mar'].includes(month) ? 2027 : 2026;
+            const isCumulative = (month === 'total');
+            const monthsToSum = isCumulative ? ACTIVE_MONTHS : [month];
+            let mLabel = isCumulative ? 'Apr-Aug' : month.toUpperCase();
 
             const tableHead = document.querySelector('#yoyDataTable thead');
-            if (tableHead) tableHead.innerHTML = `<tr class="bg-indigo-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5">Category / Vertical</th><th class="p-3.5 bg-slate-800">LY Count (${lyYearCount})</th><th class="p-3.5 bg-indigo-800">TY Count (${tyYearCount})</th><th class="p-3.5 text-center">Count Growth %</th><th class="p-3.5 bg-slate-800">LY Revenue (${lyYearCount}) (Others: Cr, IRGB: Lakhs)</th><th class="p-3.5 bg-indigo-800">TY Revenue (${tyYearCount}) (Others: Cr, IRGB: Lakhs)</th><th class="p-3.5 text-center">Rev Growth %</th></tr>`;
+            if (tableHead) tableHead.innerHTML = `<tr class="bg-indigo-950 text-white font-bold text-xs uppercase"><th class="p-3.5">Division Name</th><th class="p-3.5">Category / Vertical</th><th class="p-3.5 bg-slate-800">LY Count (${mLabel})</th><th class="p-3.5 bg-indigo-800">TY Count (${mLabel})</th><th class="p-3.5 text-center">Count Growth %</th><th class="p-3.5 bg-slate-800">LY Revenue (${mLabel})</th><th class="p-3.5 bg-indigo-800">TY Revenue (${mLabel})</th><th class="p-3.5 text-center">Rev Growth %</th></tr>`;
 
             let rows = [], totalLYCount = 0, totalTYCount = 0, totalLYRev = 0, totalTYRev = 0;
             revenueRecords.filter(r => !r.divName.toUpperCase().includes('VERTICAL') && !r.divName.toUpperCase().includes('TOTAL') && (div === 'ALL' || isMatchingDivision(r.divName, div)) && (vert === 'ALL' || r.vertical === vert)).forEach((rItem) => {
                 let cItem = countRecords.find(x => isMatchingDivision(x.divName, rItem.divName) && x.vertical === rItem.vertical), isSbOrPli = ['SB','PLI','CCS'].includes(rItem.vertical);
-                let tyCountVal = isSbOrPli ? 0 : (cItem ? (cItem[month] || 0) : 0);
+                
+                let tyCountVal = 0;
+                if (!isSbOrPli && cItem) {
+                    monthsToSum.forEach(mk => { tyCountVal += (cItem[mk] || 0); });
+                }
                 
                 let mult = (rItem.vertical === 'IRGB') ? 100 : 1;
-                let tyRevVal = rItem ? ((rItem[month] || 0) * mult) : 0; 
+                let tyRevVal = 0;
+                monthsToSum.forEach(mk => { tyRevVal += ((rItem[mk] || 0) * mult); });
+
                 let stdKey = getStandardDivKey(rItem.divName);
                 let vKey = rItem.vertical === 'MAIL' ? 'MAIL' : (rItem.vertical === 'IRGB' ? 'IRGB' : (rItem.vertical === 'PLI' ? 'PLI/RPLI' : (rItem.vertical === 'SB' ? 'POSB' : (rItem.vertical === 'CCS' ? 'CCS' : 'PARCEL')))); 
 
                 let lyCountVal = 0, lyRevVal = 0;
                 if (HISTORICAL_LY_DATA[vKey]) {
-                    if (!isSbOrPli && HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][month] && HISTORICAL_LY_DATA[vKey]["count"][month][stdKey] !== undefined) lyCountVal = HISTORICAL_LY_DATA[vKey]["count"][month][stdKey];
-                    if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][month] && HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] !== undefined) {
-                        lyRevVal = HISTORICAL_LY_DATA[vKey]["revenue"][month][stdKey] * mult;
-                    }
+                    monthsToSum.forEach(mk => {
+                        if (!isSbOrPli && HISTORICAL_LY_DATA[vKey]["count"] && HISTORICAL_LY_DATA[vKey]["count"][mk] && HISTORICAL_LY_DATA[vKey]["count"][mk][stdKey] !== undefined) {
+                            lyCountVal += HISTORICAL_LY_DATA[vKey]["count"][mk][stdKey];
+                        }
+                        if (HISTORICAL_LY_DATA[vKey]["revenue"] && HISTORICAL_LY_DATA[vKey]["revenue"][mk] && HISTORICAL_LY_DATA[vKey]["revenue"][mk][stdKey] !== undefined) {
+                            lyRevVal += (HISTORICAL_LY_DATA[vKey]["revenue"][mk][stdKey] * mult);
+                        }
+                    });
                 }
 
                 totalLYCount += lyCountVal; totalTYCount += tyCountVal; totalLYRev += (lyRevVal / mult); totalTYRev += (tyRevVal / mult);
@@ -1798,19 +1977,38 @@
         }
 
         function renderRankings() {
-            const mode = document.getElementById('rankModeSelect').value, vert = document.getElementById('rankVertSelect').value, div = document.getElementById('rankDivSelect').value, sd = document.getElementById('rankSdSelect').value, cls = document.getElementById('rankClassSelect').value, month = document.getElementById('rankMonthSelect').value;
+            const mode = document.getElementById('rankModeSelect').value;
+            const vert = document.getElementById('rankVertSelect').value;
+            const div = document.getElementById('rankDivSelect').value;
+            const sd = document.getElementById('rankSdSelect').value;
+            const cls = document.getElementById('rankClassSelect').value;
+            const month = document.getElementById('rankMonthSelect').value;
+            const isCumulative = (month === 'total');
+
+            let theadHtml = '';
+            if (isCumulative) {
+                theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase"><th class="p-2.5 border text-center">Rank</th><th class="p-2.5 border">Office ID</th><th class="p-2.5 border">Office Name</th><th class="p-2.5 border">Class</th><th class="p-2.5 border">Sub Division</th><th class="p-2.5 border">Division</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th class="p-2.5 border text-right bg-emerald-900 text-emerald-100">Cumulative Total</th></tr>`;
+            } else {
+                theadHtml = `<tr class="bg-slate-900 text-white font-bold uppercase"><th class="p-3 border text-center">Rank</th><th class="p-3 border">Office ID</th><th class="p-3 border">Office Name</th><th class="p-3 border">Class</th><th class="p-3 border">Sub Division</th><th class="p-3 border">Division</th><th class="p-3 border text-right bg-emerald-900 text-emerald-100">${SDM_MONTH_LABELS[month]} Booking</th></tr>`;
+            }
+            document.getElementById('rankingsTableHead').innerHTML = theadHtml;
 
             let rankedList = masterOfficeDatabase.filter(o => (div === 'ALL' || isMatchingDivision(o.div, div)) && (sd === 'ALL' || o.sd === sd) && (cls === 'ALL' || o.cls === cls.toUpperCase())).map(o => {
-                let cnt = 0, getM = (m) => { let p = o[`parcel_${m}`]||0, mC = o[`mo_${m}`]||0, i = o[`irgb_${m}`]||0; return vert === 'PARCEL' ? p : (vert === 'MAIL' ? mC : (vert === 'IRGB' ? i : p + mC + i)); };
-                if (month === 'total') ['apr','may','jun','jul','aug'].forEach(m => cnt += getM(m));
-                else cnt = getM(month);
-                return { id: o.id, name: o.name, cls: o.cls, sd: o.sd, div: o.div, count: cnt };
+                let getM = (m) => { let p = o[`parcel_${m}`]||0, mC = o[`mo_${m}`]||0, i = o[`irgb_${m}`]||0; return vert === 'PARCEL' ? p : (vert === 'MAIL' ? mC : (vert === 'IRGB' ? i : p + mC + i)); };
+                let apr = getM('apr'), may = getM('may'), jun = getM('jun'), jul = getM('jul'), aug = getM('aug');
+                let tot = apr + may + jun + jul + aug;
+                let sortMetric = isCumulative ? tot : getM(month);
+                return { id: o.id, name: o.name, cls: o.cls, sd: o.sd, div: o.div, apr, may, jun, jul, aug, count: tot, sortMetric };
             });
 
-            rankedList.sort((a, b) => mode === 'TOP' ? b.count - a.count : a.count - b.count);
+            rankedList.sort((a, b) => mode === 'TOP' ? b.sortMetric - a.sortMetric : a.sortMetric - b.sortMetric);
             let rows = [];
             rankedList.slice(0, 20).forEach((item, idx) => {
-                rows.push(`<tr class="hover:bg-slate-50 border-b border-slate-200"><td class="p-3 text-center font-black">${idx + 1}</td><td class="p-3 font-mono text-slate-600">${item.id}</td><td class="p-3 font-bold text-slate-900">${item.name}</td><td class="p-3 font-semibold text-slate-500">${item.cls}</td><td class="p-3 text-slate-600">${item.sd}</td><td class="p-3 text-slate-600">${item.div}</td><td class="p-3 text-right font-black text-sm ${mode==='TOP'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${item.count.toLocaleString()}</td></tr>`);
+                if (isCumulative) {
+                    rows.push(`<tr class="hover:bg-slate-50 border-b border-slate-200"><td class="p-2.5 text-center font-black">${idx + 1}</td><td class="p-2.5 font-mono text-slate-600">${item.id}</td><td class="p-2.5 font-bold text-slate-900">${item.name}</td><td class="p-2.5 font-semibold text-slate-500">${item.cls}</td><td class="p-2.5 text-slate-600">${item.sd}</td><td class="p-2.5 text-slate-600">${item.div}</td><td>${item.apr.toLocaleString()}</td><td>${item.may.toLocaleString()}</td><td>${item.jun.toLocaleString()}</td><td>${item.jul.toLocaleString()}</td><td>${item.aug.toLocaleString()}</td><td class="p-2.5 text-right font-black text-sm ${mode==='TOP'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${item.count.toLocaleString()}</td></tr>`);
+                } else {
+                    rows.push(`<tr class="hover:bg-slate-50 border-b border-slate-200"><td class="p-3 text-center font-black">${idx + 1}</td><td class="p-3 font-mono text-slate-600">${item.id}</td><td class="p-3 font-bold text-slate-900">${item.name}</td><td class="p-3 font-semibold text-slate-500">${item.cls}</td><td class="p-3 text-slate-600">${item.sd}</td><td class="p-3 text-slate-600">${item.div}</td><td class="p-3 text-right font-black text-sm ${mode==='TOP'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${item.sortMetric.toLocaleString()}</td></tr>`);
+                }
             });
             document.getElementById('rankingsTableBody').innerHTML = rows.join('');
         }
@@ -1984,10 +2182,10 @@
                     } else {
                         ws[cellAddress].s = {
                             border: {
-                                top: { style: "thin", color: { rgb: "E2E8F0" } },
-                                bottom: { style: "thin", color: { rgb: "E2E8F0" } },
-                                left: { style: "thin", color: { rgb: "E2E8F0" } },
-                                right: { style: "thin", color: { rgb: "E2E8F0" } }
+                                top: { style: "thin", color: { rgb: "CBD5E1" } },
+                                bottom: { style: "thin", color: { rgb: "CBD5E1" } },
+                                left: { style: "thin", color: { rgb: "CBD5E1" } },
+                                right: { style: "thin", color: { rgb: "CBD5E1" } }
                             }
                         };
                     }
@@ -2075,7 +2273,7 @@
             });
         }
 
-        // --- NEW FUNCTIONS FOR DIVISION REVIEW DATA ---
+        // --- DIVISION REVIEW DATA ---
         function renderDivReviewData() {
             const divName = document.getElementById('divReviewDivSelect').value;
             let rows = [];
@@ -2099,7 +2297,7 @@
                 });
 
                 let mTarget = sumT / 12;
-                let tTillDate = mTarget * 5; // Target multiplied by 5 (for August)
+                let tTillDate = mTarget * 5;
                 
                 let pctProp = tTillDate > 0 ? ((sumAch / tTillDate) * 100).toFixed(2) : "0.00";
                 let pctTot = sumT > 0 ? ((sumAch / sumT) * 100).toFixed(2) : "0.00";
@@ -2122,7 +2320,6 @@
                 grandT += sumT; grandAp += sumAp; grandMy += sumMy; grandJn += sumJn; grandJl += sumJl; grandAg += sumAg; grandAch += sumAch;
             });
 
-            // --- Grand Total Row ---
             let grandMTarget = grandT / 12;
             let grandTillDate = grandMTarget * 5;
             let grandPctProp = grandTillDate > 0 ? ((grandAch / grandTillDate) * 100).toFixed(2) : "0.00";
@@ -2144,253 +2341,48 @@
             </tr>`);
 
             document.getElementById('divRevTableBody').innerHTML = rows.join('');
-            
-            // Sync the SD table refresh
-            renderDivReviewSD();
         }
 
-        // Class-wise color styling used across SD tables
-        const SD_CLASS_STYLE = {
-            BO: { headBg: 'bg-blue-900', subBg: 'bg-blue-800', cellBg: 'bg-blue-50', totalBg: 'bg-blue-100', text: 'text-blue-800', text2: 'text-blue-900' },
-            SO: { headBg: 'bg-purple-900', subBg: 'bg-purple-800', cellBg: 'bg-purple-50', totalBg: 'bg-purple-100', text: 'text-purple-800', text2: 'text-purple-900' },
-            HO: { headBg: 'bg-emerald-900', subBg: 'bg-emerald-800', cellBg: 'bg-emerald-50', totalBg: 'bg-emerald-100', text: 'text-emerald-800', text2: 'text-emerald-900' }
-        };
-        const SD_VERT_LABEL = { PARCEL: 'Parcel', MO: 'MO', IRGB: 'IRGB' };
+        // --- Post Office Analysis (Division Review tab) ---
+        function onDivPoDivChange() { populateSubDivDropdown('divPoDivSelect', 'divPoSdSelect'); renderDivPoAnalysis(); }
 
-        // Aggregate office-level data into Sub-Division -> Class -> Vertical counts, for a given month (or 'total' for Apr-Aug cumulative)
-        function aggregateSDData(divName, monthKey) {
-            let sdMap = new Map();
-            masterOfficeDatabase.forEach(o => {
-                if (divName !== 'ALL' && !isMatchingDivision(o.div, divName)) return;
+        function renderDivPoAnalysis() {
+            const divKey = document.getElementById('divPoDivSelect').value;
+            const sdKey = document.getElementById('divPoSdSelect').value;
+            const clsKey = document.getElementById('divPoClassSelect').value;
+            const monthKey = document.getElementById('divPoMonthSelect').value;
+            const vertKey = document.getElementById('divPoVertSelect').value;
+            const isCumulative = (monthKey === 'total');
+            const monthsToSum = isCumulative ? ACTIVE_MONTHS : [monthKey];
+            const monthLabel = isCumulative ? 'Cumulative Apr-Aug' : SDM_MONTH_LABELS[monthKey];
+            const vertLabelMap = { ALL:'Total Booking', PARCEL:'Parcel', MO:'MO', IRGB:'IRGB' };
+            const vertLabel = vertLabelMap[vertKey];
 
-                let sd = o.sd || 'UNASSIGNED';
-                if (!sdMap.has(sd)) {
-                    sdMap.set(sd, {
-                        BO: { count: 0, PARCEL: 0, MO: 0, IRGB: 0 },
-                        SO: { count: 0, PARCEL: 0, MO: 0, IRGB: 0 },
-                        HO: { count: 0, PARCEL: 0, MO: 0, IRGB: 0 }
-                    });
-                }
+            let filtered = masterOfficeDatabase.filter(o => {
+                let matchDiv = (divKey === 'ALL') || isMatchingDivision(o.div, divKey);
+                let matchSd = (sdKey === 'ALL') || (o.sd === sdKey);
+                let matchCls = (clsKey === 'ALL') || (o.cls === clsKey.toUpperCase());
+                return matchDiv && matchSd && matchCls;
+            });
 
-                let obj = sdMap.get(sd);
-                let cls = o.cls === 'BO' ? 'BO' : (o.cls === 'HO' ? 'HO' : 'SO');
-                obj[cls].count++;
-
+            let rows = filtered.map(o => {
                 let p = 0, m = 0, i = 0;
-                if (monthKey === 'total') {
-                    ['apr','may','jun','jul','aug'].forEach(mon => {
-                        p += (o[`parcel_${mon}`]||0); m += (o[`mo_${mon}`]||0); i += (o[`irgb_${mon}`]||0);
-                    });
-                } else {
-                    p = (o[`parcel_${monthKey}`]||0); m = (o[`mo_${monthKey}`]||0); i = (o[`irgb_${monthKey}`]||0);
-                }
-
-                obj[cls].PARCEL += p; obj[cls].MO += m; obj[cls].IRGB += i;
-            });
-            return sdMap;
-        }
-
-        // Dispatcher - decides between Overall View and Month-wise Compare View
-        function renderDivReviewSD() {
-            const viewType = document.getElementById('sdViewTypeSelect').value;
-            if (viewType === 'monthwise') {
-                renderSDMonthCompare();
-            } else {
-                renderSDOverall();
-            }
-        }
-
-        function onSdViewTypeChange() {
-            const vt = document.getElementById('sdViewTypeSelect').value;
-            document.getElementById('sdOverallContainer').classList.toggle('hidden', vt === 'monthwise');
-            document.getElementById('sdMonthCompareContainer').classList.toggle('hidden', vt !== 'monthwise');
-            document.getElementById('sdMonthSelectWrap').classList.toggle('hidden', vt === 'monthwise');
-            renderDivReviewSD();
-        }
-
-        // --- OVERALL VIEW: table with dynamic Class/Vertical filter columns, sorted highest->lowest avg, with Total row ---
-        function renderSDOverall() {
-            const divName = document.getElementById('divReviewDivSelect').value;
-            const month = document.getElementById('divRevMonthSelect').value;
-            const classFilter = document.getElementById('sdClassSelect').value;
-            const vertFilter = document.getElementById('sdVerticalSelect').value;
-
-            const sdMap = aggregateSDData(divName, month);
-            const classes = classFilter === 'ALL' ? ['BO','SO','HO'] : [classFilter];
-            const verticals = vertFilter === 'ALL' ? ['PARCEL','MO','IRGB'] : [vertFilter];
-            const showTotalAvgCol = verticals.length > 1;
-            const colsPerClass = 1 + (verticals.length * 2) + (showTotalAvgCol ? 1 : 0);
-
-            // Build header
-            let headRow1 = '<th class="p-2 border" rowspan="2">Name of SD</th>';
-            classes.forEach(c => {
-                headRow1 += `<th class="p-2 border ${SD_CLASS_STYLE[c].headBg}" colspan="${colsPerClass}">${c} Class</th>`;
-            });
-            let headRow2 = '';
-            classes.forEach(c => {
-                const st = SD_CLASS_STYLE[c];
-                headRow2 += `<th class="p-1 border ${st.subBg}">Total ${c}</th>`;
-                verticals.forEach(v => {
-                    headRow2 += `<th class="p-1 border ${st.subBg}">${SD_VERT_LABEL[v]}</th><th class="p-1 border ${st.subBg} text-amber-200">Avg ${SD_VERT_LABEL[v]}/${c}</th>`;
-                });
-                if (showTotalAvgCol) headRow2 += `<th class="p-1 border ${st.subBg} text-amber-200">Total Avg/${c}</th>`;
-            });
-            document.getElementById('divRevSDTableHead').innerHTML = `<tr>${headRow1}</tr><tr>${headRow2}</tr>`;
-
-            // Build body rows + compute sort value
-            let rowsData = [];
-            let grandTotals = {};
-            classes.forEach(c => grandTotals[c] = { count: 0, PARCEL: 0, MO: 0, IRGB: 0 });
-
-            sdMap.forEach((data, sdName) => {
-                let sumBookings = 0, sumOffices = 0;
-                let rowHtml = `<td class="p-2 font-bold text-left bg-slate-50 border-r">${sdName}</td>`;
-
-                classes.forEach(c => {
-                    const st = SD_CLASS_STYLE[c];
-                    const cd = data[c];
-                    grandTotals[c].count += cd.count;
-
-                    let rowTotalVertSum = 0;
-                    let cellsHtml = `<td class="p-2 font-bold ${st.text} ${st.cellBg}">${cd.count}</td>`;
-                    verticals.forEach(v => {
-                        grandTotals[c][v] += cd[v];
-                        let avg = cd.count > 0 ? (cd[v] / cd.count) : 0;
-                        rowTotalVertSum += cd[v];
-                        cellsHtml += `<td class="p-2">${cd[v].toLocaleString()}</td><td class="p-2 font-bold text-amber-700">${avg.toFixed(1)}</td>`;
-                    });
-                    if (showTotalAvgCol) {
-                        let totalAvg = cd.count > 0 ? (rowTotalVertSum / cd.count) : 0;
-                        cellsHtml += `<td class="p-2 font-extrabold ${st.text2} ${st.totalBg}">${totalAvg.toFixed(1)}</td>`;
-                    }
-                    rowHtml += cellsHtml;
-                    sumBookings += rowTotalVertSum;
-                    sumOffices += cd.count;
-                });
-
-                let sortAvg = sumOffices > 0 ? (sumBookings / sumOffices) : 0;
-                rowsData.push({ html: rowHtml, sortAvg });
+                monthsToSum.forEach(mk => { p += (o[`parcel_${mk}`]||0); m += (o[`mo_${mk}`]||0); i += (o[`irgb_${mk}`]||0); });
+                let val = vertKey === 'PARCEL' ? p : (vertKey === 'MO' ? m : (vertKey === 'IRGB' ? i : (p + m + i)));
+                return { o, p, m, i, val };
             });
 
-            // Highest -> Lowest average sort
-            rowsData.sort((a, b) => b.sortAvg - a.sortAvg);
-            let rowsHtml = rowsData.map(r => `<tr class="hover:bg-slate-50 border-b border-slate-200">${r.html}</tr>`).join('');
+            rows.sort((a, b) => a.val - b.val);
 
-            // Total row
-            let totalRowHtml = `<td class="p-2 font-extrabold text-left bg-amber-100 border-r">TOTAL</td>`;
-            classes.forEach(c => {
-                const gt = grandTotals[c];
-                let rowTotalVertSum = 0;
-                totalRowHtml += `<td class="p-2 font-extrabold bg-amber-100">${gt.count}</td>`;
-                verticals.forEach(v => {
-                    let avg = gt.count > 0 ? (gt[v] / gt.count) : 0;
-                    rowTotalVertSum += gt[v];
-                    totalRowHtml += `<td class="p-2 font-extrabold bg-amber-100">${gt[v].toLocaleString()}</td><td class="p-2 font-extrabold bg-amber-100 text-amber-800">${avg.toFixed(1)}</td>`;
-                });
-                if (showTotalAvgCol) {
-                    let totalAvg = gt.count > 0 ? (rowTotalVertSum / gt.count) : 0;
-                    totalRowHtml += `<td class="p-2 font-extrabold bg-amber-200">${totalAvg.toFixed(1)}</td>`;
-                }
-            });
-            rowsHtml += `<tr class="row-grand-total">${totalRowHtml}</tr>`;
+            document.getElementById('divPoTableHead').innerHTML = `<tr><th class="sdm-col1">Office ID</th><th class="sdm-col2">Office Name</th><th>Class</th><th>Sub Division</th><th>Division</th><th>Parcel</th><th>MO</th><th>IRGB</th><th>${vertLabel} (${monthLabel})</th></tr>`;
 
-            document.getElementById('divRevSDTableBody').innerHTML = rowsHtml;
-        }
+            let n = rows.length;
+            let bodyHtml = rows.map((r, idx) => {
+                let bg = idx < 3 ? '#f8d7da' : (idx >= n - 3 ? '#d9ead3' : '#ffffff');
+                return `<tr><td class="sdm-col1" style="background-color:${bg};">${r.o.id}</td><td class="sdm-col2" style="background-color:${bg};">${r.o.name}</td><td style="background-color:${bg};">${r.o.cls}</td><td style="background-color:${bg};">${r.o.sd}</td><td style="background-color:${bg};">${r.o.div}</td><td style="background-color:${bg};">${r.p.toLocaleString()}</td><td style="background-color:${bg};">${r.m.toLocaleString()}</td><td style="background-color:${bg};">${r.i.toLocaleString()}</td><td style="background-color:${bg};font-weight:bold;">${r.val.toLocaleString()}</td></tr>`;
+            }).join('');
 
-        // --- MONTH-WISE COMPARE VIEW: reference table + Apr-Aug trend chart per Sub-Division ---
-        // Month-wise Compare: table with April, May, June, July, August + Total(Apr-Aug) columns, grouped by Class
-        function renderSDMonthCompare() {
-            const divName = document.getElementById('divReviewDivSelect').value;
-            const classFilter = document.getElementById('sdClassSelect').value;
-            const vertFilter = document.getElementById('sdVerticalSelect').value;
-            const monthsK = ['apr','may','jun','jul','aug'];
-            const monthsL = ['April','May','June','July','August'];
-            const classes = classFilter === 'ALL' ? ['BO','SO','HO'] : [classFilter];
-            const verticals = vertFilter === 'ALL' ? ['PARCEL','MO','IRGB'] : [vertFilter];
-            const colsPerBlock = classes.length;
-
-            // Pre-compute per-month aggregation + cumulative total
-            let monthMaps = {};
-            monthsK.forEach(mk => monthMaps[mk] = aggregateSDData(divName, mk));
-            const totalMap = aggregateSDData(divName, 'total');
-
-            // --- Build Header (2 rows) ---
-            let headRow1 = '<th class="p-2 border" rowspan="2">Sub-Division</th>';
-            monthsL.forEach(ml => headRow1 += `<th class="p-2 border bg-indigo-900" colspan="${colsPerBlock}">${ml}</th>`);
-            headRow1 += `<th class="p-2 border bg-amber-800" colspan="${colsPerBlock}">Total (Apr-Aug)</th>`;
-
-            let headRow2 = '';
-            monthsL.forEach(() => { classes.forEach(c => headRow2 += `<th class="p-1 border bg-indigo-800">Avg/${c}</th>`); });
-            classes.forEach(c => headRow2 += `<th class="p-1 border bg-amber-700 text-amber-100">Avg/${c}</th>`);
-
-            document.getElementById('divRevSDMonthTableHead').innerHTML = `<tr>${headRow1}</tr><tr>${headRow2}</tr>`;
-
-            // --- Build Rows ---
-            let rowsData = [];
-            totalMap.forEach((totalData, sdName) => {
-                let cellsHtml = `<td class="p-2 font-bold text-left bg-slate-50 border-r">${sdName}</td>`;
-
-                // Month-wise cells
-                monthsK.forEach(mk => {
-                    const monthData = monthMaps[mk].get(sdName);
-                    classes.forEach(c => {
-                        const cd = monthData ? monthData[c] : { count: 0, PARCEL: 0, MO: 0, IRGB: 0 };
-                        let vSum = verticals.reduce((s, v) => s + cd[v], 0);
-                        let avg = cd.count > 0 ? (vSum / cd.count) : 0;
-                        cellsHtml += `<td class="p-2">${avg.toFixed(1)}</td>`;
-                    });
-                });
-
-                // Cumulative Total (Apr-Aug) cells
-                let sortSum = 0, sortCnt = 0;
-                classes.forEach(c => {
-                    const cd = totalData[c];
-                    let vSum = verticals.reduce((s, v) => s + cd[v], 0);
-                    let avg = cd.count > 0 ? (vSum / cd.count) : 0;
-                    sortSum += vSum; sortCnt += cd.count;
-                    cellsHtml += `<td class="p-2 font-extrabold text-amber-800 bg-amber-50">${avg.toFixed(1)}</td>`;
-                });
-
-                let sortAvg = sortCnt > 0 ? (sortSum / sortCnt) : 0;
-                rowsData.push({ html: cellsHtml, sortAvg });
-            });
-
-            // Highest -> Lowest sort
-            rowsData.sort((a, b) => b.sortAvg - a.sortAvg);
-            let rowsHtml = rowsData.map(r => `<tr class="hover:bg-slate-50 border-b border-slate-200 text-right">${r.html}</tr>`).join('');
-
-            // --- Grand Total Row ---
-            let grandRowHtml = `<td class="p-2 font-extrabold text-left bg-amber-100 border-r">TOTAL</td>`;
-            monthsK.forEach(mk => {
-                let sums = {}; classes.forEach(c => sums[c] = { cnt: 0, vSum: 0 });
-                monthMaps[mk].forEach(data => {
-                    classes.forEach(c => {
-                        const cd = data[c];
-                        sums[c].cnt += cd.count;
-                        sums[c].vSum += verticals.reduce((s, v) => s + cd[v], 0);
-                    });
-                });
-                classes.forEach(c => {
-                    let avg = sums[c].cnt > 0 ? (sums[c].vSum / sums[c].cnt) : 0;
-                    grandRowHtml += `<td class="p-2 font-extrabold bg-amber-100">${avg.toFixed(1)}</td>`;
-                });
-            });
-
-            let sumsT = {}; classes.forEach(c => sumsT[c] = { cnt: 0, vSum: 0 });
-            totalMap.forEach(data => {
-                classes.forEach(c => {
-                    const cd = data[c];
-                    sumsT[c].cnt += cd.count;
-                    sumsT[c].vSum += verticals.reduce((s, v) => s + cd[v], 0);
-                });
-            });
-            classes.forEach(c => {
-                let avg = sumsT[c].cnt > 0 ? (sumsT[c].vSum / sumsT[c].cnt) : 0;
-                grandRowHtml += `<td class="p-2 font-extrabold bg-amber-200">${avg.toFixed(1)}</td>`;
-            });
-
-            rowsHtml += `<tr class="row-grand-total">${grandRowHtml}</tr>`;
-            document.getElementById('divRevSDMonthTableBody').innerHTML = rowsHtml;
+            document.getElementById('divPoTableBody').innerHTML = bodyHtml || `<tr><td colspan="9">No data found</td></tr>`;
         }
 
         window.onload = function() {
