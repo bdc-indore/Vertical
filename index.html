@@ -705,6 +705,7 @@
             tabs.forEach(t => {
                 tabsHtml += `<button onclick="switchView('${t.id}')" id="tab-type-${t.id}" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 ${t.hover} transition flex items-center gap-1.5"><span>${t.icon}</span> ${t.text}</button>`;
             });
+            tabsHtml += `<button onclick="window.open('https://bdc-indore.github.io/scorecard/','_blank')" class="px-4 py-3 font-extrabold text-sm border-b-2 border-transparent text-slate-500 hover:text-orange-600 transition flex items-center gap-1.5"><span>🚚</span> D+0 Monitoring</button>`;
             document.getElementById('tabsNav').innerHTML = tabsHtml;
         }
 
