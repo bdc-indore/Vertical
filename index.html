@@ -251,7 +251,19 @@
                 <div class="bg-white rounded-xl p-6 border border-rose-100 card flex flex-wrap items-center justify-between gap-4">
                     <h2 class="text-base font-bold text-rose-900 flex items-center gap-2">📊 Nil Booking Report</h2>
                     <div class="flex flex-wrap items-center gap-3">
-                        <select id="offVertSelect" onchange="renderOfficeAnalytics()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">🌐 All Verticals</option><option value="PARCEL">📦 Parcel</option><option value="MAIL">✉️ Mail</option><option value="IRGB">✈️ IR & GB</option></select>
+                        <div class="relative" id="offVertWrap">
+                            <button type="button" id="offVertBtn" onclick="toggleOffVertPanel(event)" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2 hover:bg-slate-100">🌐 All Verticals ▾</button>
+                            <div id="offVertPanel" class="hidden absolute z-50 mt-1 bg-white border border-slate-300 rounded-lg shadow-lg p-2 text-xs font-semibold" style="min-width:160px;" onclick="event.stopPropagation()">
+                                <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="off-vert-cb" value="PARCEL" checked onchange="onOffVertChange(this)"> 📦 Parcel</label>
+                                <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="off-vert-cb" value="MAIL" checked onchange="onOffVertChange(this)"> ✉️ Mail (MO)</label>
+                                <label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="off-vert-cb" value="IRGB" checked onchange="onOffVertChange(this)"> ✈️ IR & GB</label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-300 rounded-lg px-2 py-1" title="Good booking ka number set karein. Khali chhodne par auto (class/vertical ke hisab se) lagega.">
+                            <span class="text-[11px] font-extrabold text-emerald-800">Good &gt;</span>
+                            <input id="offGoodInput" type="number" min="0" step="1" placeholder="auto" oninput="renderOfficeAnalytics()" class="w-16 text-xs font-bold text-emerald-900 bg-white border border-emerald-300 rounded p-1 text-center">
+                            <button type="button" onclick="resetOffGood()" class="text-xs font-bold text-emerald-800 hover:text-emerald-950" title="Auto par wapas">↺</button>
+                        </div>
                         <select id="offDivSelect" onchange="onOffDivChange()" class="bg-slate-800 text-white text-xs font-semibold rounded-lg p-2 div-select-options"></select>
                         <select id="offSdSelect" onchange="renderOfficeAnalytics()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2"><option value="ALL">All Sub-Divisions</option></select>
                         <select id="offMonthSelect" data-def="sep" onchange="renderOfficeAnalytics()" class="bg-slate-50 border border-slate-300 text-xs font-semibold rounded-lg p-2 period-select"></select>
@@ -627,7 +639,7 @@
         const isP = k => !!PERIODS[k];
         const sumM = (r, ms) => ms.reduce((a, m) => a + (Number(r[m]) || 0), 0);
         function periodOptHtml(aug) { let h = ''; Object.keys(PERIODS).forEach(k => { if (k === 'total_aug' && !aug) return; h += `<option value="${k}">📅 ${PERIODS[k][0]}</option>`; }); ACTIVE_MONTHS.forEach(m => h += `<option value="${m}">${MLAB[m]} 2026</option>`); return h; }
-        function offCnt(o, v, k) { return pm(k).reduce((s, m) => { const p = o['parcel_' + m] || 0, mo = o['mo_' + m] || 0, i = o['irgb_' + m] || 0; return s + (v === 'PARCEL' ? p : v === 'MAIL' ? mo : v === 'IRGB' ? i : p + mo + i); }, 0); }
+        function offCnt(o, v, k) { const vs = Array.isArray(v) ? v : (v === 'PARCEL' || v === 'MAIL' || v === 'IRGB' ? [v] : ['PARCEL','MAIL','IRGB']); return pm(k).reduce((s, m) => { const p = o['parcel_' + m] || 0, mo = o['mo_' + m] || 0, i = o['irgb_' + m] || 0; return s + (vs.includes('PARCEL') ? p : 0) + (vs.includes('MAIL') ? mo : 0) + (vs.includes('IRGB') ? i : 0); }, 0); }
         
         let HISTORICAL_LY_DATA = { "MAIL": { count:{}, revenue:{} }, "PARCEL": { count:{}, revenue:{} }, "IRGB": { count:{}, revenue:{} }, "PLI/RPLI": { revenue:{} }, "POSB": { revenue:{} }, "CCS": { revenue:{} } };
         let SBN_HISTORICAL_OPENED = {}, SBN_HISTORICAL_NET = {}, SBN_CURRENT_OPENED = {}, SBN_CURRENT_NET = {};
@@ -1488,16 +1500,49 @@
 
         function getLowBookingThreshold(clsKey, vertKey) {
             if (clsKey === 'SO') {
-                return (vertKey === 'ALL') ? 100 : 50;
+                const n = Array.isArray(vertKey) ? vertKey.length : (vertKey === 'ALL' ? 3 : 1);
+                return (n === 1) ? 50 : 100;
             }
             return 10;
         }
 
+        // Selected verticals (tick boxes); kam se kam ek hamesha selected rehta hai
+        function getOffVerts() {
+            const v = Array.from(document.querySelectorAll('.off-vert-cb:checked')).map(c => c.value);
+            return v.length ? v : ['PARCEL', 'MAIL', 'IRGB'];
+        }
+        const OFF_VERT_NAMES = { PARCEL: '📦 Parcel', MAIL: '✉️ Mail', IRGB: '✈️ IR & GB' };
+        function updateOffVertBtn() {
+            const v = getOffVerts();
+            document.getElementById('offVertBtn').innerText = (v.length === 3 ? '🌐 All Verticals' : v.map(x => OFF_VERT_NAMES[x]).join(' + ')) + ' ▾';
+        }
+        function toggleOffVertPanel(e) {
+            e.stopPropagation();
+            document.getElementById('offVertPanel').classList.toggle('hidden');
+        }
+        function onOffVertChange(cb) {
+            if (document.querySelectorAll('.off-vert-cb:checked').length === 0) { cb.checked = true; return; }
+            updateOffVertBtn();
+            renderOfficeAnalytics();
+        }
+        document.addEventListener('click', () => { const p = document.getElementById('offVertPanel'); if (p) p.classList.add('hidden'); });
+
+        // Good booking number: user ne set kiya ho to wahi, warna auto default
+        function getOffLowMax(clsKey, verts) {
+            const inp = document.getElementById('offGoodInput');
+            const def = getLowBookingThreshold(clsKey, verts);
+            if (inp) inp.placeholder = 'auto (' + def + ')';
+            const raw = inp ? inp.value.trim() : '';
+            const n = parseInt(raw, 10);
+            return (raw !== '' && !isNaN(n) && n >= 0) ? n : def;
+        }
+        function resetOffGood() { document.getElementById('offGoodInput').value = ''; renderOfficeAnalytics(); }
+
         function renderOfficeAnalytics() {
-            const vertKey = document.getElementById('offVertSelect').value, divKey = document.getElementById('offDivSelect').value, sdKey = document.getElementById('offSdSelect').value, mKey = document.getElementById('offMonthSelect').value, clsKey = document.getElementById('offClassSelect').value;
+            const vertKey = getOffVerts(), divKey = document.getElementById('offDivSelect').value, sdKey = document.getElementById('offSdSelect').value, mKey = document.getElementById('offMonthSelect').value, clsKey = document.getElementById('offClassSelect').value;
             let divGroup = new Map(), totalOfficesCount = 0, totalBookings = 0, totalNil = 0, totalLow = 0, totalGood = 0;
 
-            const lowMax = getLowBookingThreshold(clsKey, vertKey);
+            const lowMax = getOffLowMax(clsKey, vertKey);
 
             document.getElementById('offLowKpiLabel').innerText = `LOW BOOKING (1-${lowMax})*`;
             document.getElementById('offGoodKpiLabel').innerText = `GOOD BOOKING (>${lowMax})`;
@@ -1612,10 +1657,10 @@
         }
 
         function exportCategoryExcel(targetName, catType, isDivisionLevel = false) {
-            const vertKey = document.getElementById('offVertSelect').value;
+            const vertKey = getOffVerts();
             const mKey = document.getElementById('offMonthSelect').value;
             const clsKey = document.getElementById('offClassSelect').value;
-            const lowMax = getLowBookingThreshold(clsKey, vertKey);
+            const lowMax = getOffLowMax(clsKey, vertKey);
 
             let filteredList = masterOfficeDatabase.filter(o => {
                 if (clsKey !== 'ALL' && o.cls !== clsKey.toUpperCase()) return false;
@@ -1642,7 +1687,8 @@
                     "Class": o.cls,
                     "Sub-Division": o.sd,
                     "Division": o.div,
-                    "Booking Count": cnt
+                    ...Object.fromEntries(vertKey.length > 1 ? vertKey.map(v => [OFF_VERT_NAMES[v].replace(/^\S+\s/, '') + ' Booking', offCnt(o, [v], mKey)]) : []),
+                    "Total Booking Count": cnt
                 };
             });
 
