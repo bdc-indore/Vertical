@@ -152,7 +152,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
                         <h2 class="text-base font-bold text-slate-800">📋 विस्तृत तालिका विवरण (Detailed Performance Table)</h2>
                         <div class="flex items-center gap-2 flex-wrap justify-center">
-                            <select id="mainViewTypeSelect" onchange="updateDashboard()" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs rounded-lg px-2.5 py-1.5"><option value="division">🏢 Division View</option><option value="region">🌍 Region View</option></select>
+                            <select id="mainViewTypeSelect" onchange="updateDashboard()" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs rounded-lg px-2.5 py-1.5"><option value="division">🏢 Division View</option><option value="region">🌍 Region View</option><option value="progressive">📈 Division Progressive</option><option value="shortfall">📉 Division Shortfall</option></select>
                             <button onclick="downloadTablePDF('dataTable', 'Main_Performance_Table')" class="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow">📄 PDF</button>
                             <button onclick="downloadTableJPEG('dataTable', 'Main_Performance_Table')" class="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow">📸 JPEG</button>
                             <button onclick="exportTableByID('dataTable', 'Main_Performance_Table.xlsx')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow">📊 Excel</button>
@@ -1085,7 +1085,9 @@
             document.getElementById('kpiActiveVertText').innerText = (currentVertical === 'ALL' ? 'All Verticals Combined' : `${currentVertical} Vertical`) + ' • ' + pl(per);
 
             const isMainReg = document.getElementById('mainViewTypeSelect').value === 'region';
-            renderTable(isMainReg ? aggregateByVertical(filtered) : filtered, isIR, isMainReg);
+            const mainMode = document.getElementById('mainViewTypeSelect').value;
+            if (mainMode === 'progressive' || mainMode === 'shortfall') renderDivisionReport(mainMode, filtered, isRev);
+            else renderTable(isMainReg ? aggregateByVertical(filtered) : filtered, isIR, isMainReg);
             renderCharts(dataset, filtered, selectedDiv, isIR);
             const mwSel = document.getElementById(isRev ? 'revenueViewTypeSelect' : 'countViewTypeSelect');
             const isMwReg = mwSel ? mwSel.value === 'region' : false;
@@ -1102,6 +1104,76 @@
                 ACTIVE_MONTHS.forEach(m => { o[m] = (o[m] || 0) + (Number(r[m]) || 0); o[m + 'Tgt'] = (o[m + 'Tgt'] || 0) + (Number(r[m + 'Tgt']) || 0); });
             });
             return Object.values(g);
+        }
+
+        // ================= Division Progressive / Division Shortfall report =================
+        // "Data till" date = (today - 1 day), as agreed. Report month = selected month (for a period selection: its last month).
+        const REPORT_PCT_GREEN = 75, REPORT_PCT_LIGHT = 71;   // % Prop Ach colour tiers (green >= 75, light green >= 71, else red)
+        const MON0 = { apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11, jan: 0, feb: 1, mar: 2 };
+        function reportDates(rm) {
+            const pad = n => String(n).padStart(2, '0'), f = (d, mo, y) => `${pad(d)}.${pad(mo + 1)}.${y}`;
+            const yr = yrOf(rm), mo = MON0[rm], yest = new Date(Date.now() - 86400000);
+            const last = new Date(yr, mo + 1, 0).getDate(), sameMonth = (yest.getFullYear() === yr && yest.getMonth() === mo);
+            const upDay = sameMonth ? yest.getDate() : last, pe = new Date(yr, mo, 0);
+            return { fy: `01.04.${yrOf('apr')}`, mStart: f(1, mo, yr), upto: f(upDay, mo, yr), mEnd: f(last, mo, yr), prevEnd: f(pe.getDate(), pe.getMonth(), pe.getFullYear()),
+                     lbl: `${MLAB[rm].slice(0, 3)}-${yy(rm)}`, frac: upDay / last, partial: sameMonth };
+        }
+
+        function renderDivisionReport(mode, filtered, isRev) {
+            const sel = document.getElementById('periodSelect').value, ms = pm(sel), rm = isP(sel) ? ms[ms.length - 1] : sel;
+            const i = ACTIVE_MONTHS.indexOf(rm), cum = ACTIVE_MONTHS.slice(0, i >= 0 ? i + 1 : ACTIVE_MONTHS.length), prev = cum.slice(0, -1);
+            const D = reportDates(rm), unitName = isRev ? 'Revenue' : 'Article Count';
+            const tgtOf = (r, m) => isRev ? (Number(r.target) || 0) / 12 : (Number(r[m + 'Tgt']) || 0);
+            const annOf = r => isRev ? (Number(r.target) || 0) : ACTIVE_MONTHS.reduce((a, m) => a + (Number(r[m + 'Tgt']) || 0), 0) + (12 - ACTIVE_MONTHS.length) * (Number(r[ACTIVE_MONTHS[ACTIVE_MONTHS.length - 1] + 'Tgt']) || 0);
+            const fmt = (v, k) => isRev ? Number(v * k).toLocaleString('en-IN', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : Math.round(v).toLocaleString('en-IN');
+            const pct = (a, t) => t > 0 ? (a / t * 100) : 0;
+            const BD = 'border:1px solid #000;', NAVY = 'background:#1F3864;color:#fff;font-weight:700;text-align:center;', PEACH = 'background:#FCE4D6;font-weight:800;';
+            const td = (t, extra = '') => `<td style="${BD}padding:8px 10px;text-align:right;${extra}">${t}</td>`;
+            const th = t => `<th style="${BD}${NAVY}padding:8px 10px;">${t}</th>`;
+            const pctTd = (p, kind) => {
+                let st = 'font-weight:800;text-align:center;';
+                if (kind === 'month') st += (p >= (D.partial ? D.frac * 100 : 100)) ? 'background:#92D050;color:#000;' : 'background:#FF0000;color:#fff;';
+                else if (kind === 'prop') st += p >= REPORT_PCT_GREEN ? 'background:#92D050;color:#000;' : (p >= REPORT_PCT_LIGHT ? 'background:#C6E0B4;color:#000;' : 'background:#FF0000;color:#FFFF00;');
+                return td(p.toFixed(2), st);
+            };
+            const NC = mode === 'progressive' ? 12 : 6;
+            const title = mode === 'progressive' ? `Status of ${unitName} (Progressive) from ${D.fy} to ${D.upto}` : `Division Wise ${unitName} Target, Achievement and Shortfall Status (up to ${D.upto})`;
+            let head = `<tr><th colspan="${NC}" style="${BD}background:#F4B183;color:#000;font-size:20px;font-weight:800;text-align:center;padding:10px;">${title}</th></tr><tr>`;
+            if (mode === 'progressive') {
+                head += [ 'Division', `Target<br>${D.lbl}`, `Achievement<br>${D.mStart.slice(0, 5)}-${D.upto.slice(0, 5)}`, '%<br>monthly', 'Shortfall<br>monthly', `Prop Target<br>${D.mEnd.slice(0, 5)}`, `Prop Ach<br>${D.upto.slice(0, 5)}`, '% Prop<br>Ach', 'Shortfall<br>Prop', `Target FY<br>2026-27`, `Ach<br>${D.fy.slice(0, 5)}-${D.upto.slice(0, 5)}`, '% total<br>FY' ].map(th).join('');
+            } else {
+                head += [ 'Division Name', 'Total Target<br>26-27', `Proportionate Target<br>upto ${D.lbl}`, (prev.length ? `Achievement<br>${D.fy} to ${D.prevEnd}` : 'Achievement<br>till previous month<br>(Nil)'), `Achievement<br>${D.mStart} to ${D.upto}`, `Total Shortfall<br>upto ${D.lbl}` ].map(th).join('');
+            }
+            head += '</tr>';
+            document.getElementById('tableHead').innerHTML = head;
+
+            const verts = [...new Set(filtered.map(r => r.vertical))], body = [], rowsCount = [];
+            const calc = recs => { const o = { tm: 0, am: 0, prop: 0, ann: 0, ap: 0, ac: 0 }; recs.forEach(r => { o.tm += tgtOf(r, rm); o.am += Number(r[rm]) || 0; o.prop += cum.reduce((a, m) => a + tgtOf(r, m), 0); o.ann += annOf(r); o.ap += sumM(r, prev); o.ac += sumM(r, cum); }); return o; };
+            const line = (name, o, k, isTot) => {
+                const base = isTot ? PEACH : '', nm = `<td style="${BD}padding:8px 10px;font-weight:800;${base}">${name}</td>`;
+                if (mode === 'progressive') {
+                    return `<tr>${nm}${td(fmt(o.tm, k), base)}${td(fmt(o.am, k), base)}${pctTd(pct(o.am, o.tm), 'month')}${td(fmt(o.am - o.tm, k), base)}${td(fmt(o.prop, k), base)}${td(fmt(o.ac, k), base)}${pctTd(pct(o.ac, o.prop), 'prop')}${td(fmt(o.ac - o.prop, k), base)}${td(fmt(o.ann, k), base)}${td(fmt(o.ac, k), base)}${td(pct(o.ac, o.ann).toFixed(2), base)}</tr>`;
+                }
+                return `<tr>${nm}${td(fmt(o.ann, k), base)}${td(fmt(o.prop, k), base)}${td(fmt(o.ap, k), base)}${td(fmt(o.am, k), base)}${td(fmt(o.prop - o.ac, k), base + 'color:' + (o.prop - o.ac > 0 ? '#C00000' : '#00803C') + ';')}</tr>`;
+            };
+            verts.forEach(v => {
+                const k = (isRev && v === 'IRGB') ? 100 : 1, vr = filtered.filter(r => r.vertical === v), tot = { tm: 0, am: 0, prop: 0, ann: 0, ap: 0, ac: 0 };
+                const unit = isRev ? (v === 'IRGB' ? 'in Lakhs' : 'in Cr') : 'article count';
+                const block = [];
+                DIVISIONS.forEach(d => {
+                    const recs = vr.filter(r => isMatchingDivision(r.divName, d));
+                    if (!recs.length) return;
+                    const o = calc(recs); Object.keys(tot).forEach(x => tot[x] += o[x]); block.push(line(d, o, k, false)); rowsCount.push(1);
+                });
+                if (!block.length) return;
+                body.push(`<tr><td colspan="${NC}" style="${BD}background:#D9D9D9;font-weight:800;padding:6px 10px;">${v} VERTICAL (${unit})</td></tr>`);
+                body.push(...block, line(block.length > 1 || document.getElementById('divisionSelect').value === 'ALL' ? 'Indore Region ' + v : 'Total', tot, k, true));
+            });
+            document.getElementById('tableBody').innerHTML = body.join('');
+            document.getElementById('tableFoot').innerHTML = '';
+            document.getElementById('recordBadge').innerText = `${rowsCount.length} Records Loaded`;
+            const rem = document.getElementById('tableRemark');
+            if (rem) rem.innerText = `* Note: Data till ${D.upto} (aaj se ek din pehle). ` + (isRev ? 'IRGB in Lakhs, baaki verticals in Crores. ' : '') + (isRev ? 'Target = Annual Target / 12 x months.' : 'Target FY = Apr-' + MLAB[ACTIVE_MONTHS[ACTIVE_MONTHS.length - 1]].slice(0, 3) + ' targets + baaki mahine last month ke target ke barabar.') + (mode === 'progressive' ? ' Shortfall = Achievement - Target (negative = peeche).' : ' Total Shortfall = Proportionate Target - Achievement till date.');
         }
 
         // Groups rows vertical-wise (order of first appearance) so a "INDORE REGION <VERTICAL> TOTAL" row can close each block.
