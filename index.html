@@ -6760,8 +6760,6 @@ const ESS=(()=>{
    const classOf=o=>String(o.cl||'').toUpperCase().replace(/[^A-Z]/g,'');
    const typeCodes={BO:['BO','BRANCHOFFICE'],SO:['SO','SUBOFFICE']};
    const sorted=offices.sort((a,b)=>a.div.localeCompare(b.div)||a.sd.localeCompare(b.sd)||a.name.localeCompare(b.name)||a.id.localeCompare(b.id));
-   const allDivs=[...new Set(sorted.map(o=>o.div))];
-   /* build the data of every list */
    for(const d of defs){
     const groups=new Map();
     for(const o of sorted){
@@ -6771,28 +6769,29 @@ const ESS=(()=>{
      groups.get(o.div).push([o.id,o.name,o.sd,fmt(count)]);
     }
     d.groups=[...groups].map(([division,rows])=>({division,rows}));
-    d.byDiv=Object.fromEntries(d.groups.map(g=>[g.division,g.rows.length]));
     d.total=d.groups.reduce((n,g)=>n+g.rows.length,0);
    }
    if(!(await needLib2('jspdf')))return;
    const doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
    doc.setProperties({title:'Indore Region Office Booking Lists - '+mFull(m)});
    const margin=10,gap=5,PW=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight();
-   const colW=(PW-2*margin-gap)/2,top=36,bottom=PH-14,RH=4.2,GH=9,GAP=2;
+   const top=42,bottom=PH-14,full=bottom-top;
    const navy='#16344f',ink='#182d3e',gold='#d9a400',soft='#e5edf4';
    const today=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Kolkata'});
    const asOn=NB.asOn(m);
-   const fitText=(value,x,y,maxWidth,size=7.6,align='left')=>{
+   const fitText=(value,x,y,maxWidth,size,align='left')=>{
     const label=String(value??'');
     doc.setFontSize(size);
     const w=doc.getTextWidth(label);
     if(w>maxWidth)doc.setFontSize(size*maxWidth/w);
     doc.text(label,x,y,{align});
    };
-   /* column-balanced layout: pages are filled evenly, so a short list never leaves half a page empty */
-   const place=(groups,cap)=>{
-    const pages=[[[],[]]];let col=0,used=0;
-    const next=()=>{if(col===0){col=1;used=0}else{pages.push([[],[]]);col=0;used=0}};
+   /* Adaptive layout: a short list gets ONE wide column with bigger rows / font so the page looks full;
+      a long list gets TWO columns (dense) and the pages are filled evenly. */
+   const place=(groups,cap,ncols,sc)=>{
+    const RH=4.2*sc,GH=9*sc,GAP=2*sc;
+    const pages=[Array.from({length:ncols},()=>[])];let col=0,used=0;
+    const next=()=>{if(col<ncols-1){col++;used=0}else{pages.push(Array.from({length:ncols},()=>[]));col=0;used=0}};
     for(const g of groups){
      let i=0;
      while(i<g.rows.length){
@@ -6807,89 +6806,69 @@ const ESS=(()=>{
     return pages;
    };
    const layout=groups=>{
-    const full=bottom-top,P=place(groups,full).length;
-    let lo=GH+3*RH,hi=full;
-    for(let k=0;k<22;k++){const mid=(lo+hi)/2;if(place(groups,mid).length<=P)hi=mid;else lo=mid}
-    return place(groups,hi);
+    const P2=place(groups,full,2,1).length,P1=place(groups,full,1,1).length;
+    const ncols=P1<=P2?1:2,P=ncols===1?P1:P2,SMAX=ncols===1?1.55:1.2;
+    let lo=1,hi=SMAX;
+    if(place(groups,full,ncols,hi).length<=P)lo=hi;
+    else for(let k=0;k<22;k++){const mid=(lo+hi)/2;if(place(groups,full,ncols,mid).length<=P)lo=mid;else hi=mid}
+    const sc=lo;
+    let cl=GH0(sc)*1+3*4.2*sc,ch=full;
+    for(let k=0;k<22;k++){const mid=(cl+ch)/2;if(place(groups,mid,ncols,sc).length<=P)ch=mid;else cl=mid}
+    return {pages:place(groups,ch,ncols,sc),ncols,sc};
    };
-   let pageNo=1;
-   for(const d of defs){d.pages=d.total?layout(d.groups):[];d.start=d.pages.length?pageNo+1:0;pageNo+=d.pages.length}
+   const GH0=sc=>9*sc;
+   let pageNo=0;
+   for(const d of defs){d.lay=d.total?layout(d.groups):{pages:[],ncols:1,sc:1};pageNo+=d.lay.pages.length}
    const totalPages=pageNo;
-   const band=(title,sub)=>{
+   if(!totalPages)return alert('No offices matched any of the lists.');
+   const band=(title)=>{
     doc.setFillColor(navy);doc.rect(0,0,PW,24,'F');
     doc.setFillColor(gold);doc.rect(0,24,PW,1.2,'F');
-    doc.setTextColor('#ffffff');doc.setFont('helvetica','bold');doc.setFontSize(15);
-    doc.text(title,margin,11.5);
+    doc.setTextColor('#ffffff');doc.setFont('helvetica','bold');
+    fitText(title,margin,11.5,PW-2*margin-52,15);
     doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-    doc.text(sub,margin,18);
-    doc.setFontSize(8.5);doc.text(mFull(m),PW-margin,11.5,{align:'right'});
-    doc.text('Department of Posts · Indore Region',PW-margin,18,{align:'right'});
+    doc.text('Department of Posts · Indore Region',margin,18.5);
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(mFull(m),PW-margin,11.5,{align:'right'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);if(asOn)doc.text(asOn,PW-margin,18.5,{align:'right'});
     doc.setTextColor(ink);
    };
-   /* ---- page 1: summary ---- */
-   band('Office Booking Lists','Summary of selected lists · MO + Parcel + IRGB booking, '+mFull(m)+(asOn?' · '+asOn:''));
-   let y=34;
-   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Lists included',margin,y);y+=3;
-   const sx=[margin,margin+9,margin+PW-2*margin-34,margin+PW-2*margin-14];
-   doc.setFillColor(navy);doc.rect(margin,y,PW-2*margin,6.4,'F');doc.setTextColor('#ffffff');doc.setFontSize(8.2);
-   doc.text('#',sx[0]+2,y+4.4);doc.text('List and rule',sx[1],y+4.4);doc.text('Offices',sx[2]+20,y+4.4,{align:'right'});doc.text('Page',sx[3]+12,y+4.4,{align:'right'});
-   y+=6.4;doc.setTextColor(ink);
-   defs.forEach((d,i)=>{
-    doc.setFillColor(i%2?'#edf3f7':'#f8fafc');doc.rect(margin,y,PW-2*margin,10,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(8.6);doc.text(String(i+1),sx[0]+2,y+4.2);
-    fitText(d.title,sx[1],y+4.2,sx[2]-sx[1]-4,8.8);
-    doc.setFont('helvetica','normal');doc.setTextColor('#4a5b6a');fitText(d.rule,sx[1],y+8,sx[2]-sx[1]-4,7);doc.setTextColor(ink);
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(fmt(d.total),sx[2]+20,y+5.6,{align:'right'});
-    doc.setFont('helvetica','normal');doc.text(d.start?String(d.start):'—',sx[3]+12,y+5.6,{align:'right'});
-    y+=10;
-   });
-   y+=7;
-   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Division-wise count of offices',margin,y);y+=3;
-   const divW=PW-2*margin,firstW=Math.min(54,divW*.28),cw=(divW-firstW)/defs.length,rowH=Math.min(6.2,Math.max(4.6,(bottom-y-16)/(allDivs.length+2)));
-   doc.setFillColor(navy);doc.rect(margin,y,divW,7.4,'F');doc.setTextColor('#ffffff');doc.setFontSize(7.8);
-   doc.text('Division',margin+2,y+4.9);
-   defs.forEach((d,i)=>fitText(d.short,margin+firstW+i*cw+cw/2,y+4.9,cw-2,7.6,'center'));
-   y+=7.4;doc.setTextColor(ink);
-   const drawRow=(label,vals,fill,bold)=>{
-    doc.setFillColor(fill);doc.rect(margin,y,divW,rowH,'F');
-    doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(8);
-    fitText(label,margin+2,y+rowH*.68,firstW-3,8);
-    vals.forEach((v,i)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(8.2);doc.text(fmt(v),margin+firstW+i*cw+cw/2,y+rowH*.68,{align:'center'})});
-    y+=rowH;
-   };
-   allDivs.forEach((dv,i)=>drawRow(dv,defs.map(d=>d.byDiv[dv]||0),i%2?'#edf3f7':'#f8fafc',false));
-   drawRow('INDORE REGION TOTAL',defs.map(d=>d.total),'#fff4d6',true);
-   doc.setDrawColor('#b9c6d1');doc.setLineWidth(.2);doc.rect(margin,y-rowH*(allDivs.length+1)-7.4,divW,rowH*(allDivs.length+1)+7.4);
-   doc.setFont('helvetica','normal');doc.setFontSize(7.4);doc.setTextColor('#4a5b6a');
-   doc.text('Offices excluded from booking (non-booking offices) are not counted. Value shown beside each office = booking in '+mFull(m)+'.',margin,y+6);
-   /* ---- list pages ---- */
-   const printRow=(cells,x,y0,isHeader)=>{
-    doc.setFont('helvetica',isHeader?'bold':'normal');
-    fitText(cells[0],x+1.4,y0,17.5,7.4);
-    fitText(cells[1],x+19.5,y0,colW*.40,7.4);
-    fitText(cells[2],x+19.5+colW*.40+1.5,y0,colW-(19.5+colW*.40+1.5)-15,7.4);
-    fitText(cells[3],x+colW-1.4,y0,13,7.4,'right');
-   };
+   let first=true;
    for(const d of defs){
-    d.pages.forEach((pg,pi)=>{
-     doc.addPage();
-     band(d.title,'India Post · Indore Region · '+mFull(m)+' · '+d.rule);
-     doc.setFont('helvetica','bold');doc.setFontSize(8.6);doc.setTextColor(ink);
-     doc.text(fmt(d.total)+' offices in '+d.groups.length+' division'+(d.groups.length>1?'s':'')+(asOn?'   |   '+asOn:''),margin,31);
-     doc.setFont('helvetica','normal');doc.setTextColor('#4a5b6a');doc.text('List page '+(pi+1)+' of '+d.pages.length,PW-margin,31,{align:'right'});doc.setTextColor(ink);
+    const {pages,ncols,sc}=d.lay;
+    const RH=4.2*sc,GH=9*sc,GAP=2*sc,colW=(PW-2*margin-gap*(ncols-1))/ncols;
+    const fs=7.4*sc,hs=8*sc;
+    const printRow=(cells,x,y0,isHeader)=>{
+     doc.setFont('helvetica',isHeader?'bold':'normal');
+     if(ncols===1){
+      fitText(cells[0],x+2,y0,24,fs);fitText(cells[1],x+30,y0,72,fs);fitText(cells[2],x+106,y0,colW-106-26,fs);fitText(cells[3],x+colW-2,y0,22,fs,'right');
+     }else{
+      const nw=colW*.40;
+      fitText(cells[0],x+1.4,y0,18,fs);fitText(cells[1],x+19.5,y0,nw,fs);fitText(cells[2],x+19.5+nw+1.5,y0,colW-(19.5+nw+1.5)-15,fs);fitText(cells[3],x+colW-1.4,y0,13,fs,'right');
+     }
+    };
+    pages.forEach((pg,pi)=>{
+     if(!first)doc.addPage();first=false;
+     band(d.title);
+     doc.setFont('helvetica','normal');doc.setTextColor('#33485a');
+     fitText(d.rule,margin,31.5,PW-2*margin,9);
+     doc.setFont('helvetica','bold');doc.setTextColor(ink);doc.setFontSize(9.5);
+     doc.text('Total: '+fmt(d.total)+' offices  ·  '+d.groups.length+' division'+(d.groups.length>1?'s':''),margin,37.5);
+     doc.setFont('helvetica','normal');doc.setTextColor('#4a5b6a');doc.setFontSize(8.5);
+     if(pages.length>1)doc.text('Page '+(pi+1)+' of '+pages.length+' of this list',PW-margin,37.5,{align:'right'});
+     doc.setTextColor(ink);
      pg.forEach((col,ci)=>{
       let yy=top;const x=margin+ci*(colW+gap);
       for(const b of col){
-       doc.setFillColor(navy);doc.rect(x,yy,colW,4.6,'F');
+       doc.setFillColor(navy);doc.rect(x,yy,colW,4.6*sc,'F');
        doc.setFont('helvetica','bold');doc.setTextColor('#ffffff');
-       fitText(b.division+(b.cont?' (contd.)':'')+'  |  '+fmt(b.total)+' offices',x+1.4,yy+3.2,colW-2.8,8);
-       doc.setFillColor(soft);doc.rect(x,yy+4.6,colW,GH-4.6,'F');
+       fitText(b.division+(b.cont?' (contd.)':'')+'  |  '+fmt(b.total)+' offices',x+1.6,yy+3.2*sc+(sc>1?.3:0),colW-3.2,hs);
+       doc.setFillColor(soft);doc.rect(x,yy+4.6*sc,colW,GH-4.6*sc,'F');
        doc.setTextColor(ink);
-       printRow(['Office ID',d.office+' Name','Sub Division',d.header],x,yy+7.6,true);
+       printRow(['Office ID',d.office+' Name','Sub Division',d.header],x,yy+4.6*sc+3.1*sc,true);
        yy+=GH;
        b.rows.forEach((r,ri)=>{
         doc.setFillColor(ri%2?'#edf3f7':'#f8fafc');doc.rect(x,yy,colW,RH,'F');
-        doc.setTextColor(ink);printRow(r,x,yy+2.95,false);yy+=RH;
+        doc.setTextColor(ink);printRow(r,x,yy+RH*.68,false);yy+=RH;
        });
        yy+=GAP;
       }
